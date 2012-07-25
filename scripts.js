@@ -256,7 +256,7 @@ commands = {
             var took = end - now,
                 sec = took / 1000,
                 micro = took * 1000;
-            bot("Code took " + micro + " microseconds / " + took + " milliseconds / " + sec + " seconds to run.");
+            bot("Code took " + took + " milliseconds / " + sec + " seconds to run.");
         }
         catch (err) {
             var err = FormatError("", err);
@@ -294,7 +294,7 @@ commands = {
             return;
         }
 
-        bot("The ID of " + mcmd[0] + " is " + pid + "/");
+        bot("The ID of " + mcmd[0] + " is " + pid + ".");
     },
 };
 
