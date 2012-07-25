@@ -116,7 +116,7 @@ isMod = function () {
 }
 
 hasCommandStart = function (msg) {
-    return Settings.CommandStarts.indexOf(msg[0]);
+    return Settings.CommandStarts.indexOf(msg[0]) > -1;
 }
 
 html_escape = function (str) {
