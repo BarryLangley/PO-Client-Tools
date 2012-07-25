@@ -16,6 +16,8 @@ Settings = {
     // BOOLEAN
     FlashOnPMReceived: true,
     // BOOLEAN
+	ShowScriptCheckOK: false,
+	// BOOLEAN
     Bot: "~Client~",
     // STRING
     BotColor: "green",
@@ -300,7 +302,9 @@ commandaliases = {
     "controlpanel": "cp",
 };
 
-print("Script Check: OK");
+if (Settings.ShowScriptCheckOK) {
+	print("Script Check: OK");
+}
 
 ({
     onPlayerReceived: function (id) {
