@@ -9,6 +9,9 @@ wrapped in quotes ("text", for example)
 - If the next line is COLOR, the given value must be:
 wrapped in quotes
 sys.validColor must return true
+
+- If the next line is ARRAY, the given value must:
+follow this format: ["player1", "player2", "player3"]
 */
 
 Settings = {
@@ -16,12 +19,18 @@ Settings = {
     // BOOLEAN
     FlashOnPMReceived: true,
     // BOOLEAN
-	ShowScriptCheckOK: false,
-	// BOOLEAN
+    FlashOnMentioned: true,
+    // BOOLEAN
+    ShowScriptCheckOK: false,
+    // BOOLEAN
     Bot: "~Client~",
     // STRING
     BotColor: "green",
     // COLOR 
+    AutoIgnore: [],
+    // ARRAY
+    CommandStarts: ["-", "~"],
+    // ARRAY
 };
 
 // End settings //
@@ -53,7 +62,7 @@ connect(net.disconnected, function () {
 
 connect(net.PMReceived, function (id, message) {
     if (Settings.FlashOnPMReceived) {
-        cli.pingActivated(cli.channel(cli.currentChannel()));
+        cli.channel(cli.currentChannel()).checkFlash("a", "a");
     }
 });
 
@@ -67,6 +76,27 @@ html = function (mess, channel) {
 
 bot = function (mess, channel) {
     html("<font color='" + Settings.BotColor + "'><timestamp/><b>" + Settings.Bot + ":</b></font> " + mess);
+}
+
+ensureChannel = function () {
+    if (ownChannels().length == 0) {
+        var main = cli.channelName(0);
+        cli.join(main);
+        cli.activateChannel(main);
+    }
+}
+
+ownChannels = function () {
+    var x, current, channelNames = cli.channelNames(),
+        ret = [];
+    for (x in cli.channelNames()) {
+        current = cli.channel(Number(x));
+        if (current) {
+            ret.push(current.id());
+        }
+    }
+
+    return ret;
 }
 
 isConnected = function () {
@@ -86,7 +116,7 @@ isMod = function () {
 }
 
 hasCommandStart = function (msg) {
-    return msg[0] == "~" || msg[0] == "-";
+    return Settings.CommandStarts.indexOf(msg[0]);
 }
 
 html_escape = function (str) {
@@ -141,6 +171,13 @@ html_strip = function (str) {
     return str.replace(/<\/?[^>]*>/g, "");
 }
 
+sendAll = function (message, channel) {
+    if (typeof channel != "number" || !cli.hasChannel(channel)) {
+        channel = cli.currentChannel();
+    }
+    net.sendChanMessage(channel, message);
+}
+
 cmd = function (cmd, args, desc) {
     var str = "<font color='green'><b>" + cmd + "</b></font> ",
         x, arglist = {},
@@ -192,9 +229,10 @@ commands = {
 
         cmd("id", ["name"], "Shows the id of name.");
         cmd("eval", ["code"], "Evaluates code and returns the result.");
+        cmd("ipinfo", ["ip"], "Displays the hostname and country of ip.");
 
         if (isMod()) {
-            cmd("cp", ["player"], "Opens a CP of player (can be name or id).", ["controlpanel"]);
+            cmd("cp", ["player"], "Opens a CP of player.", ["controlpanel"]);
         }
 
         html("<br/> " + border);
@@ -296,14 +334,38 @@ commands = {
 
         bot("The ID of " + mcmd[0] + " is " + pid + ".");
     },
+
+    ipinfo: function (mcmd) {
+        var ip = mcmd[0];
+        if (!/\b(?:\d{1,3}\.){3}\d{1,3}\b/.test(ip)) {
+            bot("Invalid IP");
+            return;
+        }
+
+        bot("Getting ip info..");
+
+        sys.webCall("http://ip2country.sourceforge.net/ip2c.php?ip=" + ip, function (json_code) {
+            json_code = json_code.replace("ip", '"ip"');
+            json_code = json_code.replace("hostname", '"hostname"');
+            json_code = json_code.replace("country_code", '"country_code"');
+            json_code = json_code.replace("country_name", '"country_name"');
+
+            var code = JSON.parse(json_code);
+
+            bot("Info of " + ip + ":");
+            bot("Hostname: " + code.hostname);
+            bot("Country: " + code.country_name);
+        });
+    }
 };
 
 commandaliases = {
     "controlpanel": "cp",
+    "ip": "ipinfo"
 };
 
 if (Settings.ShowScriptCheckOK) {
-	print("Script Check: OK");
+    print("Script Check: OK");
 }
 
 ({
@@ -312,6 +374,11 @@ if (Settings.ShowScriptCheckOK) {
             return;
         }
         PLAYERS.push(id);
+
+        var name = cli.name(id).toLowerCase();
+        if (Settings.AutoIgnore.indexOf(name) != -1) {
+            cli.ignore(name, true);
+        }
     },
     onPlayerRemoved: function (id) {
         if (PLAYERS.indexOf(id) == -1) {
@@ -357,4 +424,13 @@ if (Settings.ShowScriptCheckOK) {
         }
 
     },
+
+    beforeChannelMessage: function (message, channel, html) {
+        if (Settings.FlashOnMentioned) {
+            if (message.toLowerCase().indexOf(cli.ownName().toLowerCase()) != -1) {
+                cli.channel(channel).checkFlash("a", "a");
+            }
+        }
+    },
+
 })

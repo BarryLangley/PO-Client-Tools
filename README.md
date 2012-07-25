@@ -3,10 +3,11 @@
 ***
 
 ## File: scripts.js
-### Version: 1.0.0  
+### Version: 1.0.5    
 
 **Report bugs/post suggestions in Issues**
 
 > Features:  
-Commands, Flash when someone PMs you, Automatically Idle
+Commands, Flash when someone PMs you/mentions you in chat(option), Automatically Idle (option),
+Auto Ignore list, Set your own command starts,
 ***
