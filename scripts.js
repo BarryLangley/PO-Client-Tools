@@ -435,7 +435,7 @@ commands = {
             for (i = 0; i < cids.length; ++i) {
                 cid = cids[i];
                 if (cli.hasChannel(cid)) {
-					if (!script.beforeSendMessage(what, cid)) {
+					if (!script.beforeSendMessage(what, cid, true)) {
                         sendAll(what, cid);
 					}
                 }
@@ -501,7 +501,7 @@ if (Settings.ShowScriptCheckOK) {
         PLAYERS.splice(PLAYERS.indexOf(id), 1);
     },
 
-    beforeSendMessage: function (message) {
+    beforeSendMessage: function (message, channel, isPeriodicCall) {
         var is_connected = isConnected();
 
         if (hasCommandStart(message) && is_connected && message.length > 1) {
@@ -530,7 +530,9 @@ if (Settings.ShowScriptCheckOK) {
                     bot(FormatError("The command " + command + " could not be used because of an error:", e));
                 }
 
-                sys.stopEvent();
+				if (!isPeriodicCall) {
+					sys.stopEvent();
+				}
 				return true; // periodic say
             }
         } else if (!is_connected) {
