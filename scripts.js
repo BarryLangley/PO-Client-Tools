@@ -458,7 +458,7 @@ commands = {
     },
 
     endcalls: function () {
-        if (callcount) {
+        if (!callcount) {
             bot("You have no periodic calls running.");
         } else {
             bot("You have " + callcount + " call(s) running.");
