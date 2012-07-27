@@ -141,30 +141,6 @@ html_escape = function (str) {
     return str.replace(/\&/g, "&amp;").replace(/\</g, "&lt;").replace(/\>/g, "&gt;");
 }
 
-fancyJoin = function (array) {
-	var x, retstr = '',
-		arrlen = array.length;
-
-	if (arrlen === 0 || arrlen === 1) {
-		return array.join("");
-	}
-
-	arrlen--;
-
-	for (x in array) {
-		if (Number(x) === arrlen) {
-			retstr = retstr.substr(0, retstr.lastIndexOf(","));
-			retstr += " or " + array[x];
-
-			return retstr;
-		}
-
-		retstr += array[x] + ", ";
-	}
-
-	return "";
-}
-		
 cut = function (array, entry, join) {
     if (!join) {
         join = ":";
@@ -259,7 +235,7 @@ commands = {
     commands: function () {
         html(border + " <br/>");
         html("<h2>Commands</h2>");
-        html("Use " + fancyJoin(Config.CommandStarts) + " before the following commands in order to use them:< <br/>");
+        html("<i>Use '~' or '-' before the following commands in order to use them:</i> <br/>");
 
         cmd("masspm", ["message"], "Sends a PM to everyone containing message. Don't use this on big servers as you will go overactive.");
         cmd("pm", ["players", "message"], "Sends a PM to players (use , and a space to seperate them) containing message.");
@@ -435,7 +411,9 @@ commands = {
             for (i = 0; i < cids.length; ++i) {
                 cid = cids[i];
                 if (cli.hasChannel(cid)) {
-                    sendAll(what, cid);
+					if (!script.beforeSendMessage(what, cid)) {
+                        sendAll(what, cid);
+					}
                 }
             }
             if (++count > 100) {
@@ -450,7 +428,7 @@ commands = {
             }, seconds);
         };
 
-        bot("Starting a new periodicsay.");
+        bot("Starting a new periodic say.");
         callcount++;
         periodicsay_callback(seconds, cids, what, 1);
     },
@@ -529,14 +507,14 @@ if (Settings.ShowScriptCheckOK) {
                 }
 
                 sys.stopEvent();
-				return;
+				return true; // periodic say
             }
         } else if (!is_connected) {
             bot("You are not connected.");
-			return;
+			return true; // periodic say
         }
 
-		ignoreflash = true; // periodicsays
+		ignoreflash = true; // periodic say
     },
 
     beforeChannelMessage: function (message, channel, html) {
