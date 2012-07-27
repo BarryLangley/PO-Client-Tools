@@ -547,6 +547,7 @@ if (Settings.ShowScriptCheckOK) {
                 if (!isPeriodicCall) {
                     sys.stopEvent();
                 }
+				
                 return true; // periodic say
             }
         } else if (!is_connected) {
