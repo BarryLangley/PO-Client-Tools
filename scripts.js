@@ -23,6 +23,8 @@ Settings = {
     // BOOLEAN
     ShowScriptCheckOK: false,
     // BOOLEAN
+    ReturnToMenuOnReconnectFailure: true,
+    // BOOLEAN
     Bot: "~Client~",
     // STRING
     BotColor: "green",
@@ -71,12 +73,19 @@ connect(net.disconnected, function () {
     PLAYERS = [];
     callcount = 0;
     endcalls = false;
-	ignoreflash = false;
+    ignoreflash = false;
 });
 
 connect(net.PMReceived, function (id, message) {
     if (Settings.FlashOnPMReceived) {
         cli.channel(cli.currentChannel()).checkFlash("a", "a"); // Flash
+    }
+});
+
+connect(net.reconnectFailure, function (reason) {
+    if (Settings.ReturnToMenuOnReconnectFailure) {
+        bot("Returning to the menu in 3 seconds..");
+        sys.callLater("cli.done();", 3);
     }
 });
 
@@ -142,27 +151,27 @@ html_escape = function (str) {
 }
 
 fancyJoin = function (array) {
-	var x, retstr = '',
-		arrlen = array.length;
+    var x, retstr = '',
+        arrlen = array.length;
 
-	if (arrlen === 0 || arrlen === 1) {
-		return array.join("");
-	}
+    if (arrlen === 0 || arrlen === 1) {
+        return array.join("");
+    }
 
-	arrlen--;
+    arrlen--;
 
-	for (x in array) {
-		if (Number(x) === arrlen) {
-			retstr = retstr.substr(0, retstr.lastIndexOf(","));
-			retstr += " or " + array[x];
+    for (x in array) {
+        if (Number(x) === arrlen) {
+            retstr = retstr.substr(0, retstr.lastIndexOf(","));
+            retstr += " or " + array[x];
 
-			return retstr;
-		}
+            return retstr;
+        }
 
-		retstr += array[x] + ", ";
-	}
+        retstr += array[x] + ", ";
+    }
 
-	return "";
+    return "";
 }
 
 cut = function (array, entry, join) {
@@ -229,8 +238,8 @@ cmd = function (cmd, args, desc) {
         arglist[current] = 1;
         str += "<b>" + current + "</b>:";
     }
-	
-	str += " ";
+
+    str += " ";
 
     for (x in desc) {
         current = desc[x];
@@ -427,25 +436,30 @@ commands = {
 
             callcount--;
             if (endcalls) {
-                // bot("Periodic say of '" + what + "' has ended.");
+                bot("Periodic say of '" + what + "' has ended.");
                 endcalls = false;
-                callcount = 0;
+                callcount--;
+
+                if (callcount < 0) {
+                    callcount = 0;
+                }
+
                 return;
             }
             for (i = 0; i < cids.length; ++i) {
                 cid = cids[i];
                 if (cli.hasChannel(cid)) {
-					if (!script.beforeSendMessage(what, cid, true)) {
+                    if (!script.beforeSendMessage(what, cid, true)) {
                         sendAll(what, cid);
-					}
+                    }
                 }
             }
             if (++count > 100) {
-				bot("Periodic say of '" + what + "' has ended.");
+                bot("Periodic say of '" + what + "' has ended.");
                 callcount = 0;
                 return;
             }
-			
+
             callcount++;
             sys.delayedCall(function () {
                 periodicsay_callback(seconds, cids, what, count);
@@ -530,17 +544,17 @@ if (Settings.ShowScriptCheckOK) {
                     bot(FormatError("The command " + command + " could not be used because of an error:", e));
                 }
 
-				if (!isPeriodicCall) {
-					sys.stopEvent();
-				}
-				return true; // periodic say
+                if (!isPeriodicCall) {
+                    sys.stopEvent();
+                }
+                return true; // periodic say
             }
         } else if (!is_connected) {
             bot("You are not connected.");
-			return true; // periodic say
+            return true; // periodic say
         }
 
-		ignoreflash = true; // periodic say
+        ignoreflash = true; // periodic say
     },
 
     beforeChannelMessage: function (message, channel, html) {
@@ -549,8 +563,8 @@ if (Settings.ShowScriptCheckOK) {
                 cli.channel(channel).checkFlash("a", "a"); // Flash
             }
         }
-		
-		ignoreflash = false;
+
+        ignoreflash = false;
     },
 
 })
