@@ -141,6 +141,30 @@ html_escape = function (str) {
     return str.replace(/\&/g, "&amp;").replace(/\</g, "&lt;").replace(/\>/g, "&gt;");
 }
 
+fancyJoin = function (array) {
+	var x, retstr = '',
+		arrlen = array.length;
+
+	if (arrlen === 0 || arrlen === 1) {
+		return array.join("");
+	}
+
+	arrlen--;
+
+	for (x in array) {
+		if (Number(x) === arrlen) {
+			retstr = retstr.substr(0, retstr.lastIndexOf(","));
+			retstr += " or " + array[x];
+
+			return retstr;
+		}
+
+		retstr += array[x] + ", ";
+	}
+
+	return "";
+}
+		
 cut = function (array, entry, join) {
     if (!join) {
         join = ":";
@@ -235,7 +259,7 @@ commands = {
     commands: function () {
         html(border + " <br/>");
         html("<h2>Commands</h2>");
-        html("<i>Use '~' or '-' before the following commands in order to use them:</i> <br/>");
+        html("Use " + fancyJoin(Config.CommandStarts) + " before the following commands in order to use them:< <br/>");
 
         cmd("masspm", ["message"], "Sends a PM to everyone containing message. Don't use this on big servers as you will go overactive.");
         cmd("pm", ["players", "message"], "Sends a PM to players (use , and a space to seperate them) containing message.");
