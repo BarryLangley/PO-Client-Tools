@@ -40,14 +40,25 @@ if (!sys.validColor(Settings.BotColor)) {
 
 cli = client;
 net = cli.network();
-
-PLAYERS = [];
-border = "<font color='mediumblue'><b>\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB</font>";
+GLOBAL = this;
 
 // connect function //
 connect = function (ref, func) {
     ref.connect(func);
 }
+
+ensure = function (name, value) {
+    if (typeof GLOBAL[name] == "undefined") {
+        GLOBAL[name] = value;
+    }
+}
+
+
+ensure("PLAYERS", []);
+ensure("border", "<font color='mediumblue'><b>\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB</font>");
+ensure("callcount", 0);
+ensure("endcalls", false);
+ensure("ignoreflash", false);
 
 // Signal Attaching //
 connect(net.playerLogin, function () {
@@ -58,11 +69,14 @@ connect(net.playerLogin, function () {
 
 connect(net.disconnected, function () {
     PLAYERS = [];
+    callcount = 0;
+    endcalls = false;
+	ignoreflash = false;
 });
 
 connect(net.PMReceived, function (id, message) {
     if (Settings.FlashOnPMReceived) {
-        cli.channel(cli.currentChannel()).checkFlash("a", "a");
+        cli.channel(cli.currentChannel()).checkFlash("a", "a"); // Flash
     }
 });
 
@@ -80,7 +94,7 @@ bot = function (mess, channel) {
 
 ensureChannel = function () {
     if (ownChannels().length == 0) {
-        var main = cli.channelName(0);
+        var main = cli.defaultChannel();
         cli.join(main);
         cli.activateChannel(main);
     }
@@ -190,18 +204,17 @@ cmd = function (cmd, args, desc) {
 
         arglist[current] = 1;
         str += "<b>" + current + "</b>:";
-        if (typeof args[next] != "string") {
-            str += " ";
-        }
     }
+	
+	str += " ";
 
     for (x in desc) {
         current = desc[x];
         part = current.substring(0, current.length - 1);
 
-        if (arglist[current]) {
+        if (arglist[current.toLowerCase()]) {
             str += "<b>" + current + "</b> ";
-        } else if (arglist[part]) {
+        } else if (arglist[part.toLowerCase()]) {
             str += "<b>" + part + "</b>" + current[part.length] + " ";
         }
         else {
@@ -220,9 +233,9 @@ cmd = function (cmd, args, desc) {
 // Commands //
 commands = {
     commands: function () {
-        html(border + "<br/>");
+        html(border + " <br/>");
         html("<h2>Commands</h2>");
-        html("Put '~' or '-' before the following commands in order to use them: <br/>");
+        html("<i>Use '~' or '-' before the following commands in order to use them:</i> <br/>");
 
         cmd("masspm", ["message"], "Sends a PM to everyone containing message. Don't use this on big servers as you will go overactive.");
         cmd("pm", ["players", "message"], "Sends a PM to players (use , and a space to seperate them) containing message.");
@@ -230,6 +243,9 @@ commands = {
         cmd("id", ["name"], "Shows the id of name.");
         cmd("eval", ["code"], "Evaluates code and returns the result.");
         cmd("ipinfo", ["ip"], "Displays the hostname and country of ip.");
+
+        cmd("periodicsay", ["seconds", "channels", "message"], "Sends message every seconds in channels. Seconds must be a number and cannot be under 15. Seperate channels with \"<b>,</b>\". The current channel will be used if no channels are specified.");
+        cmd("endcalls", [""], "Ends all running periodic says.");
 
         if (isMod()) {
             cmd("cp", ["player"], "Opens a CP of player.", ["controlpanel"]);
@@ -338,14 +354,14 @@ commands = {
     ipinfo: function (mcmd) {
         var ip = mcmd[0];
         if (!/\b(?:\d{1,3}\.){3}\d{1,3}\b/.test(ip)) {
-            bot("Invalid IP");
+            bot("Invalid IP.");
             return;
         }
 
         bot("Getting ip info..");
 
         sys.webCall("http://ip2country.sourceforge.net/ip2c.php?ip=" + ip, function (json_code) {
-            json_code = json_code.replace("ip", '"ip"');
+            json_code = json_code.replace("ip", '"ip"'); // Fixes malformed JSON
             json_code = json_code.replace("hostname", '"hostname"');
             json_code = json_code.replace("country_code", '"country_code"');
             json_code = json_code.replace("country_name", '"country_name"');
@@ -356,7 +372,79 @@ commands = {
             bot("Hostname: " + code.hostname);
             bot("Country: " + code.country_name);
         });
-    }
+    },
+
+    periodicsay: function (mcmd) {
+        var seconds = parseInt(mcmd[0], 10);
+        if (seconds < 15) {
+            return;
+        }
+
+        var channels = mcmd[1].split(","),
+            cids = [],
+            cid, i;
+
+        for (i = 0; i < channels.length; ++i) {
+            cid = cli.channelId(channels[i].replace(/(^\s*)|(\s*$)/g, ""));
+            if (cid !== undefined) {
+                cids.push(cid);
+            }
+        }
+        if (cids.length === 0) {
+            cids.push(cli.currentChannel());
+        }
+
+        var what = mcmd.slice(2).join(":");
+
+        periodicsay_callback = function (seconds, cids, what, count) {
+            if (!isConnected()) {
+                return;
+            }
+
+            callcount--;
+            if (endcalls) {
+                // bot("Periodic say of '" + what + "' has ended.");
+                endcalls = false;
+                callcount = 0;
+                return;
+            }
+            for (i = 0; i < cids.length; ++i) {
+                cid = cids[i];
+                if (cli.hasChannel(cid)) {
+                    sendAll(what, cid);
+                }
+            }
+            if (++count > 100) {
+				bot("Periodic say of '" + what + "' has ended.");
+                callcount = 0;
+                return;
+            }
+			
+            callcount++;
+            sys.delayedCall(function () {
+                periodicsay_callback(seconds, cids, what, count);
+            }, seconds);
+        };
+
+        bot("Starting a new periodicsay.");
+        callcount++;
+        periodicsay_callback(seconds, cids, what, 1);
+    },
+
+    endcalls: function () {
+        if (callcount) {
+            bot("You have no periodic calls running.");
+        } else {
+            bot("You have " + callcount + " call(s) running.");
+        }
+        if (!endcalls) {
+            endcalls = true;
+            bot("Next periodic say called will end.");
+        } else {
+            endcalls = false;
+            bot("Cancelled the ending of periodic say.");
+        }
+    },
 };
 
 commandaliases = {
@@ -393,7 +481,6 @@ if (Settings.ShowScriptCheckOK) {
         if (hasCommandStart(message) && is_connected && message.length > 1) {
             var commandData = "",
                 mcmd = [""],
-                cmdData = "",
                 tar, pos = message.indexOf(' ');
 
             if (pos != -1) {
@@ -418,19 +505,24 @@ if (Settings.ShowScriptCheckOK) {
                 }
 
                 sys.stopEvent();
+				return;
             }
         } else if (!is_connected) {
             bot("You are not connected.");
+			return;
         }
 
+		ignoreflash = true; // periodicsays
     },
 
     beforeChannelMessage: function (message, channel, html) {
-        if (Settings.FlashOnMentioned) {
+        if (Settings.FlashOnMentioned && !ignoreflash) {
             if (message.toLowerCase().indexOf(cli.ownName().toLowerCase()) != -1) {
-                cli.channel(channel).checkFlash("a", "a");
+                cli.channel(channel).checkFlash("a", "a"); // Flash
             }
         }
+		
+		ignoreflash = false;
     },
 
 })
