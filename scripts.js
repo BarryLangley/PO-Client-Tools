@@ -259,7 +259,7 @@ commands = {
     commands: function () {
         html(border + " <br/>");
         html("<h2>Commands</h2>");
-        html("Use " + fancyJoin(Config.CommandStarts) + " before the following commands in order to use them:< <br/>");
+        html("Use " + fancyJoin(Settings.CommandStarts) + " before the following commands in order to use them:< <br/>");
 
         cmd("masspm", ["message"], "Sends a PM to everyone containing message. Don't use this on big servers as you will go overactive.");
         cmd("pm", ["players", "message"], "Sends a PM to players (use , and a space to seperate them) containing message.");
