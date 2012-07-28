@@ -61,6 +61,7 @@ ensure("border", "<font color='mediumblue'><b>\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\x
 ensure("callcount", 0);
 ensure("endcalls", false);
 ensure("ignoreflash", false);
+ensure("routinetimer", sys.intervalTimer("script.playerRoutine();", 30));
 
 // Signal Attaching //
 connect(net.playerLogin, function () {
@@ -163,12 +164,12 @@ fancyJoin = function (array) {
     for (x in array) {
         if (Number(x) === arrlen) {
             retstr = retstr.substr(0, retstr.lastIndexOf(","));
-            retstr += " or " + array[x];
+            retstr += " or '" + array[x] + "'";
 
             return retstr;
         }
 
-        retstr += array[x] + ", ";
+        retstr += "'" + array[x] + "', ";
     }
 
     return "";
@@ -268,7 +269,7 @@ commands = {
     commands: function () {
         html(border + " <br/>");
         html("<h2>Commands</h2>");
-        html("Use " + fancyJoin(Settings.CommandStarts) + " before the following commands in order to use them:< <br/>");
+        html("Use " + fancyJoin(Settings.CommandStarts) + " before the following commands in order to use them: <br/>");
 
         cmd("masspm", ["message"], "Sends a PM to everyone containing message. Don't use this on big servers as you will go overactive.");
         cmd("pm", ["players", "message"], "Sends a PM to players (use , and a space to seperate them) containing message.");
@@ -288,11 +289,16 @@ commands = {
     },
 
     masspm: function (mcmd) {
-        var x, mess = cut(mcmd, 0);
+        var x, mess = cut(mcmd, 0),
+            mid = cli.ownId();
         for (x in PLAYERS) {
             if (!isConnected()) {
                 bot("Mass PM failed because you have been disconnected.");
                 return;
+            }
+
+            if (PLAYERS[x] == mid) {
+                continue;
             }
 
             net.sendPM(PLAYERS[x], mess);
@@ -305,7 +311,8 @@ commands = {
     pm: function (mcmd) {
         var x, names = mcmd[0].split(", "),
             mess = cut(mcmd, 1),
-            curr_id, numpms = 0;
+            curr_id, numpms = 0,
+            mid = cli.ownId();
         for (x in names) {
             if (!isConnected()) {
                 bot("PMing failed because you have been disconnected.");
@@ -317,9 +324,11 @@ commands = {
                 bot("Could not PM " + names[x] + ": The client doesn't have information about him/her.");
                 continue;
             }
+            if (curr_id == mid) {
+                continue;
+            }
 
             net.sendPM(curr_id, mess);
-            bot("PM'd " + names[x]);
             numpms++;
         }
 
@@ -512,7 +521,18 @@ if (Settings.ShowScriptCheckOK) {
         if (PLAYERS.indexOf(id) == -1) {
             return;
         }
+
         PLAYERS.splice(PLAYERS.indexOf(id), 1);
+    },
+
+    playerRoutine: function () {
+        var x, current;
+        for (x in PLAYERS) {
+            current = PLAYERS[x];
+            if (cli.name(current) == "~Unknown~") {
+                PLAYERS.splice(PLAYERS.indexOf(current), 1);
+            }
+        }
     },
 
     beforeSendMessage: function (message, channel, isPeriodicCall) {
@@ -547,7 +567,7 @@ if (Settings.ShowScriptCheckOK) {
                 if (!isPeriodicCall) {
                     sys.stopEvent();
                 }
-				
+
                 return true; // periodic say
             }
         } else if (!is_connected) {
