@@ -61,13 +61,16 @@ ensure("border", "<font color='mediumblue'><b>\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\x
 ensure("callcount", 0);
 ensure("endcalls", false);
 ensure("ignoreflash", false);
-ensure("routinetimer", sys.intervalTimer("script.playerRoutine();", 30));
+ensure("routinetimer", sys.intervalTimer("script.playerRoutine();", 5));
+ensure("reconnectfailed", false);
 
 // Signal Attaching //
 connect(net.playerLogin, function () {
     if (Settings.AutoIdle) {
         cli.goAway(true);
     }
+	
+	reconnectfailed = false;
 });
 
 connect(net.disconnected, function () {
@@ -75,6 +78,15 @@ connect(net.disconnected, function () {
     callcount = 0;
     endcalls = false;
     ignoreflash = false;
+	
+	if (reconnectfailed) {
+	    if (Settings.ReturnToMenuOnReconnectFailure) {
+        bot("Returning to the menu in 3 seconds..");
+        sys.callLater("cli.done();", 3);
+    }
+	}
+	
+	reconnectfailed = true;
 });
 
 connect(net.PMReceived, function (id, message) {
