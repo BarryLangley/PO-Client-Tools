@@ -8,7 +8,7 @@ wrapped in quotes ("text", for example)
 
 - If the next line is COLOR, the given value must be:
 wrapped in quotes
-sys.validColor must return true
+sys.validColor must return true (it must be a valid color)
 
 - If the next line is ARRAY, the given value must:
 follow this format: ["player1", "player2", "player3"]
@@ -504,13 +504,13 @@ commands = {
 
             callcount++;
             periodictimers.push(sys.delayedCall(function () {
-                periodicsay_callback(seconds, cids, what, count);
+                periodicsay_callback(seconds, cids, message, count);
             }, seconds));
         };
 
         bot("Starting a new periodic say.");
         callcount++;
-        periodicsay_callback(seconds, cids, what, 1);
+        periodicsay_callback(seconds, cids, message, 1);
     },
 
     endcalls: function (mcmd) {
