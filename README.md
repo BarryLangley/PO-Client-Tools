@@ -3,7 +3,7 @@
 ***
 
 ## File: scripts.js
-### Version: 1.1.1    
+### Version: 1.1.5    
 
 **Report bugs/post suggestions in Issues**
 

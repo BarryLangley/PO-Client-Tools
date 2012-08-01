@@ -25,6 +25,8 @@ Settings = {
     // BOOLEAN
     ReturnToMenuOnReconnectFailure: true,
     // BOOLEAN
+    AutoReconnect: true,
+    // BOOLEAN
     Bot: "~Client~",
     // STRING
     BotColor: "green",
@@ -60,17 +62,19 @@ ensure("PLAYERS", []);
 ensure("border", "<font color='mediumblue'><b>\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB</font>");
 ensure("callcount", 0);
 ensure("endcalls", false);
+ensure("periodictimers", []);
 ensure("ignoreflash", false);
 ensure("routinetimer", sys.intervalTimer("script.playerRoutine();", 5));
 ensure("reconnectfailed", false);
+ensure("announcement", "");
 
 // Signal Attaching //
 connect(net.playerLogin, function () {
     if (Settings.AutoIdle) {
         cli.goAway(true);
     }
-	
-	reconnectfailed = false;
+
+    reconnectfailed = false;
 });
 
 connect(net.disconnected, function () {
@@ -78,15 +82,22 @@ connect(net.disconnected, function () {
     callcount = 0;
     endcalls = false;
     ignoreflash = false;
-	
-	if (reconnectfailed) {
-	    if (Settings.ReturnToMenuOnReconnectFailure) {
-        bot("Returning to the menu in 3 seconds..");
-        sys.callLater("cli.done();", 3);
+
+    if (reconnectfailed) {
+        if (Settings.ReturnToMenuOnReconnectFailure) {
+            bot("Returning to the menu in 3 seconds..");
+            sys.callLater("cli.done();", 3);
+        } else {
+            bot("Reconnecting failed.");
+        }
+    } else {
+        if (Settings.AutoReconnect) {
+            bot("Automatically reconnecting..");
+            client.reconnect();
+        }
     }
-	}
-	
-	reconnectfailed = true;
+
+    reconnectfailed = true;
 });
 
 connect(net.PMReceived, function (id, message) {
@@ -99,7 +110,13 @@ connect(net.reconnectFailure, function (reason) {
     if (Settings.ReturnToMenuOnReconnectFailure) {
         bot("Returning to the menu in 3 seconds..");
         sys.callLater("cli.done();", 3);
+    } else {
+        bot("Reconnecting failed.");
     }
+});
+
+connect(net.announcement, function (ann) {
+    announcement = ann;
 });
 
 // Utilities //
@@ -111,12 +128,17 @@ html = function (mess, channel) {
 }
 
 bot = function (mess, channel) {
+    ensureChannel(channel);
     html("<font color='" + Settings.BotColor + "'><timestamp/><b>" + Settings.Bot + ":</b></font> " + mess);
 }
 
-ensureChannel = function () {
+ensureChannel = function (channel) {
     if (ownChannels().length == 0) {
         var main = cli.defaultChannel();
+        if (typeof channel != "undefined") {
+            main = channel;
+        }
+
         cli.join(main);
         cli.activateChannel(main);
     }
@@ -252,7 +274,9 @@ cmd = function (cmd, args, desc) {
         str += "<b>" + current + "</b>:";
     }
 
-    str += " ";
+    if (args.length != 0) {
+        str += " ";
+    }
 
     for (x in desc) {
         current = desc[x];
@@ -283,17 +307,19 @@ commands = {
         html("<h2>Commands</h2>");
         html("Use " + fancyJoin(Settings.CommandStarts) + " before the following commands in order to use them: <br/>");
 
-        cmd("masspm", ["message"], "Sends a PM to everyone containing message. Don't use this on big servers as you will go overactive.");
         cmd("pm", ["players", "message"], "Sends a PM to players (use , and a space to seperate them) containing message.");
+        cmd("masspm", ["message"], "Sends a PM to everyone containing message. Don't use this on big servers as you will go overactive.");
 
         cmd("id", ["name"], "Shows the id of name.");
-        cmd("eval", ["code"], "Evaluates code and returns the result.");
         cmd("ipinfo", ["ip"], "Displays the hostname and country of ip.");
 
-        cmd("periodicsay", ["seconds", "channels", "message"], "Sends message every seconds in channels. Seconds must be a number and cannot be under 15. Seperate channels with \"<b>,</b>\". The current channel will be used if no channels are specified.");
-        cmd("endcalls", [""], "Ends all running periodic says.");
+        cmd("periodicsay", ["seconds", "channels", "message"], "Sends message every seconds in channels. Seconds must be a number. Seperate channels with \"<b>,</b>\". The current channel will be used if no channels are specified.");
+        cmd("endcalls", ["type"], "Ends the next called periodic say. Use all as type to cancel all periodic says.");
 
-        if (isMod()) {
+        cmd("announcement", [], "Shows this server's raw announcement (which you can copy).");
+        cmd("eval", ["code"], "Evaluates code and returns the result (for advanced users ONLY).");
+
+        if (isMod()) { // These require moderator to work propertly
             cmd("cp", ["player"], "Opens a CP of player.", ["controlpanel"]);
         }
 
@@ -429,12 +455,8 @@ commands = {
     },
 
     periodicsay: function (mcmd) {
-        var seconds = parseInt(mcmd[0], 10);
-        if (seconds < 15) {
-            return;
-        }
-
-        var channels = mcmd[1].split(","),
+        var seconds = parseInt(mcmd[0], 10),
+            channels = mcmd[1].split(","),
             cids = [],
             cid, i;
 
@@ -448,43 +470,42 @@ commands = {
             cids.push(cli.currentChannel());
         }
 
-        var what = mcmd.slice(2).join(":");
+        var message = mcmd.slice(2).join(":");
 
-        periodicsay_callback = function (seconds, cids, what, count) {
+        periodicsay_callback = function (seconds, cids, message, count) {
             if (!isConnected()) {
                 return;
             }
 
             callcount--;
             if (endcalls) {
-                bot("Periodic say of '" + what + "' has ended.");
+                bot("Periodic say of '" + message + "' has ended.");
                 endcalls = false;
                 callcount--;
 
                 if (callcount < 0) {
                     callcount = 0;
                 }
-
                 return;
             }
             for (i = 0; i < cids.length; ++i) {
                 cid = cids[i];
                 if (cli.hasChannel(cid)) {
-                    if (!script.beforeSendMessage(what, cid, true)) {
-                        sendAll(what, cid);
+                    if (!script.beforeSendMessage(message, cid, true)) {
+                        sendAll(message, cid);
                     }
                 }
             }
             if (++count > 100) {
-                bot("Periodic say of '" + what + "' has ended.");
+                bot("Periodic say of '" + message + "' has ended.");
                 callcount = 0;
                 return;
             }
 
             callcount++;
-            sys.delayedCall(function () {
+            periodictimers.push(sys.delayedCall(function () {
                 periodicsay_callback(seconds, cids, what, count);
-            }, seconds);
+            }, seconds));
         };
 
         bot("Starting a new periodic say.");
@@ -492,25 +513,51 @@ commands = {
         periodicsay_callback(seconds, cids, what, 1);
     },
 
-    endcalls: function () {
+    endcalls: function (mcmd) {
         if (!callcount) {
             bot("You have no periodic calls running.");
         } else {
             bot("You have " + callcount + " call(s) running.");
         }
-        if (!endcalls) {
-            endcalls = true;
-            bot("Next periodic say called will end.");
+
+        var isAll = mcmd[0].toLowerCase() == "all";
+
+        if (!isAll) {
+            if (!endcalls) {
+                endcalls = true;
+                bot("Next periodic say called will end.");
+            } else {
+                endcalls = false;
+                bot("Cancelled the ending of periodic say.");
+            }
         } else {
-            endcalls = false;
-            bot("Cancelled the ending of periodic say.");
+            var x, timers = periodictimers.length;
+            for (x in periodictimers) {
+                sys.stopTimer(periodictimers[x]);
+            }
+            bot("Cancelled " + timers + " timer(s)");
         }
     },
+
+    announcement: function () {
+        if (!isConnected()) {
+            bot("Not connected.");
+            return;
+        }
+
+        if (announcement == "") {
+            bot("This server doesn't have an announcement");
+            return;
+        }
+
+        bot("Server Announcement: " + html_escape(announcement));
+    }
 };
 
 commandaliases = {
     "controlpanel": "cp",
-    "ip": "ipinfo"
+    "ip": "ipinfo",
+	"ann": "announcement"
 };
 
 if (Settings.ShowScriptCheckOK) {
@@ -598,6 +645,5 @@ if (Settings.ShowScriptCheckOK) {
         }
 
         ignoreflash = false;
-    },
-
+    }
 })
