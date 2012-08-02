@@ -107,6 +107,8 @@ connect(net.PMReceived, function (id, message) {
 });
 
 connect(net.reconnectFailure, function (reason) {
+    reconnectfailed = true;
+	
     if (Settings.ReturnToMenuOnReconnectFailure) {
         bot("Returning to the menu in 3 seconds..");
         sys.callLater("cli.done();", 3);
@@ -535,7 +537,11 @@ commands = {
             for (x in periodictimers) {
                 sys.stopTimer(periodictimers[x]);
             }
+			
+			periodictimers = [];
+			
             bot("Cancelled " + timers + " timer(s)");
+			callcount = 0;
         }
     },
 
