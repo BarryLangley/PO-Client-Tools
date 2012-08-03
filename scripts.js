@@ -383,15 +383,16 @@ commands = {
         html(border);
 
         try {
-            var now = millitime();
-            var result = eval(code);
-            var end = millitime();
+            var now = millitime(),
+			result = eval(code),
+			end = millitime();
 
-            bot(result);
+            bot(html_escape(result));
 
             var took = end - now,
                 sec = took / 1000,
                 micro = took * 1000;
+				
             bot("Code took " + took + " milliseconds / " + sec + " seconds to run.");
         }
         catch (err) {
