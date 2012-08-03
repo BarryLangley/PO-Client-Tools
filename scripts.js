@@ -82,6 +82,8 @@ connect(net.disconnected, function () {
     callcount = 0;
     endcalls = false;
     ignoreflash = false;
+	endCalls();
+    announcement = "";
 
     if (reconnectfailed) {
         if (Settings.ReturnToMenuOnReconnectFailure) {
@@ -134,6 +136,15 @@ bot = function (mess, channel) {
     html("<font color='" + Settings.BotColor + "'><timestamp/><b>" + Settings.Bot + ":</b></font> " + mess);
 }
 
+endCalls = function () {
+	var x, timers = periodictimers.length;
+	for (x in periodictimers) {
+		sys.stopTimer(periodictimers[x]);
+	}
+	
+	periodictimers = [];
+	return timers;
+}
 ensureChannel = function (channel) {
     if (ownChannels().length == 0) {
         var main = cli.defaultChannel();
@@ -534,14 +545,7 @@ commands = {
                 bot("Cancelled the ending of periodic say.");
             }
         } else {
-            var x, timers = periodictimers.length;
-            for (x in periodictimers) {
-                sys.stopTimer(periodictimers[x]);
-            }
-			
-			periodictimers = [];
-			
-            bot("Cancelled " + timers + " timer(s)");
+            bot("Cancelled " + endCalls() + " timer(s).");
 			callcount = 0;
         }
     },
