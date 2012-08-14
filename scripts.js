@@ -324,12 +324,12 @@ commands = {
         cmd("masspm", ["message"], "Sends a PM to everyone containing message. Don't use this on big servers as you will go overactive.");
 
         cmd("id", ["name"], "Shows the id of name.");
-        cmd("ipinfo", ["ip"], "Displays the hostname and country of ip.");
+        cmd("ipinfo", ["ip"], "Displays the hostname and country of ip.", ["info"]);
 
         cmd("periodicsay", ["seconds", "channels", "message"], "Sends message every seconds in channels. Seconds must be a number. Seperate channels with \"<b>,</b>\". The current channel will be used if no channels are specified.");
         cmd("endcalls", ["type"], "Ends the next called periodic say. Use all as type to cancel all periodic says.");
 
-        cmd("announcement", [], "Shows this server's raw announcement (which you can copy).");
+        cmd("announcement", [], "Shows this server's raw announcement (which you can copy).", ["ann"]);
         cmd("eval", ["code"], "Evaluates code and returns the result (for advanced users ONLY).");
 
         if (isMod()) { // These require moderator to work propertly
@@ -567,7 +567,7 @@ commands = {
 
 commandaliases = {
     "controlpanel": "cp",
-    "ip": "ipinfo",
+    "info": "ipinfo",
 	"ann": "announcement"
 };
 
@@ -608,7 +608,7 @@ if (Settings.ShowScriptCheckOK) {
     beforeSendMessage: function (message, channel, isPeriodicCall) {
         var is_connected = isConnected();
 
-        if (hasCommandStart(message) && is_connected && message.length > 1) {
+        if (hasCommandStart(message) && && !hasCommandStart(message.substr(1)) && is_connected && message.length > 1) {
             var commandData = "",
                 mcmd = [""],
                 tar, pos = message.indexOf(' ');
