@@ -1,9 +1,8 @@
 # TheUnknownOne's Client Tools
-*Everyone may make pull requests. Always check if your changes work, and follow the current indention (JS Beautifier).*
 ***
 
 ## File: scripts.js
-### Version: 1.1.5    
+### Version: 1.1.6    
 
 **Report bugs/post suggestions in Issues**
 

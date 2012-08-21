@@ -103,7 +103,7 @@ connect(net.disconnected, function () {
 });
 
 connect(net.PMReceived, function (id, message) {
-    if (Settings.FlashOnPMReceived) {
+    if (Settings.FlashOnPMReceived && !cli.ignored(id)) {
         cli.channel(cli.currentChannel()).checkFlash("a", "a"); // Flash
     }
 });
@@ -650,6 +650,14 @@ if (Settings.ShowScriptCheckOK) {
 
     beforeChannelMessage: function (message, channel, html) {
         if (Settings.FlashOnMentioned && !ignoreflash) {
+		if (!html) {
+		var sendBy = message.substring(0, message.indexOf(":"));
+		if (cli.ignored(cli.id(sendBy))) {
+		ignoreflash = false;
+		return;
+		}
+		}
+		
             if (message.toLowerCase().indexOf(cli.ownName().toLowerCase()) != -1) {
                 cli.channel(channel).checkFlash("a", "a"); // Flash
             }
