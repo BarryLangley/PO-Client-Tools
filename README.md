@@ -2,7 +2,7 @@
 ***
 
 ## File: scripts.js
-### Version: 1.1.6    
+### Version: 1.1.7  
 
 **Report bugs/post suggestions in Issues**
 

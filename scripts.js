@@ -23,9 +23,9 @@ Settings = {
     // BOOLEAN
     ShowScriptCheckOK: false,
     // BOOLEAN
-    ReturnToMenuOnReconnectFailure: true,
+    ReturnToMenuOnReconnectFailure: false,
     // BOOLEAN
-    AutoReconnect: true,
+    AutoReconnect: false,
     // BOOLEAN
     Bot: "~Client~",
     // STRING
@@ -82,7 +82,7 @@ connect(net.disconnected, function () {
     callcount = 0;
     endcalls = false;
     ignoreflash = false;
-	endCalls();
+    endCalls();
     announcement = "";
 
     if (reconnectfailed) {
@@ -103,14 +103,14 @@ connect(net.disconnected, function () {
 });
 
 connect(net.PMReceived, function (id, message) {
-    if (Settings.FlashOnPMReceived && !cli.ignored(id)) {
+    if (Settings.FlashOnPMReceived && !cli.isIgnored(id)) {
         cli.channel(cli.currentChannel()).checkFlash("a", "a"); // Flash
     }
 });
 
 connect(net.reconnectFailure, function (reason) {
     reconnectfailed = true;
-	
+
     if (Settings.ReturnToMenuOnReconnectFailure) {
         bot("Returning to the menu in 3 seconds..");
         sys.callLater("cli.done();", 3);
@@ -137,13 +137,13 @@ bot = function (mess, channel) {
 }
 
 endCalls = function () {
-	var x, timers = periodictimers.length;
-	for (x in periodictimers) {
-		sys.stopTimer(periodictimers[x]);
-	}
-	
-	periodictimers = [];
-	return timers;
+    var x, timers = periodictimers.length;
+    for (x in periodictimers) {
+        sys.stopTimer(periodictimers[x]);
+    }
+
+    periodictimers = [];
+    return timers;
 }
 ensureChannel = function (channel) {
     if (ownChannels().length == 0) {
@@ -320,8 +320,8 @@ commands = {
         html("<h2>Commands</h2>");
         html("Use " + fancyJoin(Settings.CommandStarts) + " before the following commands in order to use them: <br/>");
 
-        cmd("pm", ["players", "message"], "Sends a PM to players (use , and a space to seperate them) containing message.");
-        cmd("masspm", ["message"], "Sends a PM to everyone containing message. Don't use this on big servers as you will go overactive.");
+        cmd("pm", ["players", "message"], "Sends a PM to players (use , and a space to seperate them) containing message. Use %name for the current player's name.");
+        cmd("masspm", ["message"], "Sends a PM to everyone containing message. Use %name for the current player's name. Don't use this on big servers as you will go overactive.");
 
         cmd("id", ["name"], "Shows the id of name.");
         cmd("ipinfo", ["ip"], "Displays the hostname and country of ip.", ["info"]);
@@ -341,19 +341,21 @@ commands = {
 
     masspm: function (mcmd) {
         var x, mess = cut(mcmd, 0),
-            mid = cli.ownId();
+            mid = cli.ownId(),
+            curr_name, curr;
         for (x in PLAYERS) {
             if (!isConnected()) {
                 bot("Mass PM failed because you have been disconnected.");
                 return;
             }
 
-            if (PLAYERS[x] == mid) {
+            curr = PLAYERS[x];
+            if (curr == mid) {
                 continue;
             }
 
-            net.sendPM(PLAYERS[x], mess);
-            bot("PM'd " + client.name(PLAYERS[x]));
+            curr_name = client.name(curr);
+            net.sendPM(curr, mess.replace(/%name/gi, curr_name));
         }
 
         bot("Mass PM completed. PM'd " + PLAYERS.length + " players.");
@@ -379,7 +381,7 @@ commands = {
                 continue;
             }
 
-            net.sendPM(curr_id, mess);
+            net.sendPM(curr_id, mess.replace(/%name/gi, names[x]));
             numpms++;
         }
 
@@ -395,15 +397,15 @@ commands = {
 
         try {
             var now = millitime(),
-			result = eval(code),
-			end = millitime();
+                result = eval(code),
+                end = millitime();
 
             bot(html_escape(result));
 
             var took = end - now,
                 sec = took / 1000,
                 micro = took * 1000;
-				
+
             bot("Code took " + took + " milliseconds / " + sec + " seconds to run.");
         }
         catch (err) {
@@ -546,7 +548,7 @@ commands = {
             }
         } else {
             bot("Cancelled " + endCalls() + " timer(s).");
-			callcount = 0;
+            callcount = 0;
         }
     },
 
@@ -568,7 +570,7 @@ commands = {
 commandaliases = {
     "controlpanel": "cp",
     "info": "ipinfo",
-	"ann": "announcement"
+    "ann": "announcement"
 };
 
 if (Settings.ShowScriptCheckOK) {
@@ -608,7 +610,7 @@ if (Settings.ShowScriptCheckOK) {
     beforeSendMessage: function (message, channel, isPeriodicCall) {
         var is_connected = isConnected();
 
-        if (hasCommandStart(message) && && !hasCommandStart(message.substr(1)) && is_connected && message.length > 1) {
+        if (hasCommandStart(message) && !hasCommandStart(message.substr(1)) && is_connected && message.length > 1) {
             var commandData = "",
                 mcmd = [""],
                 tar, pos = message.indexOf(' ');
@@ -650,14 +652,14 @@ if (Settings.ShowScriptCheckOK) {
 
     beforeChannelMessage: function (message, channel, html) {
         if (Settings.FlashOnMentioned && !ignoreflash) {
-		if (!html) {
-		var sendBy = message.substring(0, message.indexOf(":"));
-		if (cli.ignored(cli.id(sendBy))) {
-		ignoreflash = false;
-		return;
-		}
-		}
-		
+            if (!html) {
+                var sendBy = message.substring(0, message.indexOf(":"));
+                if (cli.isIgnored(cli.id(sendBy))) {
+                    ignoreflash = false;
+                    return;
+                }
+            }
+
             if (message.toLowerCase().indexOf(cli.ownName().toLowerCase()) != -1) {
                 cli.channel(channel).checkFlash("a", "a"); // Flash
             }
