@@ -67,6 +67,7 @@ ensure("ignoreflash", false);
 ensure("routinetimer", sys.intervalTimer("script.playerRoutine();", 5));
 ensure("reconnectfailed", false);
 ensure("announcement", "");
+ensure("EvalID", -1);
 
 // Signal Attaching //
 connect(net.playerLogin, function () {
@@ -313,6 +314,19 @@ cmd = function (cmd, args, desc) {
     html(str);
 }
 
+PMEval = function ($1) {
+    var ret;
+    try {
+        ret = eval($1.substring(2, $1.length - 3));
+    } catch (e) {
+        ret = "";
+        print(FormatError("Error in PM:", e));
+    }
+
+    delete EvalID;
+    return ret;
+}
+
 // Commands //
 commands = {
     commands: function () {
@@ -320,8 +334,8 @@ commands = {
         html("<h2>Commands</h2>");
         html("Use " + fancyJoin(Settings.CommandStarts) + " before the following commands in order to use them: <br/>");
 
-        cmd("pm", ["players", "message"], "Sends a PM to players (use , and a space to seperate them) containing message. Use %name for the current player's name.");
-        cmd("masspm", ["message"], "Sends a PM to everyone containing message. Use %name for the current player's name. Don't use this on big servers as you will go overactive.");
+        cmd("pm", ["players", "message"], "Sends a PM to players (use , and a space to seperate them) containing message. Use %name for the current player's name. Code inside <% %> will get evaluated (EvalID is the id of the current player).");
+        cmd("masspm", ["message"], "Sends a PM to everyone containing message. Use %name for the current player's name. Code inside <% %> will get evaluated (EvalID is the id of the current player). Don't use this on big servers as you will go overactive.");
 
         cmd("id", ["name"], "Shows the id of name.");
         cmd("ipinfo", ["ip"], "Displays the hostname and country of ip.", ["info"]);
@@ -355,7 +369,8 @@ commands = {
             }
 
             curr_name = client.name(curr);
-            net.sendPM(curr, mess.replace(/%name/gi, curr_name));
+            EvalID = curr;
+            net.sendPM(curr, mess.replace(/<%(.*?)%>/gi, PMEval).replace(/%name/gi, curr_name));
         }
 
         bot("Mass PM completed. PM'd " + PLAYERS.length + " players.");
@@ -381,7 +396,8 @@ commands = {
                 continue;
             }
 
-            net.sendPM(curr_id, mess.replace(/%name/gi, names[x]));
+            EvalID = curr_id;
+            net.sendPM(curr_id, mess.replace(/<%(.*?)%>/gi, PMEval).replace(/%name/gi, names[x]));
             numpms++;
         }
 
