@@ -45,6 +45,7 @@ if (!sys.validColor(Settings.BotColor)) {
 cli = client;
 net = cli.network();
 GLOBAL = this;
+valPrefix = "TheUnknownOnesClientScript_";
 
 // connect function //
 connect = function (ref, func) {
@@ -57,6 +58,18 @@ ensure = function (name, value) {
     }
 }
 
+getVal = function (name, defaultValue) {
+    var res = sys.getVal(valPrefix + name);
+    if (res == undefined) {
+        return defaultValue;
+    }
+
+    return res;
+}
+
+saveVal = function (name, content) {
+    sys.saveVal(valPrefix + name, content);
+}
 
 ensure("PLAYERS", []);
 ensure("border", "<font color='mediumblue'><b>\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB</font>");
@@ -68,6 +81,8 @@ ensure("routinetimer", sys.intervalTimer("script.playerRoutine();", 5));
 ensure("reconnectfailed", false);
 ensure("announcement", "");
 ensure("EvalID", -1);
+ensure("NoHTML", getVal("NoHTML", false));
+ensure("ignoreNoHtml", false);
 
 // Signal Attaching //
 connect(net.playerLogin, function () {
@@ -125,16 +140,23 @@ connect(net.announcement, function (ann) {
 });
 
 // Utilities //
-html = function (mess, channel) {
+htmlMessage = function (mess, channel) {
     if (typeof channel != "number" || !cli.hasChannel(channel)) {
         channel = cli.currentChannel();
     }
+
+    ignoreNoHtml = true;
     cli.printChannelMessage(mess, channel, true);
+    ignoreNoHtml = false;
 }
 
 bot = function (mess, channel) {
     ensureChannel(channel);
-    html("<font color='" + Settings.BotColor + "'><timestamp/><b>" + Settings.Bot + ":</b></font> " + mess);
+    htmlMessage("<font color='" + Settings.BotColor + "'><timestamp/><b>" + Settings.Bot + ":</b></font> " + mess);
+}
+
+white = function (channel) {
+    htmlMessage("", channel);
 }
 
 endCalls = function () {
@@ -144,6 +166,7 @@ endCalls = function () {
     }
 
     periodictimers = [];
+
     return timers;
 }
 ensureChannel = function (channel) {
@@ -290,6 +313,8 @@ cmd = function (cmd, args, desc) {
 
     if (args.length != 0) {
         str += " ";
+    } else {
+        str += ":";
     }
 
     for (x in desc) {
@@ -311,7 +336,7 @@ cmd = function (cmd, args, desc) {
         str += "<i>Aliases: " + aliases.join(", ") + "</i>";
     }
 
-    html(str);
+    htmlMessage(str);
 }
 
 PMEval = function ($1) {
@@ -330,27 +355,34 @@ PMEval = function ($1) {
 // Commands //
 commands = {
     commands: function () {
-        html(border + " <br/>");
-        html("<h2>Commands</h2>");
-        html("Use " + fancyJoin(Settings.CommandStarts) + " before the following commands in order to use them: <br/>");
+        htmlMessage(border + " <br/>");
+        htmlMessage("<h2>Commands</h2>");
+        htmlMessage("Use " + fancyJoin(Settings.CommandStarts) + " before the following commands in order to use them: <br/>");
 
+        white();
         cmd("pm", ["players", "message"], "Sends a PM to players (use , and a space to seperate them) containing message. Use %name for the current player's name. Code inside <% %> will get evaluated (EvalID is the id of the current player).");
         cmd("masspm", ["message"], "Sends a PM to everyone containing message. Use %name for the current player's name. Code inside <% %> will get evaluated (EvalID is the id of the current player). Don't use this on big servers as you will go overactive.");
 
-        cmd("id", ["name"], "Shows the id of name.");
+        white();
+        cmd("id", ["name"], "Displays the id of name.");
+        cmd("color", ["name"], "Displays the hex color of name.");
         cmd("ipinfo", ["ip"], "Displays the hostname and country of ip.", ["info"]);
 
+        white();
         cmd("periodicsay", ["seconds", "channels", "message"], "Sends message every seconds in channels. Seconds must be a number. Seperate channels with \"<b>,</b>\". The current channel will be used if no channels are specified.");
         cmd("endcalls", ["type"], "Ends the next called periodic say. Use all as type to cancel all periodic says.");
 
-        cmd("announcement", [], "Shows this server's raw announcement (which you can copy).", ["ann"]);
+        white();
+        cmd("nohtml", [], "Toggles No HTML. Default value for this is off. Escapes all HTML when on.");
+        cmd("announcement", [], "Displays this server's raw announcement (which you can copy).", ["ann"]);
         cmd("eval", ["code"], "Evaluates code and returns the result (for advanced users ONLY).");
 
         if (isMod()) { // These require moderator to work propertly
+            white();
             cmd("cp", ["player"], "Opens a CP of player.", ["controlpanel"]);
         }
 
-        html("<br/> " + border);
+        htmlMessage("<br/> " + border);
     },
 
     masspm: function (mcmd) {
@@ -406,10 +438,10 @@ commands = {
 
     eval: function (mcmd) {
         var code = cut(mcmd, 0);
-        html(border);
+        htmlMessage(border);
         bot("You evaluated the following code:");
-        html("<code>" + html_escape(code) + "</code>");
-        html(border);
+        htmlMessage("<code>" + html_escape(code) + "</code>");
+        htmlMessage(border);
 
         try {
             var now = millitime(),
@@ -463,6 +495,17 @@ commands = {
         bot("The ID of " + mcmd[0] + " is " + pid + ".");
     },
 
+    color: function (mcmd) {
+        var pid = id(mcmd[0]);
+
+        if (pid == -1) {
+            bot("The client doesn't have data of " + mcmd[0]);
+            return;
+        }
+
+        bot("The color of " + mcmd[0] + " is " + cli.color(pid) + ".");
+    },
+
     ipinfo: function (mcmd) {
         var ip = mcmd[0];
         if (!/\b(?:\d{1,3}\.){3}\d{1,3}\b/.test(ip)) {
@@ -484,6 +527,18 @@ commands = {
             bot("Hostname: " + code.hostname);
             bot("Country: " + code.country_name);
         });
+    },
+
+    nohtml: function () {
+        NoHTML = !NoHTML;
+        saveVal("NoHTML", NoHTML);
+
+        var mode = "on";
+        if (!NoHTML) {
+            mode = "off";
+        }
+
+        bot("No HTML was turned " + mode + ".");
     },
 
     periodicsay: function (mcmd) {
@@ -679,6 +734,11 @@ if (Settings.ShowScriptCheckOK) {
             if (message.toLowerCase().indexOf(cli.ownName().toLowerCase()) != -1) {
                 cli.channel(channel).checkFlash("a", "a"); // Flash
             }
+        }
+
+        if (NoHTML && html && !ignoreNoHtml) {
+            sys.stopEvent();
+            cli.printChannelMessage(message, channel, false);
         }
 
         ignoreflash = false;
