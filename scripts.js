@@ -45,7 +45,6 @@ if (!sys.validColor(Settings.BotColor)) {
 cli = client;
 net = cli.network();
 GLOBAL = this;
-valPrefix = "TheUnknownOnesClientScript_";
 
 // connect function //
 connect = function (ref, func) {
@@ -59,8 +58,8 @@ ensure = function (name, value) {
 }
 
 getVal = function (name, defaultValue) {
-    var res = sys.getVal(valPrefix + name);
-    if (res == undefined) {
+    var res = sys.getVal(name);
+    if (res == "") {
         return defaultValue;
     }
 
@@ -68,7 +67,7 @@ getVal = function (name, defaultValue) {
 }
 
 saveVal = function (name, content) {
-    sys.saveVal(valPrefix + name, content);
+    sys.saveVal(name, content);
 }
 
 ensure("PLAYERS", []);
@@ -81,7 +80,6 @@ ensure("routinetimer", sys.intervalTimer("script.playerRoutine();", 5));
 ensure("reconnectfailed", false);
 ensure("announcement", "");
 ensure("EvalID", -1);
-ensure("NoHTML", getVal("NoHTML", false));
 ensure("ignoreNoHtml", false);
 
 // Signal Attaching //
@@ -649,6 +647,9 @@ if (Settings.ShowScriptCheckOK) {
 }
 
 ({
+clientStartUp: function () {
+	ensure("NoHTML", getVal("NoHTML", false)); // Fix a bug
+},
     onPlayerReceived: function (id) {
         if (PLAYERS.indexOf(id) != -1) {
             return;
@@ -740,7 +741,7 @@ if (Settings.ShowScriptCheckOK) {
             sys.stopEvent();
             cli.printChannelMessage(message, channel, false);
         }
-
+		
         ignoreflash = false;
     }
 })
