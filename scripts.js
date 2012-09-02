@@ -81,11 +81,19 @@ ensure("reconnectfailed", false);
 ensure("announcement", "");
 ensure("EvalID", -1);
 ensure("ignoreNoHtml", false);
+ensure("AutoIdleTimer", -1);
 
 // Signal Attaching //
 connect(net.playerLogin, function () {
     if (Settings.AutoIdle) {
-        cli.goAway(true);
+        AutoIdleTimer = sys.intervalCall(function goAway() {
+            if (isConnected()) {
+                if (!cli.away()) {
+                    cli.goAway(true);
+                }
+                sys.callQuickly("sys.stopTimer(AutoIdleTimer);", 10);
+            }
+        }, 20);
     }
 
     reconnectfailed = false;
