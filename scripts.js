@@ -647,9 +647,9 @@ if (Settings.ShowScriptCheckOK) {
 }
 
 ({
-clientStartUp: function () {
-	ensure("NoHTML", getVal("NoHTML", false)); // Fix a bug
-},
+    clientStartUp: function () {
+        ensure("NoHTML", getVal("NoHTML", "false") == "true"); // Fix a bug with sys.getVal? & Fix with string storage
+    },
     onPlayerReceived: function (id) {
         if (PLAYERS.indexOf(id) != -1) {
             return;
@@ -741,7 +741,7 @@ clientStartUp: function () {
             sys.stopEvent();
             cli.printChannelMessage(message, channel, false);
         }
-		
+
         ignoreflash = false;
     }
 })
