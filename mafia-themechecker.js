@@ -924,7 +924,6 @@
 
 ({
     beforeSendMessage: function (message, channel) {
-        print(message);
         if ((message[0] == "~" || message[0] == "-") && message.length > 1) {
             var commandData = "",
                 pos = message.indexOf(' ');
