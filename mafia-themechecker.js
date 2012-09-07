@@ -195,10 +195,45 @@
         configurable: true
     });
 
+    pureHtml = function (msg) {
+        cli.printChannelMessage(msg, cli.currentChannel(), true);
+    }
+
+    html = function (msg, color) {
+        var send = "";
+        if (msg) {
+            send = "<font color='" + color + "'><timestamp/><b>~Client~:</b></font> " + msg;
+        }
+
+        pureHtml(send);
+    }
+
+    out = function (msg) {
+        html(msg, "green");
+    }
+
+    minor = function (msg) {
+        html(msg, "orange");
+    }
+
+    fatal = function (msg) {
+        html(msg, "red");
+    }
+
+    printErrors = function (errors) {
+        var errorlist = "",
+            x;
+        for (x in errors) {
+            errorlist += "&nbsp;&nbsp;&nbsp; \u2022 " + errors[x];
+        }
+
+        pureHtml(errorlist + "<br/>");
+    }
+
     var minorErrors = [],
-        fatalErrors = [],
-        cli = client,
-        net = cli.network;
+        fatalErrors = [];
+    cli = client;
+    net = cli.network;
 
     addMinorError = function (msg) {
         minorErrors.push(msg);
@@ -213,25 +248,6 @@
         fatalErrors = [];
     }
 
-    out = function (msg) {
-        cli.printChannelMessage(msg, cli.currentChannel(), false);
-    }
-
-    html = function (msg) {
-        cli.printChannelMessage(msg, cli.currentChannel(), true);
-    }
-
-    minor = function (msg) {
-        html("<font color='orange'><b>[Minor]</b></font> " + msg);
-    }
-
-    warn = function (msg) {
-        html("<font color='blue'><b>[Warning]</b></font> " + msg);
-    }
-
-    fatal = function (msg) {
-        html("<font color='red'><b>[Fatal]</b></font> " + msg);
-    }
 
     readable = function (arr, last_delim) {
         if (!Array.isArray(arr)) {
@@ -252,7 +268,7 @@
         this.roles = {};
     }
 
-    themeProto = Theme.prototype;
+    var themeProto = Theme.prototype;
     themeProto.addSide = function (obj) {
         var side = "One of your sides";
         if (obj.has("side")) {
@@ -867,18 +883,13 @@
             json = JSON.parse(content);
         } catch (err) {
             fatal("Could not parse JSON.");
-            html("<timestamp/> You might want to hone your syntax with <a href='http://jsonlint.com'>JSONLint</a>");
+            out("You might want to hone your syntax with <a href='http://jsonlint.com'>JSONLint</a>");
             return;
         }
-
-        out("Theme parsed.");
-
         theme = new Theme();
 
-        out("Checking theme...");
-
         try {
-            checkAttributes(json, ["name", "sides", "roles", /*"roles1"*/], ["villageCantLoseRoles", "author", "summary", "border", "killmsg", "killusermsg", "lynchmsg", "drawmsg"], "Your theme", true);
+            checkAttributes(json, ["name", "sides", "roles", /*"roles1"*/ ], ["villageCantLoseRoles", "author", "summary", "border", "killmsg", "killusermsg", "lynchmsg", "drawmsg"], "Your theme", true);
 
             // Init from the theme
             for (x in json.sides) {
@@ -918,55 +929,50 @@
             fatal("Couldn't check the entire code. The following error has occured: " + err);
         }
 
+        out("");
         if (!fatalErrors.isEmpty()) {
             errorsFound = true;
-            out("");
             out("Fatal errors found in your theme:");
 
-            for (x in fatalErrors) {
-                out(fatalErrors[x]);
-            }
+            printErrors(fatalErrors);
         }
         else {
             out("No fatal errors found in your theme. Good job!");
         }
 
+        out("");
         if (!minorErrors.isEmpty()) {
             errorsFound = true;
-            out("");
             out("Minor errors found in your theme:");
 
-            for (x in minorErrors) {
-                out(minorErrors[x]);
-            }
+            printErrors(minorErrors);
         } else {
             out("No minor errors found in your theme. Good job!");
         }
 
         if (!errorsFound) {
+            out("");
             out("No errors found! Your theme should work.");
         }
 
         resetErrors();
 
         out("");
-        out("Theme checked.");
     }
 
     checkTheme = function (url) {
-        out("Downloading theme...");
+        out("Downloading your theme.");
 
         sys.webCall(url, function (resp) {
             if (resp === "") {
-                out("The page didn't exist or there was an error with retrieving the content of the page.");
-                fatal("Checking canceled.");
+                fatal("The page didn't exist or there was an error with retrieving the content of the page.");
                 return;
             }
 
             try {
                 loadTheme(resp);
             } catch (e) {
-                out("Couldn't check your theme: " + e);
+                fatal("Couldn't check your theme: " + e);
             }
 
         });
@@ -983,7 +989,6 @@
 
             if (pos != -1) {
                 command = message.substring(1, pos).toLowerCase();
-
                 commandData = message.substr(pos + 1);
             }
             else {
@@ -995,13 +1000,14 @@
                     fatal("Safe scripts is on. Your theme can't be downloaded.");
                     return;
                 }
-                out("Checking your theme...");
+
                 checkTheme(commandData);
                 return;
             }
 
             if (command == "eval") {
-                out(eval(commandData));
+                out("Result:");
+                cli.printLine(eval(commandData));
                 return;
             }
         }
