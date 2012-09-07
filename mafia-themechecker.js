@@ -660,7 +660,7 @@
                 }
             }
             if (role.actions.has("daykillrevengemsg") && checkType(role.actions.daykillrevengemsg, ["string"], "Role " + yourRole + "'s daykillrevengemsg attribute")) {
-                if (role.actions.has("daykill")) {
+                if (!role.actions.has("daykill")) {
                     addMinorError("Role " + yourRole + " has a \"daykillrevengemsg\" attribute, but no \"daykill\" attribute.");
                 } else {
                     checkType(role.actions.daykillrevengemsg, ["string"], "Role " + yourRole + "'s daykillrevengemsg attribute");
@@ -801,7 +801,7 @@
         if (types.has(typeof atr)) {
             return true;
         }
-        if (!types.has("array") && Array.isArray(atr)) {
+        if (types.has("array") && Array.isArray(atr)) {
             return true;
         }
 
@@ -809,7 +809,7 @@
         return false;
     }
 
-    checkAttributes = function (obj, mandatory, optional, what) {
+    checkAttributes = function (obj, mandatory, optional, what, mainObject) {
         var x, curr;
         if (typeof obj == "object") {
             for (x in mandatory) {
@@ -820,7 +820,7 @@
             }
             for (e in obj) {
                 if (!mandatory.has(e) && !optional.has(e)) {
-                    if (!e.contains("roles")) { // Roles
+                    if (!(e.contains("roles") && mainObject)) { // Roles
                         addMinorError(what + ' has an extra attribute "' + e + '".');
                     }
                 }
@@ -878,7 +878,7 @@
         out("Checking theme...");
 
         try {
-            checkAttributes(json, ["name", "sides", "roles", "roles1"], ["villageCantLoseRoles", "author", "summary", "border", "killmsg", "killusermsg", "lynchmsg", "drawmsg"], "Your theme");
+            checkAttributes(json, ["name", "sides", "roles", /*"roles1"*/], ["villageCantLoseRoles", "author", "summary", "border", "killmsg", "killusermsg", "lynchmsg", "drawmsg"], "Your theme", true);
 
             // Init from the theme
             for (x in json.sides) {
@@ -944,7 +944,7 @@
         }
 
         if (!errorsFound) {
-            out("No errors found! Your theme should work!");
+            out("No errors found! Your theme should work.");
         }
 
         resetErrors();
