@@ -230,9 +230,7 @@
     }
 
     cli = client;
-    net = cli.network;
-
-
+    net = cli.network();
 
     readable = function (arr, last_delim) {
         if (!Array.isArray(arr)) {

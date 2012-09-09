@@ -35,6 +35,10 @@ Settings = {
     // ARRAY
     CommandStarts: ["-", "~"],
     // ARRAY
+    Replacements: {
+        "\\[\\[(.*?)\\]\\]": "http://en.wikipedia.com/wiki/$1",
+    },
+    // OBJECT
 };
 
 // End settings //
@@ -728,6 +732,14 @@ if (Settings.ShowScriptCheckOK) {
         }
 
         ignoreflash = true; // periodic say
+        sys.stopEvent();
+
+        var x, replacements = Settings.Replacements;
+        for (x in replacements) {
+            message = message.replace(new RegExp(x, "g"), replacements[x]);
+        }
+
+        net.sendChanMessage(channel, message);
     },
 
     beforeChannelMessage: function (message, channel, html) {
