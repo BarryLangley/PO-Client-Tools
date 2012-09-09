@@ -37,6 +37,7 @@ Settings = {
     // ARRAY
     Replacements: {
         "\\[\\[(.*?)\\]\\]": "http://en.wikipedia.com/wiki/$1",
+		"\\[(.*?)\\]": "http://google.com/search?q=$1"
     },
     // OBJECT
 };
