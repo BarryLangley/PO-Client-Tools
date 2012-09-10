@@ -945,7 +945,11 @@
                         addFatalError("Your \"villageCantLoseRoles\" list contains an invalid role \"" + cantLose[x] + "\".");
                     }
                 }
-            }
+            } else {
+			if (themes.sides.has("village")) {
+			addFatalError("Your theme needs (an empty) \"villageCantLoseRoles\", because you have a side 'village'.");
+			}
+			}
 
             theme.addActions();
             theme.checkActions();

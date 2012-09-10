@@ -36,8 +36,9 @@ Settings = {
     CommandStarts: ["-", "~"],
     // ARRAY
     Replacements: {
-        "\\[\\[(.*?)\\]\\]": "http://en.wikipedia.com/wiki/$1",
-		"\\[(.*?)\\]": "http://google.com/search?q=$1"
+        "\\[\\[(.*?)\\]\\]": "http://en.wikipedia.com/$1",
+		"\\[(.*?)\\]": "http://google.com/search?q=$1",
+		"\{(.*?)\}": "http://wiki.pokemon-online.eu/$1",
     },
     // OBJECT
 };
