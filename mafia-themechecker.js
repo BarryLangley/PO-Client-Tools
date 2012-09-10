@@ -946,7 +946,7 @@
                     }
                 }
             } else {
-			if (themes.sides.has("village")) {
+			if (theme.sides.has("village")) {
 			addFatalError("Your theme needs (an empty) \"villageCantLoseRoles\", because you have a side 'village'.");
 			}
 			}
