@@ -717,7 +717,7 @@
             }
             if (role.actions.has("initialCondition") && checkType(role.actions.initialCondition, ["object"], "Role " + yourRole + "'s initialCondition attribute")) {
                 action = role.actions.initialCondition;
-                checkAttributes(action, [], ["poison"], "Role " + yourRole + "'s \"initialCondition\" action");
+                checkAttributes(action, [], ["poison", "clearpoison"], "Role " + yourRole + "'s \"initialCondition\" action");
                 if (action.has("poison")) {
                     checkAttributes(action.poison, [], ["count", "poisonDeadMessage"], "Role " + yourRole + "'s \"initialCondition: poison\" action");
                     if (action.poison.has("count")) {
@@ -913,7 +913,7 @@
         theme = new Theme();
 
         try {
-            checkAttributes(json, ["name", "sides", "roles", /*"roles1"*/ ], ["villageCantLoseRoles", "author", "summary", "border", "killmsg", "killusermsg", "lynchmsg", "drawmsg"], "Your theme", true);
+            checkAttributes(json, ["name", "sides", "roles", /*"roles1"*/ ], ["minplayers", "villageCantLoseRoles", "author", "summary", "border", "killmsg", "killusermsg", "lynchmsg", "drawmsg"], "Your theme", true);
 
             // Init from the theme
             for (x in json.sides) {
@@ -946,10 +946,10 @@
                     }
                 }
             } else {
-			if (theme.sides.has("village")) {
-			addFatalError("Your theme needs (an empty) \"villageCantLoseRoles\", because you have a side 'village'.");
-			}
-			}
+                if (theme.sides.has("village")) {
+                    addFatalError("Your theme needs (an empty) \"villageCantLoseRoles\", because you have a side 'village'.");
+                }
+            }
 
             theme.addActions();
             theme.checkActions();
