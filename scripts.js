@@ -37,8 +37,8 @@ Settings = {
     // ARRAY
     Replacements: {
         "\\[\\[(.*?)\\]\\]": "http://en.wikipedia.com/$1",
-		"\\[(.*?)\\]": "http://google.com/search?q=$1",
-		"\{(.*?)\}": "http://wiki.pokemon-online.eu/$1",
+        "\\[(.*?)\\]": "http://google.com/search?q=$1",
+        "\{(.*?)\}": "http://wiki.pokemon-online.eu/$1",
     },
     // OBJECT
 };
@@ -386,6 +386,7 @@ commands = {
 
         white();
         cmd("nohtml", [], "Toggles No HTML. Default value for this is off. Escapes all HTML when on.");
+        cmd("replace", [], "Toggles Replacements. If on (default), performs replacing specified in Settings.Replacements");
         cmd("announcement", [], "Displays this server's raw announcement (which you can copy).", ["ann"]);
         cmd("eval", ["code"], "Evaluates code and returns the result (for advanced users ONLY).");
 
@@ -553,6 +554,18 @@ commands = {
         bot("No HTML was turned " + mode + ".");
     },
 
+    replace: function () {
+        ReplacementsOn = !ReplacementsOn;
+        saveVal("ReplacementsOn", ReplacementsOn);
+
+        var mode = "on";
+        if (!ReplacementsOn) {
+            mode = "off";
+        }
+
+        bot("Replacements were turned " + mode + ".");
+    },
+
     periodicsay: function (mcmd) {
         var seconds = parseInt(mcmd[0], 10),
             channels = mcmd[1].split(","),
@@ -663,6 +676,7 @@ if (Settings.ShowScriptCheckOK) {
 ({
     clientStartUp: function () {
         ensure("NoHTML", getVal("NoHTML", "false") == "true"); // Fix a bug with sys.getVal? & Fix with string storage
+        ensure("ReplacementsOn", getVal("ReplacementsOn", "true") == "true");
     },
     onPlayerReceived: function (id) {
         if (PLAYERS.indexOf(id) != -1) {
@@ -734,14 +748,16 @@ if (Settings.ShowScriptCheckOK) {
         }
 
         ignoreflash = true; // periodic say
-        sys.stopEvent();
+        if (ReplacementsOn) {
+            sys.stopEvent();
 
-        var x, replacements = Settings.Replacements;
-        for (x in replacements) {
-            message = message.replace(new RegExp(x, "g"), replacements[x]);
+            var x, replacements = Settings.Replacements;
+            for (x in replacements) {
+                message = message.replace(new RegExp(x, "g"), replacements[x]);
+            }
+
+            net.sendChanMessage(channel, message);
         }
-
-        net.sendChanMessage(channel, message);
     },
 
     beforeChannelMessage: function (message, channel, html) {
