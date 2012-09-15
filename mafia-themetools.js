@@ -1348,8 +1348,23 @@
     });
 
 
+    Object.defineProperty(Object.prototype, "list", {
+        "value": function () {
+            var obj = this,
+                x, ret = [];
+            for (x in obj) {
+                ret.push(x + ": " + obj);
+            }
 
-    property = function (prop, type, msg, arrayList) {
+            return ret.list();
+        },
+
+        writable: true,
+        enumerable: false,
+        configurable: true
+    });
+
+    property = function (prop, type, msg, list) {
         if (typeof type === "array") {
             var x, curr;
 
@@ -1357,7 +1372,7 @@
                 curr = type[x];
 
                 if (type === "array" && Array.isArray(prop)) {
-                    if (!arrayList) {
+                    if (!list) {
                         return prop;
                     }
 
@@ -1365,7 +1380,11 @@
                 }
 
                 if (typeof prop === curr) {
-                    return prop;
+                    if (!list) {
+                        return prop;
+                    }
+
+                    return prop.list();
                 }
             }
 
@@ -1373,11 +1392,15 @@
         }
 
         if (typeof prop === type) {
-            return prop;
+            if (!list) {
+                return prop;
+            }
+
+            return prop.list();
         }
 
         if (type === "array" && Array.isArray(prop)) {
-            if (!arrayApply) {
+            if (!list) {
                 return prop;
             }
 
@@ -1385,7 +1408,11 @@
         }
 
         if ((type === "all" || type === "any") && prop !== undefined && prop !== null) {
-            return prop;
+            if (!list) {
+                return prop;
+            }
+
+            return prop.list();
         }
 
         return msg;
@@ -1396,6 +1423,7 @@
         this.code = json;
         this.object = "";
         this.subObjects = [];
+        this.noObjectSplice = false;
     }
 
     template.prototype.header = function (msg, depth, objectName) {
@@ -1412,6 +1440,9 @@
         if (objectName) {
             this.subObjects.push(objectName);
         }
+        else {
+            this.noObjectSplice = true;
+        }
     }
 
     template.prototype.endHeader = function () {
@@ -1422,7 +1453,11 @@
     template.prototype.endSubHeader = function () {
         this.stack.push("</ul>");
 
-        this.subObjects.splice(this.subObjects.length - 1, 1);
+        if (!this.noObjectSplice) {
+            this.subObjects.splice(this.subObjects.length - 1, 1);
+        } else {
+            this.noObjectSplice = false;
+        }
     }
 
     template.prototype.add = function (msg) {
@@ -1455,18 +1490,26 @@
         return object.join(".") + ".";
     }
 
-    template.prototype.addProperty = function (name, propname, types, arrayList, nameAsArray) {
+    template.prototype.addProperty = function (name, propname, types, list, nameAsArray, isFloat) {
         var code = this.code,
             prop = eval("code." + this.getObject() + this.getSubObjects() + propname),
-            res = property(prop, types, "", arrayList),
-            title = name.bold();
+            res = property(prop, types, "", list),
+            title = "<b>" + name + ":</b>";
 
         if (nameAsArray && Array.isArray(prop)) {
-            title = nameAsArray.bold();
+            title = "<b>" + nameAsArray + ":</b>";
+        }
+
+        if (!name) {
+            title = "";
+        }
+
+        if (isFloat) {
+            res = (res * 100) + "%"
         }
 
         if (res !== "") {
-            this.li(title + ": " + res);
+            this.li(title + " " + res);
         }
     }
 
@@ -1488,16 +1531,39 @@
         this.li(name.bold() + ": " + prop);
     }
 
+    template.prototype.propertyType = function (propname) {
+        var code = this.code,
+            prop = eval("code." + this.getObject() + this.getSubObjects() + propname),
+            type;
+
+        if (Array.isArray(prop)) {
+            type = "array";
+        } else if (prop === null) {
+            type = "null";
+        } else {
+            type = typeof prop;
+        }
+
+        return type;
+    }
+
+    Flags = {
+        "list": true,
+        "noList": null,
+        "noNameAsArray": null,
+        "isFloat": true
+    };
+
     printThemeSummary = function (json) {
         try {
             var t = new template(json),
-                x, y, sides = json.sides,
+                x, y, z, sides = json.sides,
                 roles = json.roles;
 
-            t.header("Theme summary of " + json.name + ":", 2, "");
+            t.header("Theme summary of " + json.name + ":", 1);
 
             t.addProperty("Name", "name", "string");
-            t.addProperty("Author", "author", ["string", "array"], true, "Authors");
+            t.addProperty("Author", "author", ["string", "array"], Flags.list, "Authors");
             t.addProperty("Summary", "summary", "string");
 
             t.addProperty("Border", "border", "string");
@@ -1511,12 +1577,27 @@
             t.addProperty("No Lynching", "nolynch", "any");
             t.addProperty("Vote Sniping", "votesniping", "any");
 
-            t.header("Sides:", 3);
+            t.header("Sides:", 2);
 
             for (x in sides) {
-                t.header(sides[x].translation + ":", 4, "sides[" + x + "]");
+                z = sides[x];
+                t.header(z.translation + ":", 3, "sides[" + x + "]");
 
-                t.addProperty("Proto Side", "side", "string");
+                y = t.propertyType("side");
+
+                if (y === "string") {
+                    t.addProperty("Proto Side", "side", "string");
+                } else if (y === "object") {
+                    t.subHeader("Possible Proto Sides:", 4);
+
+                    y = z.side.random;
+                    for (x in y) {
+                        t.li("<b>" + x + ":</b> " + (x[y] * 100) + "%");
+                    }
+
+                    t.endSubHeader();
+                }
+
                 t.addProperty("Side Translation", "translation", "string");
                 t.addProperty("Win Message", "winmsg", "string");
                 t.endHeader();
@@ -1524,24 +1605,71 @@
 
             t.endHeader();
 
-            t.header("Roles:", 3);
+            t.header("Roles:", 2);
 
             for (x in roles) {
-                t.header(roles[x].translation + ":", 4, "roles[" + x + "]");
+                t.header(roles[x].translation + ":", 3, "roles[" + x + "]");
 
                 t.addProperty("Proto Role", "role", "string");
                 t.addProperty("Role Translation", "translation", "string");
                 t.addProperty("Side", "side", "string");
-                t.addProperty("Help Message", "help", "string");
+                t.addProperty("Help", "help", "string");
                 t.addProperty("Info", "info", "string");
-                t.addProperty("Winning Side", "winningSides", ["array", "string"], true, "Winning Sides");
-                t.addProperty("Win If Dead Roles", "winningSides", "array", true);
+                t.addProperty("Winning Side", "winningSides", ["array", "string"], Flags.list, "Winning Sides");
+                t.addProperty("Win If Dead Roles", "winningSides", "array", Flags.list);
+
+                t.subHeader("Actions:", 4, "actions");
+
+                y = t.propertyType("mode");
+                if (y === "string") {
+                    t.addProperty("Mode", "mode", "string");
+                } else if (y === "object") {
+                    t.subHeader("Mode:", 5, "mode");
+
+                    t.endSubHeader();
+                }
+
+                t.addProperty("Avoid Hax", "avoidHax", "array", Flags.list);
+
+                y = t.propertyType("daykill");
+                if (y === "string") {
+                    t.addProperty("Daykill", "daykill", "string");
+                } else if (y === "object") {
+                    t.subHeader("Daykill:", 5, "daykill");
+
+                    t.subHeader("Mode:", 6, "mode");
+
+                    t.addProperty("Evade Chance", "evadeChance", "number", Flags.noList, Flags.noNameAsArray, Flags.isFloat);
+
+                    t.endSubHeader();
+
+                    t.endSubHeader();
+                }
+
+                t.addProperty("Daykill Revenge Message", "daykillrevengemsg", "string");
+                t.addProperty("Vote", "vote", "number");
+                t.addProperty("Voteshield", "voteshield", "number");
+                t.addProperty("Onlist", "onlist", "string");
+
+                if (t.propertyType("lynch") === "object") {
+                    t.subHeader("Lynch:", 5, "lynch");
+
+                    t.addProperty("Reveal As", "revealAs", "string");
+                    t.addProperty("Convert To", "convertTo", "string");
+                    t.addProperty("Convert Message", "convertmsg", "string");
+
+                    t.endSubHeader();
+                }
+
+                t.endSubHeader();
 
                 t.endHeader();
             }
 
             t.endHeader();
+
             t.endHeader();
+
             t.printAll();
         } catch (e) {
             fatal("Couldn't generate a summary: " + FormatError("", e));
