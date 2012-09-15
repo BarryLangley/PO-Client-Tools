@@ -254,6 +254,34 @@
 
         return isOn;
     }
+
+    FormatError = function (mess, e) {
+        if (typeof mess != "string") {
+            mess = "";
+        }
+
+        var lastChar = mess[mess.length - 1],
+            lineData = "";
+        if (mess != "" && lastChar !== "." && lastChar !== "!" && lastChar !== "?" && lastChar !== ":") {
+            mess += ".";
+        }
+
+        if (e.lineNumber != 1) {
+            lineData = " on line " + e.lineNumber;
+        }
+
+        var name = e.name,
+            msg = e.message,
+            str = name + lineData + ": " + msg,
+            lastChar = msg[msg.length - 1];
+
+        if (lastChar != "." && lastChar != "?" && lastChar != ":" && lastChar != "!") {
+            str += ".";
+        }
+
+        return mess + " " + str;
+    }
+
 })();
 
 /* Mafia Theme Checker */
@@ -283,9 +311,6 @@
         minorErrors = [];
         fatalErrors = [];
     }
-
-    /* End of utilities */
-    /* Mafia Theme Checker */
 
     Theme = function () {
         this.sides = {};
@@ -1310,6 +1335,240 @@
     }
 })();
 
+/* Theme Summary */
+(function () {
+    Object.defineProperty(Array.prototype, "list", {
+        "value": function () {
+            return this.join(", ");
+        },
+
+        writable: true,
+        enumerable: false,
+        configurable: true
+    });
+
+
+
+    property = function (prop, type, msg, arrayList) {
+        if (typeof type === "array") {
+            var x, curr;
+
+            for (x in type) {
+                curr = type[x];
+
+                if (type === "array" && Array.isArray(prop)) {
+                    if (!arrayList) {
+                        return prop;
+                    }
+
+                    return prop.list();
+                }
+
+                if (typeof prop === curr) {
+                    return prop;
+                }
+            }
+
+            return msg;
+        }
+
+        if (typeof prop === type) {
+            return prop;
+        }
+
+        if (type === "array" && Array.isArray(prop)) {
+            if (!arrayApply) {
+                return prop;
+            }
+
+            return prop.list();
+        }
+
+        if ((type === "all" || type === "any") && prop !== undefined && prop !== null) {
+            return prop;
+        }
+
+        return msg;
+    }
+
+    template = function (json) {
+        this.stack = [];
+        this.code = json;
+        this.object = "";
+        this.subObjects = [];
+    }
+
+    template.prototype.header = function (msg, depth, objectName) {
+        this.stack.push("<h" + depth + ">" + msg + "</h" + depth + ">", "<ul>");
+
+        if (objectName) {
+            this.object = objectName;
+        }
+    }
+
+    template.prototype.subHeader = function (msg, depth, objectName) {
+        this.stack.push("<h" + depth + ">" + msg + "</h" + depth + ">", "<ul>");
+
+        if (objectName) {
+            this.subObjects.push(objectName);
+        }
+    }
+
+    template.prototype.endHeader = function () {
+        this.stack.push("</ul>");
+        this.object = "";
+    }
+
+    template.prototype.endSubHeader = function () {
+        this.stack.push("</ul>");
+
+        this.subObjects.splice(this.subObjects.length - 1, 1);
+    }
+
+    template.prototype.add = function (msg) {
+        this.stack.push(msg);
+    }
+
+    template.prototype.li = function (msg) {
+        this.stack.push("<li>" + msg + "</li>");
+    }
+
+    template.prototype.printAll = function () {
+        pureHtml(this.stack.join(""));
+    }
+
+    template.prototype.getObject = function () {
+        var object = this.object;
+        if (object.isEmpty()) {
+            return "";
+        }
+
+        return object + ".";
+    }
+
+    template.prototype.getSubObjects = function () {
+        var object = this.subObjects;
+        if (object.isEmpty()) {
+            return "";
+        }
+
+        return object.join(".") + ".";
+    }
+
+    template.prototype.addProperty = function (name, propname, types, arrayList, nameAsArray) {
+        var code = this.code,
+            prop = eval("code." + this.getObject() + this.getSubObjects() + propname),
+            res = property(prop, types, "", arrayList),
+            title = name.bold();
+
+        if (nameAsArray && Array.isArray(prop)) {
+            title = nameAsArray.bold();
+        }
+
+        if (res !== "") {
+            this.li(title + ": " + res);
+        }
+    }
+
+    template.prototype.addNumberProperty = function (name, propname, minimum, maximum) {
+        var prop = this.code[propname];
+
+        if (typeof prop !== "number") {
+            return;
+        }
+
+        if (minimum != undefined && minimum > prop) {
+            return;
+        }
+
+        if (maximum != undefined && prop > maximum) {
+            return;
+        }
+
+        this.li(name.bold() + ": " + prop);
+    }
+
+    printThemeSummary = function (json) {
+        try {
+            var t = new template(json),
+                x, y, sides = json.sides,
+                roles = json.roles;
+
+            t.header("Theme summary of " + json.name + ":", 2, "");
+
+            t.addProperty("Name", "name", "string");
+            t.addProperty("Author", "author", ["string", "array"], true, "Authors");
+            t.addProperty("Summary", "summary", "string");
+
+            t.addProperty("Border", "border", "string");
+            t.addProperty("Kill Message", "killmsg", "string");
+            t.addProperty("Kill User Message", "killusermsg", "string");
+            t.addProperty("Lynch Message", "lynchmsg", "string");
+            t.addProperty("Draw Message", "drawmsg", "string");
+
+            t.addNumberProperty("Minimum Players", "minplayers", 3);
+
+            t.addProperty("No Lynching", "nolynch", "any");
+            t.addProperty("Vote Sniping", "votesniping", "any");
+
+            t.header("Sides:", 3);
+
+            for (x in sides) {
+                t.header(sides[x].translation + ":", 4, "sides[" + x + "]");
+
+                t.addProperty("Proto Side", "side", "string");
+                t.addProperty("Side Translation", "translation", "string");
+                t.addProperty("Win Message", "winmsg", "string");
+                t.endHeader();
+            }
+
+            t.endHeader();
+
+            t.header("Roles:", 3);
+
+            for (x in roles) {
+                t.header(roles[x].translation + ":", 4, "roles[" + x + "]");
+
+                t.addProperty("Proto Role", "role", "string");
+                t.addProperty("Role Translation", "translation", "string");
+                t.addProperty("Side", "side", "string");
+                t.addProperty("Help Message", "help", "string");
+                t.addProperty("Info", "info", "string");
+                t.addProperty("Winning Side", "winningSides", ["array", "string"], true, "Winning Sides");
+                t.addProperty("Win If Dead Roles", "winningSides", "array", true);
+
+                t.endHeader();
+            }
+
+            t.endHeader();
+            t.endHeader();
+            t.printAll();
+        } catch (e) {
+            fatal("Couldn't generate a summary: " + FormatError("", e));
+        }
+    }
+
+    displayThemeSummary = function (url) {
+        out("Downloading your theme.");
+
+        sys.webCall(url, function (resp) {
+            if (resp === "") {
+                fatal("The page didn't exist or there was an error with retrieving the content of the page.");
+                return;
+            }
+
+            try {
+                println("");
+                printThemeSummary(JSON.parse(resp));
+                println("");
+            } catch (e) {
+                fatal("Couldn't load your theme: " + FormatError("", e));
+            }
+
+        });
+    }
+})();
+
 /* Core */
 ({
     beforeSendMessage: function (message, channel) {
@@ -1329,8 +1588,9 @@
             if (command == "commands") {
                 pureHtml("<font size='4'><b>Commands</b></font><br/>Start with '~' or '-' along with the command name to use these:<br/>");
                 printCommand("checktheme", "URL", "Checks the theme from <b>URL</b>. Safe scripts has to be off.");
-                printCommand("roles", "URL", "For a preview of /roles from the theme at <b>URL</b>. Make sure the theme works.");
-                printCommand("eval", "code", "Evaluates <b>code</b>");
+                printCommand("roles", "URL", "For a preview of /roles from the theme at <b>URL</b>. Make sure the theme works. Safe scripts has to be off.");
+                printCommand("summary", "URL", "For a summary of a theme. Make sure the theme works. Safe scripts has to be off.");
+                printCommand("eval", "code", "Evaluates <b>code</b>.");
                 out("");
                 return;
             }
@@ -1350,6 +1610,15 @@
                 }
 
                 displayThemeRoles(commandData);
+                return;
+            }
+
+            if (command == "summary") {
+                if (isSafeScripts()) {
+                    return;
+                }
+
+                displayThemeSummary(commandData);
                 return;
             }
 
