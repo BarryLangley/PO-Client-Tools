@@ -205,7 +205,11 @@
     }
 
     printCommand = function (name, arg, help) {
-        pureHtml("<b>" + name + " [" + arg + "]:</b> " + help);
+        var args = "[" + arg + "]";
+        if (Array.isArray(arg)) {
+            args = arg.join("");
+        }
+        pureHtml("<b>" + name + " " + args + ":</b> " + help);
     }
 
     html = function (msg, color) {
@@ -1418,24 +1422,68 @@
         return msg;
     }
 
-    template = function (json) {
+    template = function (json, type) {
         this.stack = [];
         this.code = json;
         this.object = "";
         this.subObjects = [];
         this.noObjectSplice = false;
+        this.listType = "ul";
+
+        this.type = type;
+        this.typeCount = 0;
+
+        this.indent = 0;
+        this.gaveIndent = false;
     }
 
-    template.prototype.header = function (msg, depth, objectName) {
-        this.stack.push("<h" + depth + ">" + msg + "</h" + depth + ">", "<ul>");
-
+    template.prototype.header = function (msg, depth, objectName, listType, noIndent) {
         if (objectName) {
             this.object = objectName;
+        }
+
+        if (listType) {
+            this.listType = listType;
+        }
+
+        var separator = "<" + this.listType + ">",
+            indentToDo = this.indent,
+            toAdd = "";
+
+        if (this.type === 2) {
+            while (indentToDo != 0) {
+                toAdd += "&nbsp;";
+                indentToDo--;
+            }
+
+            this.stack.push("<br/>" + toAdd + "<font size='" + this.getDepth(depth) + "'><b>" + msg + "</b></font><br/>", "");
+        }
+        else {
+            this.stack.push("<h" + depth + ">" + msg + "</h" + depth + ">", separator);
+        }
+        
+        if (!noIndent) {
+            this.indent += 10;
+            this.gaveIndent = true;
         }
     }
 
     template.prototype.subHeader = function (msg, depth, objectName) {
-        this.stack.push("<h" + depth + ">" + msg + "</h" + depth + ">", "<ul>");
+        var separator = "<" + this.listType + ">",
+            indentToDo = this.indent,
+            toAdd = "";
+
+        if (this.type === 2) {
+            while (indentToDo != 0) {
+                toAdd += "&nbsp;";
+                indentToDo--;
+            }
+
+            this.stack.push("<br/>" + toAdd + "<font size='" + this.getDepth(depth) + "'><b>" + msg + "</b></font><br/><br/>", "");
+        } else {
+            this.stack.push("<h" + depth + ">" + msg + "</h" + depth + ">", separator);
+        }
+
 
         if (objectName) {
             this.subObjects.push(objectName);
@@ -1443,20 +1491,52 @@
         else {
             this.noObjectSplice = true;
         }
+
+        this.indent += 10;
+        this.gaveIndent = true;
     }
 
     template.prototype.endHeader = function () {
-        this.stack.push("</ul>");
+        if (this.type !== 2) {
+            this.stack.push("</" + this.listType + ">");
+        }
+
         this.object = "";
+        this.listType = "ul";
+        this.typeCount = 0;
+
+        if (this.gaveIndent) {
+            this.indent -= 10;
+
+            if (this.indent < 0) {
+                this.indent = 0;
+            }
+        } else {
+            this.gaveIndent = false;
+        }
     }
 
     template.prototype.endSubHeader = function () {
-        this.stack.push("</ul>");
+        if (this.type !== 2) {
+            this.stack.push("</" + this.listType + ">");
+        }
 
         if (!this.noObjectSplice) {
             this.subObjects.splice(this.subObjects.length - 1, 1);
         } else {
             this.noObjectSplice = false;
+        }
+
+        this.typeCount = 0;
+
+        if (this.gaveIndent) {
+            this.indent -= 10;
+
+            if (this.indent < 0) {
+                this.indent = 0;
+            }
+        } else {
+            this.gaveIndent = false;
         }
     }
 
@@ -1465,7 +1545,28 @@
     }
 
     template.prototype.li = function (msg) {
-        this.stack.push("<li>" + msg + "</li>");
+        var wrapper = ["<li>", "</li>"],
+            indentToDo = this.indent,
+            toAdd = "";
+
+        this.typeCount++;
+
+        if (this.type === 2) {
+            if (this.listType === "ul") {
+                wrapper = ["\u2022 ", "<br/>"];
+            } else {
+                wrapper = [this.typeCount + ". ", "<br/>"];
+            }
+
+            while (indentToDo != 0) {
+                toAdd += "&nbsp;";
+                indentToDo--;
+            }
+
+            wrapper[0] = toAdd + wrapper[0];
+        }
+
+        this.stack.push(wrapper[0] + msg + wrapper[1]);
     }
 
     template.prototype.printAll = function () {
@@ -1490,6 +1591,18 @@
         return object.join(".") + ".";
     }
 
+
+    template.prototype.getDepth = function (depth) {
+        return {
+            "1": "6",
+            "2": "5",
+            "3": "4",
+            "4": "3",
+            "5": "2",
+            "6": "1"
+        }[depth];
+    }
+
     template.prototype.addProperty = function (name, propname, types, list, nameAsArray, isFloat) {
         var code = this.code,
             prop = eval("code." + this.getObject() + this.getSubObjects() + propname),
@@ -1505,7 +1618,7 @@
         }
 
         if (isFloat) {
-            res = (res * 100) + "%"
+            res = (res * 100) + "%";
         }
 
         if (res !== "") {
@@ -1551,16 +1664,24 @@
         "list": true,
         "noList": null,
         "noNameAsArray": null,
-        "isFloat": true
+        "isFloat": true,
+        "noListType": null,
+        "noIndent": true
     };
 
-    printThemeSummary = function (json) {
+    printThemeSummary = function (json, type) {
+        if (type !== "copyable") {
+            type = 1;
+        } else {
+            type = 2;
+        }
         try {
-            var t = new template(json),
-                x, y, z, sides = json.sides,
-                roles = json.roles;
+            var t = new template(json, type),
+                x, y, z, i, sides = json.sides,
+                roles = json.roles,
+                roleTranslations = {};
 
-            t.header("Theme summary of " + json.name + ":", 1);
+            t.header("Theme summary of " + json.name + ":<br/>", 1);
 
             t.addProperty("Name", "name", "string");
             t.addProperty("Author", "author", ["string", "array"], Flags.list, "Authors");
@@ -1599,6 +1720,7 @@
                 }
 
                 t.addProperty("Side Translation", "translation", "string");
+
                 t.addProperty("Win Message", "winmsg", "string");
                 t.endHeader();
             }
@@ -1608,7 +1730,10 @@
             t.header("Roles:", 2);
 
             for (x in roles) {
-                t.header(roles[x].translation + ":", 3, "roles[" + x + "]");
+                z = roles[x];
+                t.header(z.translation + ":", 3, "roles[" + x + "]");
+
+                roleTranslations[z.role] = z.translation;
 
                 t.addProperty("Proto Role", "role", "string");
                 t.addProperty("Role Translation", "translation", "string");
@@ -1668,6 +1793,21 @@
 
             t.endHeader();
 
+            i = 1;
+
+            while (json.has("roles" + i)) {
+                t.header("Roles " + i + ":", 3, "roles" + i, "ol");
+
+                z = json["roles" + i];
+                for (y in z) {
+                    curr = z[y];
+                    t.li(curr + " (" + roleTranslations[curr] + ")");
+                }
+
+                t.endHeader();
+                i++;
+            }
+
             t.endHeader();
 
             t.printAll();
@@ -1679,7 +1819,7 @@
     displayThemeSummary = function (url) {
         out("Downloading your theme.");
 
-        sys.webCall(url, function (resp) {
+        sys.webCall(url[0], function (resp) {
             if (resp === "") {
                 fatal("The page didn't exist or there was an error with retrieving the content of the page.");
                 return;
@@ -1687,7 +1827,7 @@
 
             try {
                 println("");
-                printThemeSummary(JSON.parse(resp));
+                printThemeSummary(JSON.parse(resp), url[1]);
                 println("");
             } catch (e) {
                 fatal("Couldn't load your theme: " + FormatError("", e));
@@ -1717,7 +1857,7 @@
                 pureHtml("<font size='4'><b>Commands</b></font><br/>Start with '~' or '-' along with the command name to use these:<br/>");
                 printCommand("checktheme", "URL", "Checks the theme from <b>URL</b>. Safe scripts has to be off.");
                 printCommand("roles", "URL", "For a preview of /roles from the theme at <b>URL</b>. Make sure the theme works. Safe scripts has to be off.");
-                printCommand("summary", "URL", "For a summary of a theme. Make sure the theme works. Safe scripts has to be off.");
+                printCommand("summary", ["[URL]", "*", "{Type}"], "For a summary of a theme. Make sure the theme works. Safe scripts has to be off. Type can be 'html' or 'copyable'.");
                 printCommand("eval", "code", "Evaluates <b>code</b>.");
                 out("");
                 return;
@@ -1746,7 +1886,7 @@
                     return;
                 }
 
-                displayThemeSummary(commandData);
+                displayThemeSummary(commandData.split("*"));
                 return;
             }
 
