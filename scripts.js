@@ -88,6 +88,8 @@ ensure("announcement", "");
 ensure("EvalID", -1);
 ensure("ignoreNoHtml", false);
 ensure("AutoIdleTimer", -1);
+ensure("NoHTML", false);
+ensure("ReplacementsOn", true);
 
 // Signal Attaching //
 connect(net.playerLogin, function () {
@@ -152,6 +154,123 @@ connect(net.announcement, function (ann) {
 });
 
 // Utilities //
+defineCoreProperty = function (core, prop, func) {
+    Object.defineProperty(core, prop, {
+        "value": func,
+
+        writable: true,
+        enumerable: false,
+        configurable: true
+    });
+}
+
+defineCoreProperty(String.prototype, "isEmpty", function () {
+    var mess = this;
+    return mess == "" || mess.trim() == "";
+});
+
+defineCoreProperty(String.prototype, "contains", function (string) {
+    var str = this;
+    return str.indexOf(string) > -1;
+});
+
+defineCoreProperty(String.prototype, "has", function (string) {
+    return this.contains(string);
+});
+
+defineCoreProperty(String.prototype, "format", function () {
+    var str = this,
+        exp, i, args = arguments.length,
+        icontainer = 0;
+    for (i = 0; i < args; i++) {
+        icontainer++;
+        exp = new RegExp("%" + icontainer, "");
+        str = str.replace(exp, arguments[i]);
+    }
+    return str;
+});
+
+defineCoreProperty(String.prototype, "fontsize", function (size) {
+    var str = this;
+
+    return "<font size='" + size + "'>" + str + "</font>";
+});
+
+defineCoreProperty(Boolean.prototype, "isEmpty", function () {
+    return this === false;
+});
+
+defineCoreProperty(Number.prototype, "isEmpty", function () {
+    return !isFinite(this) || this === 0;
+});
+
+defineCoreProperty(Number.prototype, "positive", function () {
+    return !this.isEmpty();
+});
+
+defineCoreProperty(Object.prototype, "isEmpty", function () {
+    return this.length() === 0;
+});
+
+defineCoreProperty(Object.prototype, "keys", function () {
+    return Object.keys(this);
+});
+
+defineCoreProperty(Object.prototype, "has", function (prop) {
+    return typeof this[prop] !== "undefined";
+});
+
+defineCoreProperty(Object.prototype, "contains", function (prop) {
+    return this.has(prop);
+});
+
+defineCoreProperty(Object.prototype, "insert", function (name, val) {
+    this[name] = val;
+});
+
+defineCoreProperty(Object.prototype, "extend", function (other) {
+    var x, curr, y;
+    for (x in arguments) {
+        curr = arguments[x];
+        if (typeof curr === "object" && !Array.isArray(curr) && curr !== null) {
+            for (y in curr) {
+                this[y] = curr[y];
+            }
+        }
+    }
+});
+
+defineCoreProperty(Object.prototype, "remove", function (name) {
+    if (!this.has(name)) {
+        return;
+    }
+
+    delete this[name];
+});
+
+defineCoreProperty(Object.prototype, "length", function () {
+    return Object.keys(this).length;
+});
+
+defineCoreProperty(Array.prototype, "has", function (prop) {
+    var x;
+    for (x in this) {
+        if (this[x] == prop) {
+            return true;
+        }
+    }
+
+    return false;
+});
+
+defineCoreProperty(Array.prototype, "isEmpty", function () {
+    return this.length === 0;
+});
+
+defineCoreProperty(Array.prototype, "contains", function (prop) {
+    return this.has(prop);
+});
+
 htmlMessage = function (mess, channel) {
     if (typeof channel != "number" || !cli.hasChannel(channel)) {
         channel = cli.currentChannel();
@@ -372,19 +491,24 @@ commands = {
         htmlMessage("Use " + fancyJoin(Settings.CommandStarts) + " before the following commands in order to use them: <br/>");
 
         white();
+
         cmd("pm", ["players", "message"], "Sends a PM to players (use , and a space to seperate them) containing message. Use %name for the current player's name. Code inside <% %> will get evaluated (EvalID is the id of the current player).");
         cmd("masspm", ["message"], "Sends a PM to everyone containing message. Use %name for the current player's name. Code inside <% %> will get evaluated (EvalID is the id of the current player). Don't use this on big servers as you will go overactive.");
+        cmd("flashall", ["server|channel", "exceptions"], "To flash everyone on the server or channel. Default is channel. Server doesn't work if there are more than 60 people on the server. Separate exceptions with <b>,</b>. Exceptions is a list of player names which won't be pinged.");
 
         white();
+
         cmd("id", ["name"], "Displays the id of name.");
         cmd("color", ["name"], "Displays the hex color of name.");
         cmd("ipinfo", ["ip"], "Displays the hostname and country of ip.", ["info"]);
 
         white();
+
         cmd("periodicsay", ["seconds", "channels", "message"], "Sends message every seconds in channels. Seconds must be a number. Seperate channels with \"<b>,</b>\". The current channel will be used if no channels are specified.");
         cmd("endcalls", ["type"], "Ends the next called periodic say. Use all as type to cancel all periodic says.");
 
         white();
+
         cmd("nohtml", [], "Toggles No HTML. Default value for this is off. Escapes all HTML when on.");
         cmd("replace", [], "Toggles Replacements. If on (default), performs replacing specified in Settings.Replacements");
         cmd("announcement", [], "Displays this server's raw announcement (which you can copy).", ["ann"]);
@@ -392,6 +516,7 @@ commands = {
 
         if (isMod()) { // These require moderator to work propertly
             white();
+
             cmd("cp", ["player"], "Opens a CP of player.", ["controlpanel"]);
         }
 
@@ -447,6 +572,41 @@ commands = {
         }
 
         bot("PMing completed. PM'd " + numpms + " players.");
+    },
+
+    flashall: function (mcmd) {
+        var playerList = [],
+            x, curr, chan, chanId = cli.currentChannel(),
+            exceptions = [],
+            currname;
+
+        if (mcmd[1] !== undefined) {
+            exceptions = mcmd[1].split(",").map(function (val) {
+                return val.toLowerCase();
+            });
+        }
+
+        if (mcmd[0].toLowerCase() !== "server") {
+            chan = cli.channel(chanId);
+            for (x in PLAYERS) {
+                curr = PLAYERS[x];
+                currname = cli.name(curr);
+                if (chan.hasPlayer(curr) && !exceptions.has(currname.toLowerCase())) {
+                    playerList.push(currname);
+                }
+            }
+        } else if (PLAYERS.length < 61) {
+            script.playerRoutine();
+
+            for (x in PLAYERS) {
+                curr = cli.name(PLAYERS[x]);
+                if (!exceptions.has(curr.toLowerCase())) {
+                    playerList.push(curr);
+                }
+            }
+        }
+
+        sendAll(playerList.join(" , ") + " FLASH", chanId);
     },
 
     eval: function (mcmd) {
@@ -675,9 +835,10 @@ if (Settings.ShowScriptCheckOK) {
 
 ({
     clientStartUp: function () {
-        ensure("NoHTML", getVal("NoHTML", "false") == "true"); // Fix a bug with sys.getVal? & Fix with string storage
-        ensure("ReplacementsOn", getVal("ReplacementsOn", "true") == "true");
+        NoHTML = getVal("NoHTML", "false") == "true"; // Fix a bug with sys.getVal? & Fix with string storage
+        ReplacementsOn = getVal("ReplacementsOn", "true") == "true";
     },
+
     onPlayerReceived: function (id) {
         if (PLAYERS.indexOf(id) != -1) {
             return;
@@ -689,6 +850,7 @@ if (Settings.ShowScriptCheckOK) {
             cli.ignore(name, true);
         }
     },
+
     onPlayerRemoved: function (id) {
         if (PLAYERS.indexOf(id) == -1) {
             return;
