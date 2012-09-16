@@ -1461,7 +1461,7 @@
         else {
             this.stack.push("<h" + depth + ">" + msg + "</h" + depth + ">", separator);
         }
-        
+
         if (!noIndent) {
             this.indent += 10;
             this.gaveIndent = true;
@@ -1698,6 +1698,8 @@
             t.addProperty("No Lynching", "nolynch", "any");
             t.addProperty("Vote Sniping", "votesniping", "any");
 
+            t.addProperty("Village Can't Lose Roles", "villageCantLoseRoles", "array", Flags.list);
+
             t.header("Sides:", 2);
 
             for (x in sides) {
@@ -1756,6 +1758,23 @@
 
                 t.addProperty("Avoid Hax", "avoidHax", "array", Flags.list);
 
+                if (t.propertyType("initialCondition") === "object") {
+                    t.subHeader("Initial Condition", 5, "initialCondition");
+
+                    t.addProperty("Clear Poison", "clearpoison", "boolean");
+
+                    if (t.propertyType("poison") === "object") {
+                        t.subHeader("Poison", 6, "poison");
+
+                        t.addProperty("Count", "count", "number");
+                        t.addProperty("Poison Dead Message", "poisonDeadMessage", "string");
+
+                        t.endSubHeader();
+                    }
+
+                    t.endSubHeader();
+                }
+
                 y = t.propertyType("daykill");
                 if (y === "string") {
                     t.addProperty("Daykill", "daykill", "string");
@@ -1801,7 +1820,7 @@
                 z = json["roles" + i];
                 for (y in z) {
                     curr = z[y];
-                    t.li(curr + " (" + roleTranslations[curr] + ")");
+                    t.li(curr.bold() + "<b>:</b> " + roleTranslations[curr]);
                 }
 
                 t.endHeader();
