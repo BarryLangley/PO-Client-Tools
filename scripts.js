@@ -429,11 +429,15 @@ sendAll = function (message, channel) {
 }
 
 cmd = function (cmd, args, desc) {
-    var str = "<font color='green'><b>" + cmd + "</b></font> ",
+    var str = "<font color='green'><b>" + cmd + "</b></font>",
         x, arglist = {},
         current, next, part;
     desc = desc.split(" ");
 
+    if (!args.isEmpty()) {
+    str += " ";
+    }
+    
     for (x in args) {
         current = args[x];
         next = x + 1;
@@ -442,10 +446,10 @@ cmd = function (cmd, args, desc) {
         str += "<b>" + current + "</b>:";
     }
 
-    if (args.length != 0) {
+    if (!args.isEmpty()) {
         str += " ";
     } else {
-        str += ":";
+        str += ": ";
     }
 
     for (x in desc) {
@@ -514,7 +518,7 @@ commands = {
         cmd("announcement", [], "Displays this server's raw announcement (which you can copy).", ["ann"]);
         cmd("eval", ["code"], "Evaluates code and returns the result (for advanced users ONLY).");
 
-        if (isMod()) { // These require moderator to work propertly
+        if (isMod()) { // These require moderator to work properly
             white();
 
             cmd("cp", ["player"], "Opens a CP of player.", ["controlpanel"]);
