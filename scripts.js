@@ -238,6 +238,8 @@ defineCoreProperty(Object.prototype, "extend", function (other) {
             }
         }
     }
+    
+    return this;
 });
 
 defineCoreProperty(Object.prototype, "remove", function (name) {
