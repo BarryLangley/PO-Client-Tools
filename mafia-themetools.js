@@ -746,7 +746,7 @@
             }
             if (role.actions.has("initialCondition") && checkType(role.actions.initialCondition, ["object"], "Role " + yourRole + "'s initialCondition attribute")) {
                 action = role.actions.initialCondition;
-                checkAttributes(action, [], ["poison", "clearpoison"], "Role " + yourRole + "'s \"initialCondition\" action");
+                checkAttributes(action, [], ["poison", "clearPoison"], "Role " + yourRole + "'s \"initialCondition\" action");
                 if (action.has("poison")) {
                     checkAttributes(action.poison, [], ["count", "poisonDeadMessage"], "Role " + yourRole + "'s \"initialCondition: poison\" action");
                     if (action.poison.has("count")) {
@@ -1761,7 +1761,7 @@
                 if (t.propertyType("initialCondition") === "object") {
                     t.subHeader("Initial Condition", 5, "initialCondition");
 
-                    t.addProperty("Clear Poison", "clearpoison", "boolean");
+                    t.addProperty("Clear Poison", "clearPoison", "boolean");
 
                     if (t.propertyType("poison") === "object") {
                         t.subHeader("Poison", 6, "poison");
