@@ -942,7 +942,7 @@
         theme = new Theme();
 
         try {
-            checkAttributes(json, ["name", "sides", "roles", /*"roles1"*/ ], ["minplayers", "votesniping", "nolynch", "villageCantLoseRoles", "author", "summary", "border", "killmsg", "killusermsg", "lynchmsg", "drawmsg"], "Your theme", true);
+            checkAttributes(json, ["name", "sides", "roles", /*"roles1"*/ ], ["ticks", "minplayers", "votesniping", "nolynch", "villageCantLoseRoles", "author", "summary", "border", "killmsg", "killusermsg", "lynchmsg", "drawmsg"], "Your theme", true);
 
             // Init from the theme
             for (x in json.sides) {
