@@ -1006,6 +1006,36 @@
             if (action.has("broadcastmsg")) {
                 checkType(action.broadcastmsg, ["string"], "Role " + yourRole + "'s attribute \"broadcastmsg\" for night action \"" + command + "\"");
             }
+            if (action.has("suicideChance")) {
+                checkType(action.suicideChance, ["number"], "Role " + yourRole + "'s attribute \"suicideChance\" for night action \"" + command + "\"");
+            }
+            if (action.has("restrict")) {
+                var r, role, action, curr, night = [],
+                    roles = this.roles,
+                    res = action.restrict;
+
+                for (r in roles) {
+                    role = roles[r].actions;
+                    if (role.has("night")) {
+                        for (e in role.night) {
+                            if (!night.has(e)) {
+                                night.push(e);
+                            }
+                        }
+                    }
+                }
+
+                if (Array.isArray(res)) {
+                    for (x in res) {
+                        curr = res[x];
+                        if (!night.has(curr)) {
+                            addMinorError("Your role " + yourRole + "'s attribute \"restrict\" has an inexistant role \"" + curr + "\"");
+                        }
+                    }
+                }
+
+                checkType(res, ["array"], "Role " + yourRole + "'s attribute \"restrict\" for night action \"" + command + "\"");
+            }
         }
 
         loadTheme = function (content) {
@@ -1470,8 +1500,7 @@
     }
 })();
 
-/* Theme Summary */ 
-(function () {
+/* Theme Summary */ (function () {
     Object.defineProperty(Array.prototype, "list", {
         "value": function () {
             return this.join(", ");
@@ -1833,13 +1862,13 @@
 
             if (t.propertyType("ticks") === "object") {
                 t.subHeader("Ticks:", 4, "ticks");
-                
+
                 t.addProperty("Night", "night", "boolean");
                 t.addProperty("Standby", "standby", "boolean");
-                
+
                 t.endSubHeader();
             }
-            
+
             t.header("Sides:", 2);
 
             for (x in sides) {
