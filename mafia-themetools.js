@@ -1203,10 +1203,6 @@
     function MafiaTheme() {}
 
     MafiaTheme.prototype.getBorder = function () {
-        if (this.has("border")) {
-            return this.border;
-        }
-
         return "*** *********************************************************************** ***";
     }
 
@@ -1474,7 +1470,6 @@
                 throw "Couldn't parse theme " + json.name + ": No role lists.";
             }
 
-            theme.border = json.border;
             theme.generateRoleInfo();
             theme.printInfo();
         } catch (err) {
@@ -1500,7 +1495,9 @@
     }
 })();
 
-/* Theme Summary */ (function () {
+/* Theme Summary */ 
+
+(function () {
     Object.defineProperty(Array.prototype, "list", {
         "value": function () {
             return this.join(", ");
