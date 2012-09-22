@@ -513,6 +513,7 @@
                         }
                     }
                 }
+                }
 
                 if (role.actions.has("standby") && checkType(role.actions.standby, ["object"], "Role " + yourRole + "'s standby actions")) {
                     for (e in role.actions.standby) {
@@ -1265,166 +1266,170 @@
         }
 
         for (r = 0; r < role_order.length; ++r) {
-            try {
-                role = this.roles[role_order[r]];
-                roles.push("켙ole: " + role.translation);
+                        role = this.roles[role_order[r]];
+                        roles.push("켙ole: " + role.translation);
 
-                // check which abilities the role has
-                abilities = "";
-                if ("info" in role) {
-                    abilities = role.info;
-                } else {
-                    if (role.actions.night) {
-                        for (a in role.actions.night) {
-                            ability = role.actions.night[a];
-                            abilities += "Can " + a + " " + ("limit" in ability ? ability.limit + " persons" : "one person") + " during the night. ";
-                            if ("avoidHax" in role.actions && role.actions.avoidHax.indexOf(a) != -1) {
-                                abilities += "(Can't be detected by spies.) ";
-                            }
-                        }
-                    }
-                    if (role.actions.standby) {
-                        for (a in role.actions.standby) {
-                            ability = role.actions.standby[a];
-                            abilities += "Can " + a + " " + ("limit" in ability ? ability.limit + " persons" : "one person") + " during the standby. ";
-                        }
-                    }
-                    if ("vote" in role.actions) {
-                        abilities += "Vote counts as " + role.actions.vote + ". ";
-                    }
-                    if ("voteshield" in role.actions) {
-                        abilities += "Receives " + role.actions.voteshield + " extra votes if voted for at all. ";
-                    }
-                    if ("kill" in role.actions) {
-                        if (role.actions.kill.mode == "ignore") {
-                            abilities += "Can't be nightkilled. ";
-                        }
-                        else if (role.actions.kill.mode == "killattackerevenifprotected") {
-                            abilities += "Revenges nightkills (even when protected). ";
-                        }
-                        else if (role.actions.kill.mode == "killattacker") {
-                            abilities += "Revenges nightkills. ";
-                        }
-                        else if (role.actions.kill.mode == "poisonattacker" || role.actions.kill.mode == "poisonattackerevenifprotected") {
-                            abilities += "Poison attacker when killed. ";
-                        }
-                        else if (typeof role.actions.kill.mode == "object") {
-                            if ("ignore" in role.actions.kill.mode) {
-                                var ignoreRoles = role.actions.kill.mode.ignore.map(trrole, this);
-                                abilities += "Can't be nightkilled by " + readable(ignoreRoles, "and") + ". ";
-                            }
-                            if ("evadeChance" in role.actions.kill.mode && role.actions.kill.mode.evadeChance > 0) {
-                                abilities += "Has a " + Math.floor(role.actions.kill.mode.evadeChance * 100) + "% chance of evading nightkills. ";
-                            }
-                        }
-                    }
-                    if ("daykill" in role.actions) {
-                        if (role.actions.daykill == "evade") {
-                            abilities += "Can't be daykilled. ";
-                        }
-                        else if (role.actions.daykill == "revenge") {
-                            abilities += "Counter daykills. ";
-                        }
-                        else if (role.actions.daykill == "bomb") {
-                            abilities += "Revenges daykills. ";
-                        }
-                        else if (typeof role.actions.daykill == "object" && typeof role.actions.daykill.mode == "object" && role.actions.daykill.mode.evadeChance > 0) {
-                            abilities += "Has a " + Math.floor(role.actions.daykill.mode.evadeChance * 100) + "% chance of evading daykills. ";
-                        }
-                        else if (role.actions.daykill == "revealkiller") {
-                            abilities += "Reveals killer when daykilled. ";
-                        }
-                    }
-                    if ("poison" in role.actions) {
-                        if (role.actions.poison.mode == "ignore") {
-                            abilities += "Can't be poisoned. ";
-                        }
-                        else if (typeof role.actions.poison.mode == "object" && role.actions.poison.mode.evadeChance > 0) {
-                            abilities += "Has a " + Math.floor(role.actions.poison.mode.evadeChance * 100) + "% chance of evading poison. ";
-                        }
-                    }
-                    if ("hax" in role.actions && Object.keys) {
-                        var haxy = Object.keys(role.actions.hax);
-                        abilities += "Gets hax on " + readable(haxy, "and") + ". ";
-                    }
-                    if ("inspect" in role.actions) {
-                        if (Array.isArray(role.actions.inspect.revealAs)) {
-                            var revealAs = role.actions.inspect.revealAs.map(trrole, this);
-                            abilities += "Reveals as " + readable(revealAs, "or") + " when inspected. ";
-                        } else if (role.actions.inspect.revealAs == "*") {
-                            abilities += "Reveals as a random role when inspected. ";
+                        // check which abilities the role has
+                        var abilities = "",
+                            a, ability;
+                        if ("info" in role) {
+                            abilities += role.info;
                         } else {
-                            abilities += "Reveals as " + this.roles[role.actions.inspect.revealAs].translation + " when inspected. ";
-                        }
-                    }
-                    if ("distract" in role.actions) {
-                        if (role.actions.distract.mode == "ChangeTarget") abilities += "Kills any distractors. ";
-                        if (role.actions.distract.mode == "ignore") abilities += "Ignores any distractors. ";
-                    }
-                    if ("initialCondition" in role.actions) {
-                        if ("poison" in role.actions.initialCondition) {
-                            abilities += "Dies at the end of night " + (role.actions.initialCondition.poison.count || 2) + ". ";
-                        }
-                    }
-                    if (typeof role.side == "string") {
-                        abilities += "Sided with " + this.trside(role.side) + ". ";
-                    } else if (typeof role.side == "object") {
-                        var plop = Object.keys(role.side.random);
-                        var tran = [];
-                        for (var p = 0; p < plop.length; ++p) {
-                            tran.push(this.trside(plop[p]));
-                        }
-                        abilities += "Sided with " + readable(tran, "or") + ". ";
-                    }
-                    if (role.hasOwnProperty("winningSides")) {
-                        if (role.winningSides == "*") {
-                            abilities += "Wins the game in any case. ";
-                        } else if (Array.isArray(role.winningSides)) {
-                            abilities += "Wins the game with " + readable(role.winningSides.map(trside, this), "or");
-                        }
-                    }
-                }
-                roles.push("켂bility: " + abilities);
-
-                // check on which player counts the role appears
-                var parts = [];
-                var end = 0;
-                for (var i = 1; i <= this.roleLists; ++i) {
-                    role_i = "roles" + i;
-                    var start = this[role_i].indexOf(role.role);
-                    var last = end;
-                    end = this[role_i].length;
-                    if (start >= 0) {
-                        ++start;
-                        start = start > last ? start : 1 + last;
-                        if (parts.length > 0 && parts[parts.length - 1][1] == start - 1) {
-                            parts[parts.length - 1][1] = end;
-                        } else {
-                            parts.push([start, end]);
-                            if (parts.length > 1) {
-                                parts[parts.length - 2] = parts[parts.length - 2][0] < parts[parts.length - 2][1] ? parts[parts.length - 2].join("-") : parts[parts.length - 2][1];
+                            if (role.actions.night) {
+                                for (a in role.actions.night) {
+                                    ability = role.actions.night[a];
+                                    abilities += "Can " + a + " " + ("limit" in ability ? ability.limit + " persons" : "one person") + " during the night. ";
+                                    if ("avoidHax" in role.actions && role.actions.avoidHax.indexOf(a) != -1) {
+                                        abilities += "(Can't be detected by spies.) ";
+                                    }
+                                }
+                            }
+                            if (role.actions.standby) {
+                                for (a in role.actions.standby) {
+                                    ability = role.actions.standby[a];
+                                    abilities += "Can " + a + " " + ("limit" in ability ? ability.limit + " persons" : "one person") + " during the standby. ";
+                                }
+                            }
+                            if ("vote" in role.actions) {
+                                if (typeof role.actions.vote === "number") {
+                                    abilities += "Vote counts as " + role.actions.vote + ". ";
+                                } else if (Array.isArray(role.actions.vote)) {
+                                    abilities += "Vote counts randomly between " + role.actions.vote[0] + " (inclusive) and " + role.actions.vote[1] + " (exclusive). ";
+                                }
+                            }
+                            if ("voteshield" in role.actions) {
+                                if (typeof role.actions.voteshield === "number") {
+                                    abilities += "Receives " + role.actions.voteshield + " extra votes if voted for at all. ";
+                                } else if (Array.isArray(role.actions.voteshield)) {
+                                    abilities += "Receives between " + role.actions.voteshield[0] + " (inclusive) and " + role.actions.voteshield[1] + " (exclusive) extra votes randomly if voted for at all. ";
+                                }
+                            }
+                            if ("kill" in role.actions) {
+                                if (role.actions.kill.mode == "ignore") {
+                                    abilities += "Can't be nightkilled. ";
+                                }
+                                else if (role.actions.kill.mode == "killattackerevenifprotected") {
+                                    abilities += "Revenges nightkills (even when protected). ";
+                                }
+                                else if (role.actions.kill.mode == "killattacker") {
+                                    abilities += "Revenges nightkills. ";
+                                }
+                                else if (role.actions.kill.mode == "poisonattacker" || role.actions.kill.mode == "poisonattackerevenifprotected") {
+                                    abilities += "Poison attacker when killed. ";
+                                }
+                                else if (typeof role.actions.kill.mode == "object") {
+                                    if ("ignore" in role.actions.kill.mode) {
+                                        var ignoreRoles = role.actions.kill.mode.ignore.map(trrole, this);
+                                        abilities += "Can't be nightkilled by " + readable(ignoreRoles, "and") + ". ";
+                                    }
+                                    if ("evadeChance" in role.actions.kill.mode && role.actions.kill.mode.evadeChance > 0) {
+                                        abilities += "Has a " + Math.floor(role.actions.kill.mode.evadeChance * 100) + "% chance of evading nightkills. ";
+                                    }
+                                }
+                            }
+                            if ("daykill" in role.actions) {
+                                if (role.actions.daykill == "evade") {
+                                    abilities += "Can't be daykilled. ";
+                                }
+                                else if (role.actions.daykill == "revenge") {
+                                    abilities += "Counter daykills. ";
+                                }
+                                else if (role.actions.daykill == "bomb") {
+                                    abilities += "Revenges daykills. ";
+                                }
+                                else if (typeof role.actions.daykill == "object" && typeof role.actions.daykill.mode == "object" && role.actions.daykill.mode.evadeChance > 0) {
+                                    abilities += "Has a " + Math.floor(role.actions.daykill.mode.evadeChance * 100) + "% chance of evading daykills. ";
+                                }
+                                else if (role.actions.daykill == "revealkiller") {
+                                    abilities += "Reveals killer when daykilled. ";
+                                }
+                            }
+                            if ("poison" in role.actions) {
+                                if (role.actions.poison.mode == "ignore") {
+                                    abilities += "Can't be poisoned. ";
+                                }
+                                else if (typeof role.actions.poison.mode == "object" && role.actions.poison.mode.evadeChance > 0) {
+                                    abilities += "Has a " + Math.floor(role.actions.poison.mode.evadeChance * 100) + "% chance of evading poison. ";
+                                }
+                            }
+                            if ("hax" in role.actions && Object.keys) {
+                                var haxy = Object.keys(role.actions.hax);
+                                abilities += "Gets hax on " + readable(haxy, "and") + ". ";
+                            }
+                            if ("inspect" in role.actions) {
+                                if ("revealAs" in role.actions.inspect) {
+                                    if (Array.isArray(role.actions.inspect.revealAs)) {
+                                        var revealAs = role.actions.inspect.revealAs.map(trrole, this);
+                                        abilities += "Reveals as " + readable(revealAs, "or") + " when inspected. ";
+                                    } else if (role.actions.inspect.revealAs == "*") {
+                                        abilities += "Reveals as a random role when inspected. ";
+                                    } else {
+                                        abilities += "Reveals as " + this.roles[role.actions.inspect.revealAs].translation + " when inspected. ";
+                                    }
+                                }
+                            }
+                            if ("distract" in role.actions) {
+                                if (role.actions.distract.mode == "ChangeTarget") abilities += "Kills any distractors. ";
+                                if (role.actions.distract.mode == "ignore") abilities += "Ignores any distractors. ";
+                            }
+                            if ("initialCondition" in role.actions) {
+                                if ("poison" in role.actions.initialCondition) {
+                                    abilities += "Dies at the end of night " + (role.actions.initialCondition.poison.count || 2) + ". ";
+                                }
+                            }
+                            if (typeof role.side == "string") {
+                                abilities += "Sided with " + this.trside(role.side) + ". ";
+                            } else if (typeof role.side == "object") {
+                                var plop = Object.keys(role.side.random);
+                                var tran = [];
+                                for (var p = 0; p < plop.length; ++p) {
+                                    tran.push(this.trside(plop[p]));
+                                }
+                                abilities += "Sided with " + readable(tran, "or") + ". ";
+                            }
+                            if (role.hasOwnProperty("winningSides")) {
+                                if (role.winningSides == "*") {
+                                    abilities += "Wins the game in any case. ";
+                                } else if (Array.isArray(role.winningSides)) {
+                                    // Argh give me Function.bind already ;~;
+                                    abilities += "Wins the game with " + readable(role.winningSides.map(trside, this), "or");
+                                }
                             }
                         }
+                        roles.push("켂bility: " + abilities);
+
+                        // check on which player counts the role appears
+                        var parts = [];
+                        var end = 0;
+                        for (var i = 1; i <= this.roleLists; ++i) {
+                            role_i = "roles" + i;
+                            var start = this[role_i].indexOf(role.role);
+                            var last = end;
+                            end = this[role_i].length;
+                            if (start >= 0) {
+                                ++start;
+                                start = start > last ? start : 1 + last;
+                                if (parts.length > 0 && parts[parts.length - 1][1] == start - 1) {
+                                    parts[parts.length - 1][1] = end;
+                                } else {
+                                    parts.push([start, end]);
+                                    if (parts.length > 1) {
+                                        parts[parts.length - 2] = parts[parts.length - 2][0] < parts[parts.length - 2][1] ? parts[parts.length - 2].join("-") : parts[parts.length - 2][1];
+                                    }
+                                }
+                            }
+                        }
+                        if (parts.length > 0) {
+                            parts[parts.length - 1] = parts[parts.length - 1][0] < parts[parts.length - 1][1] ? parts[parts.length - 1].join("-") : parts[parts.length - 1][1];
+                        }
+                        roles.push("켊ame: " + parts.join(", ") + " Players");
+
+                        roles.push(sep);
+                    } catch (err) {
+                        throw err;
                     }
                 }
-                if (parts.length > 0) {
-                    parts[parts.length - 1] = parts[parts.length - 1][0] < parts[parts.length - 1][1] ? parts[parts.length - 1].join("-") : parts[parts.length - 1][1];
-                }
-                roles.push("켊ame: " + parts.join(", ") + " Players");
-
-                roles.push(sep);
-            } catch (err) {
-                if (role_i === null) {
-                    out("Error adding role " + role.translation + "(" + role.role + ") to /roles");
-                }
-                else {
-                    out("Error making rolelist with role id: " + role_i);
-                }
-                throw err;
-            }
-        }
-
-        this.roleInfo = roles;
+                this.roleInfo = roles;
     };
 
     /* Theme Loading and Storing */
@@ -2023,7 +2028,9 @@
     }
 })();
 
-/* Core */ ({
+/* Core */ 
+
+({
     beforeSendMessage: function (message, channel) {
         if ((message[0] == "~" || message[0] == "-") && message.length > 1) {
             var commandData = "",
