@@ -1352,7 +1352,6 @@
         } catch (err) {
             throw err;
         }
-    }
     this.roleInfo = roles;
 };
 
