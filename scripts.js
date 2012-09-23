@@ -229,16 +229,14 @@ defineCoreProperty(Object.prototype, "insert", function (name, val) {
 });
 
 defineCoreProperty(Object.prototype, "extend", function (other) {
-    var x, curr, y;
-    for (x in arguments) {
-        curr = arguments[x];
-        if (typeof curr === "object" && !Array.isArray(curr) && curr !== null) {
-            for (y in curr) {
-                this[y] = curr[y];
-            }
+    var x;
+
+    if (typeof other === "object" && !Array.isArray(other) && other !== null) {
+        for (x in other) {
+            this[x] = other[x];
         }
     }
-    
+
     return this;
 });
 

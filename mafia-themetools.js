@@ -2,198 +2,121 @@
 
 /* Utilities */
 (function () {
-    Object.defineProperty(String.prototype, "isEmpty", {
-        "value": function () {
-            var mess = this;
-            return mess == "" || mess.trim() == "";
-        },
+    defineCoreProperty = function (core, prop, func) {
+        Object.defineProperty(core, prop, {
+            "value": func,
 
-        writable: true,
-        enumerable: false,
-        configurable: true
+            writable: true,
+            enumerable: false,
+            configurable: true
+        });
+    }
+
+    defineCoreProperty(String.prototype, "isEmpty", function () {
+        var mess = this;
+        return mess == "" || mess.trim() == "";
     });
 
-    Object.defineProperty(String.prototype, "contains", {
-        "value": function (string) {
-            var str = this;
-            return str.indexOf(string) > -1;
-        },
-
-        writable: true,
-        enumerable: false,
-        configurable: true
+    defineCoreProperty(String.prototype, "contains", function (string) {
+        var str = this;
+        return str.indexOf(string) > -1;
     });
 
-    Object.defineProperty(String.prototype, "has", {
-        "value": function (string) {
-            return this.contains(string);
-        },
-
-        writable: true,
-        enumerable: false,
-        configurable: true
+    defineCoreProperty(String.prototype, "has", function (string) {
+        return this.contains(string);
     });
 
-    Object.defineProperty(String.prototype, "format", {
-        "value": function () {
-            var str = this,
-                exp, i, args = arguments.length,
-                icontainer = 0;
-            for (i = 0; i < args; i++) {
-                icontainer++;
-                exp = new RegExp("%" + icontainer, "");
-                str = str.replace(exp, arguments[i]);
+    defineCoreProperty(String.prototype, "format", function () {
+        var str = this,
+            exp, i, args = arguments.length,
+            icontainer = 0;
+        for (i = 0; i < args; i++) {
+            icontainer++;
+            exp = new RegExp("%" + icontainer, "");
+            str = str.replace(exp, arguments[i]);
+        }
+        return str;
+    });
+
+    defineCoreProperty(String.prototype, "fontsize", function (size) {
+        var str = this;
+
+        return "<font size='" + size + "'>" + str + "</font>";
+    });
+
+    defineCoreProperty(Boolean.prototype, "isEmpty", function () {
+        return this === false;
+    });
+
+    defineCoreProperty(Number.prototype, "isEmpty", function () {
+        return !isFinite(this) || this === 0;
+    });
+
+    defineCoreProperty(Number.prototype, "positive", function () {
+        return !this.isEmpty();
+    });
+
+    defineCoreProperty(Object.prototype, "isEmpty", function () {
+        return this.length() === 0;
+    });
+
+    defineCoreProperty(Object.prototype, "keys", function () {
+        return Object.keys(this);
+    });
+
+    defineCoreProperty(Object.prototype, "has", function (prop) {
+        return typeof this[prop] !== "undefined";
+    });
+
+    defineCoreProperty(Object.prototype, "contains", function (prop) {
+        return this.has(prop);
+    });
+
+    defineCoreProperty(Object.prototype, "insert", function (name, val) {
+        this[name] = val;
+    });
+
+    defineCoreProperty(Object.prototype, "extend", function (other) {
+        var x;
+
+        if (typeof other === "object" && !Array.isArray(other) && other !== null) {
+            for (x in other) {
+                this[x] = other[x];
             }
-            return str;
-        },
+        }
 
-        writable: true,
-        enumerable: false,
-        configurable: true
+        return this;
     });
 
-    Object.defineProperty(Boolean.prototype, "isEmpty", {
-        "value": function () {
-            return this === false;
-        },
+    defineCoreProperty(Object.prototype, "remove", function (name) {
+        if (!this.has(name)) {
+            return;
+        }
 
-        writable: true,
-        enumerable: false,
-        configurable: true
+        delete this[name];
     });
 
-    Object.defineProperty(Number.prototype, "isEmpty", {
-        "value": function () {
-            return isNaN(this) || this === 0;
-        },
-
-        writable: true,
-        enumerable: false,
-        configurable: true
+    defineCoreProperty(Object.prototype, "length", function () {
+        return Object.keys(this).length;
     });
 
-    Object.defineProperty(Object.prototype, "isEmpty", {
-        "value": function () {
-            return this.length() === 0;
-        },
-
-        writable: true,
-        enumerable: false,
-        configurable: true
-    });
-
-    Object.defineProperty(Object.prototype, "keys", {
-        "value": function () {
-            return Object.keys(this);
-        },
-
-        writable: true,
-        enumerable: false,
-        configurable: true
-    });
-
-    Object.defineProperty(Object.prototype, "has", {
-        "value": function (prop) {
-            return typeof this[prop] !== "undefined";
-        },
-
-        writable: true,
-        enumerable: false,
-        configurable: true
-    });
-
-    Object.defineProperty(Object.prototype, "contains", {
-        "value": function (prop) {
-            return this.has(prop);
-        },
-
-        writable: true,
-        enumerable: false,
-        configurable: true
-    });
-
-    Object.defineProperty(Object.prototype, "insert", {
-        "value": function (name, val) {
-            this[name] = val;
-        },
-
-        writable: true,
-        enumerable: false,
-        configurable: true
-    });
-
-    Object.defineProperty(Object.prototype, "remove", {
-        "value": function (name) {
-            if (!this.has(name)) {
-                return;
+    defineCoreProperty(Array.prototype, "has", function (prop) {
+        var x;
+        for (x in this) {
+            if (this[x] == prop) {
+                return true;
             }
+        }
 
-            delete this[name];
-        },
-
-        writable: true,
-        enumerable: false,
-        configurable: true
+        return false;
     });
 
-    Object.defineProperty(Object.prototype, "first", {
-        "value": function () {
-            var x;
-            for (x in this) {
-                return this[x]; // Grab the first property
-            }
-        },
-
-        writable: true,
-        enumerable: false,
-        configurable: true
+    defineCoreProperty(Array.prototype, "isEmpty", function () {
+        return this.length === 0;
     });
 
-    Object.defineProperty(Object.prototype, "length", {
-        "value": function () {
-            return Object.keys(this).length;
-        },
-
-        writable: true,
-        enumerable: false,
-        configurable: true
-    });
-
-    Object.defineProperty(Array.prototype, "has", {
-        "value": function (prop) {
-            var x;
-            for (x in this) {
-                if (this[x] == prop) {
-                    return true;
-                }
-            }
-
-            return false;
-        },
-
-        writable: true,
-        enumerable: false,
-        configurable: true
-    });
-
-    Object.defineProperty(Array.prototype, "isEmpty", {
-        "value": function () {
-            return this.length === 0;
-        },
-
-        writable: true,
-        enumerable: false,
-        configurable: true
-    });
-
-    Object.defineProperty(Array.prototype, "contains", {
-        "value": function (prop) {
-            return this.has(prop);
-        },
-
-        writable: true,
-        enumerable: false,
-        configurable: true
+    defineCoreProperty(Array.prototype, "contains", function (prop) {
+        return this.has(prop);
     });
 
     pureHtml = function (msg) {
@@ -513,343 +436,507 @@
                         }
                     }
                 }
-                }
+            }
 
-                if (role.actions.has("standby") && checkType(role.actions.standby, ["object"], "Role " + yourRole + "'s standby actions")) {
-                    for (e in role.actions.standby) {
-                        action = role.actions.standby[e];
-                        if (checkType(action, ["object"], "Role " + yourRole + "'s standby action \"" + e + "\"")) {
-                            command = e;
-                            if (action.command) {
-                                command = action.command;
-                            }
-                            if (command == "kill") {
-                                checkAttributes(action, ["target"], ["command", "limit", "msg", "killmsg", "revealChance", "revealmsg", "recharge", "initialrecharge"], "Role " + yourRole + "'s standby action \"" + e + "\"");
-                                if (action.has("target")) {
-                                    checkValidValue(action.target, ["Any", "Self", "AnyButTeam", "AnyButRole", "AnyButSelf"], "Role " + yourRole + "'s standby action \"" + e + "\" has a invalid value for \"target\": %1 (%2)");
-                                }
-                                if (action.has("limit")) {
-                                    checkType(action.limit, ["number"], "Role " + yourRole + "'s attribute \"limit\" for standby action \"" + command + "\"");
-                                }
-                                if (action.has("msg")) {
-                                    checkType(action.msg, ["string"], "Role " + yourRole + "'s attribute \"msg\" for standby action \"" + command + "\"");
-                                }
-                                if (action.has("killmsg")) {
-                                    checkType(action.killmsg, ["string"], "Role " + yourRole + "'s attribute \"killmsg\" for standby action \"" + command + "\"");
-                                }
-                                if (action.has("revealChance")) {
-                                    checkType(action.revealChance, ["number"], "Role " + yourRole + "'s attribute \"revealChance\" for standby action \"" + command + "\"");
-                                }
-                                if (action.has("revealmsg")) {
-                                    checkType(action.revealmsg, ["string"], "Role " + yourRole + "'s attribute \"revealmsg\" for standby action \"" + command + "\"");
-                                }
-                                if (action.has("recharge")) {
-                                    checkType(action.recharge, ["number"], "Role " + yourRole + "'s attribute \"recharge\" for standby action \"" + command + "\"");
-                                }
-                                if (action.has("initialrecharge")) {
-                                    checkType(action.initialrecharge, ["number"], "Role " + yourRole + "'s attribute \"initialrecharge\" for standby action \"" + command + "\"");
-                                }
-                            } else if (command == "expose") {
-                                checkAttributes(action, ["target"], ["command", "limit", "msg", "exposemsg", "revealChance", "revealmsg", "recharge", "initialrecharge"], "Role " + yourRole + "'s standby action \"" + e + "\"");
-                                if (action.has("target")) {
-                                    checkValidValue(action.target, ["Any", "Self", "AnyButTeam", "AnyButRole", "AnyButSelf"], "Role " + yourRole + "'s standby action \"" + e + "\" has a invalid value for \"target\": %1 (%2)");
-                                }
-                                if (action.has("limit")) {
-                                    checkType(action.limit, ["number"], "Role " + yourRole + "'s attribute \"limit\" for standby action \"" + command + "\"");
-                                }
-                                if (action.has("msg")) {
-                                    checkType(action.msg, ["string"], "Role " + yourRole + "'s attribute \"msg\" for standby action \"" + command + "\"");
-                                }
-                                if (action.has("exposemsg")) {
-                                    checkType(action.exposemsg, ["string"], "Role " + yourRole + "'s attribute \"exposemsg\" for standby action \"" + command + "\"");
-                                }
-                                if (action.has("revealChance")) {
-                                    checkType(action.revealChance, ["number"], "Role " + yourRole + "'s attribute \"revealChance\" for standby action \"" + command + "\"");
-                                }
-                                if (action.has("revealmsg")) {
-                                    checkType(action.revealmsg, ["string"], "Role " + yourRole + "'s attribute \"revealmsg\" for standby action \"" + command + "\"");
-                                }
-                                if (action.has("recharge")) {
-                                    checkType(action.recharge, ["number"], "Role " + yourRole + "'s attribute \"recharge\" for standby action \"" + command + "\"");
-                                }
-                                if (action.has("initialrecharge")) {
-                                    checkType(action.initialrecharge, ["number"], "Role " + yourRole + "'s attribute \"initialrecharge\" for standby action \"" + command + "\"");
-                                }
-                            } else if (command == "reveal") {
-                                checkAttributes(action, [], ["command", "limit", "msg", "revealmsg", "recharge", "initialrecharge"], "Role " + yourRole + "'s standby action \"" + e + "\"");
-                                if (action.has("limit")) {
-                                    checkType(action.limit, ["number"], "Role " + yourRole + "'s attribute \"limit\" for standby action \"" + command + "\"");
-                                }
-                                if (action.has("msg")) {
-                                    checkType(action.msg, ["string"], "Role " + yourRole + "'s attribute \"msg\" for standby action \"" + command + "\"");
-                                }
-                                if (action.has("revealmsg")) {
-                                    checkType(action.revealmsg, ["string"], "Role " + yourRole + "'s attribute \"revealmsg\" for standby action \"" + command + "\"");
-                                }
-                                if (action.has("recharge")) {
-                                    checkType(action.recharge, ["number"], "Role " + yourRole + "'s attribute \"recharge\" for standby action \"" + command + "\"");
-                                }
-                                if (action.has("initialrecharge")) {
-                                    checkType(action.initialrecharge, ["number"], "Role " + yourRole + "'s attribute \"initialrecharge\" for standby action \"" + command + "\"");
-                                }
-                            } else {
-                                addMinorError("Role " + yourRole + "'s standby action \"" + command + "\" is not a valid action (Valid standby actions are " + readable(possibleStandbyActions, "and") + ")");
-                            }
+            if (role.actions.has("standby") && checkType(role.actions.standby, ["object"], "Role " + yourRole + "'s standby actions")) {
+                for (e in role.actions.standby) {
+                    action = role.actions.standby[e];
+                    if (checkType(action, ["object"], "Role " + yourRole + "'s standby action \"" + e + "\"")) {
+                        command = e;
+                        if (action.command) {
+                            command = action.command;
                         }
-                    }
-                }
-                if (role.actions.has("hax") && checkType(role.actions.hax, ["object"], "Role " + yourRole + "'s hax")) {
-                    for (e in role.actions.hax) {
-                        checkAttributes(role.actions.hax[e], [], ["revealTeam", "revealPlayer", "revealRole"], "Role " + yourRole + "'s hax on \"" + e + "\"");
-                        if (typeof role.actions.hax[e] == "object") {
-                            if (role.actions.hax[e].has("revealTeam")) {
-                                checkType(role.actions.hax[e].revealTeam, ["number"], "Role " + yourRole + "s hax on " + e + " (revealTeam)");
+                        if (command == "kill") {
+                            checkAttributes(action, ["target"], ["command", "limit", "msg", "killmsg", "revealChance", "revealmsg", "recharge", "initialrecharge"], "Role " + yourRole + "'s standby action \"" + e + "\"");
+                            if (action.has("target")) {
+                                checkValidValue(action.target, ["Any", "Self", "AnyButTeam", "AnyButRole", "AnyButSelf"], "Role " + yourRole + "'s standby action \"" + e + "\" has a invalid value for \"target\": %1 (%2)");
                             }
-                            if (role.actions.hax[e].has("revealPlayer")) {
-                                checkType(role.actions.hax[e].revealPlayer, ["number"], "Role " + yourRole + "s hax on " + e + " (revealPlayer)");
+                            if (action.has("limit")) {
+                                checkType(action.limit, ["number"], "Role " + yourRole + "'s attribute \"limit\" for standby action \"" + command + "\"");
                             }
-                            if (role.actions.hax[e].has("revealRole")) {
-                                checkType(role.actions.hax[e].revealRole, ["number"], "Role " + yourRole + "s hax on " + e + " (revealRole)");
+                            if (action.has("msg")) {
+                                checkType(action.msg, ["string"], "Role " + yourRole + "'s attribute \"msg\" for standby action \"" + command + "\"");
                             }
-                        }
-                    }
-                }
-                if (role.actions.has("standbyHax") && checkType(role.actions.standbyHax, ["object"], "Role " + yourRole + "'s standbyHax")) {
-                    for (e in role.actions.standbyHax) {
-                        checkAttributes(role.actions.standbyHax[e], [], ["revealTeam", "revealPlayer", "revealRole"], "Role " + yourRole + "'s standbyHax on \"" + e + "\"");
-                        if (typeof role.actions.standbyHax[e] == "object") {
-                            if (role.actions.standbyHax[e].has("revealTeam")) {
-                                checkType(role.actions.standbyHax[e].revealTeam, ["number"], "Role " + yourRole + "s standbyHax on " + e + " (revealTeam)");
+                            if (action.has("killmsg")) {
+                                checkType(action.killmsg, ["string"], "Role " + yourRole + "'s attribute \"killmsg\" for standby action \"" + command + "\"");
                             }
-                            if (role.actions.standbyHax[e].has("revealPlayer")) {
-                                checkType(role.actions.standbyHax[e].revealPlayer, ["number"], "Role " + yourRole + "s standbyHax on " + e + " (revealPlayer)");
+                            if (action.has("revealChance")) {
+                                checkType(action.revealChance, ["number"], "Role " + yourRole + "'s attribute \"revealChance\" for standby action \"" + command + "\"");
                             }
-                            if (role.actions.standbyHax[e].has("revealRole")) {
-                                checkType(role.actions.standbyHax[e].revealRole, ["number"], "Role " + yourRole + "s standbyHax on " + e + " (revealRole)");
+                            if (action.has("revealmsg")) {
+                                checkType(action.revealmsg, ["string"], "Role " + yourRole + "'s attribute \"revealmsg\" for standby action \"" + command + "\"");
                             }
-                        }
-                    }
-                }
-                if (role.actions.has("onDeath") && checkType(role.actions.onDeath, ["object"], "Role " + yourRole + "'s onDeath")) {
-                    action = role.actions.onDeath;
-                    checkAttributes(action, [], ["killRoles", "poisonRoles", "convertRoles", "exposeRoles", "killmsg", "convertmsg", "poisonmsg", "poisonDeadMessage", "exposemsg"], "Role " + yourRole + "'s onDeath");
-                    if (action.has("killRoles") && checkType(action.killRoles, ["array"], "Role " + yourRole + "s onDeath: killRoles")) {
-                        for (e in action.killRoles) {
-                            this.checkValidRole(action.killRoles[e], "Role " + yourRole + "'s \"onDeath: killRoles\"");
-                        }
-                    }
-                    if (action.has("killmsg")) {
-                        checkType(action.killmsg, ["string"], "Role " + yourRole + "'s onDeath: killmsg");
-                    }
-                    if (action.has("poisonRoles") && checkType(action.poisonRoles, ["object"], "Role " + yourRole + "s onDeath: poisonRoles")) {
-                        for (e in action.poisonRoles) {
-                            this.checkValidRole(e, "Role " + yourRole + "'s \"onDeath: poisonRoles\"");
-                            checkType(action.poisonRoles[e], ["number"], "Role " + yourRole + "s onDeath: poisonRoles: " + e);
-                        }
-                    }
-                    if (action.has("poisonmsg")) {
-                        checkType(action.poisonmsg, ["string"], "Role " + yourRole + "'s onDeath: poisonmsg");
-                    }
-                    if (action.has("convertRoles") && checkType(action.convertRoles, ["object"], "Role " + yourRole + "s onDeath: convertRoles")) {
-                        for (e in action.convertRoles) {
-                            this.checkValidRole(e, "Role " + yourRole + "'s \"onDeath: convertRoles\"");
-                            this.checkValidRole(action.convertRoles[e], "role " + yourRole + "'s \"onDeath: convertRoles\"");
-                        }
-                    }
-                    if (action.has("convertmsg")) {
-                        checkType(action.convertmsg, ["string"], "Role " + yourRole + "'s onDeath: convertmsg");
-                    }
-                    if (action.has("exposeRoles") && checkType(action.exposeRoles, ["array"], "Role " + yourRole + "s onDeath: exposeRoles")) {
-                        for (e in action.exposeRoles) {
-                            this.checkValidRole(action.exposeRoles[e], "role " + yourRole + "'s \"onDeath: exposeRoles\"");
-                        }
-                    }
-                    if (action.has("exposemsg")) {
-                        checkType(action.exposemsg, ["string"], "Role " + yourRole + "'s onDeath: exposemsg");
-                    }
-                }
-                if (role.actions.has("vote")) {
-                    checkType(role.actions.vote, ["number"], "Role " + yourRole + "s vote");
-                }
-                if (role.actions.has("voteshield")) {
-                    checkType(role.actions.voteshield, ["number"], "Role " + yourRole + "'s voteshield");
-                }
-                for (e in possibleNightActions) {
-                    if (role.actions.has(possibleNightActions[e])) {
-                        command = possibleNightActions[e];
-                        action = role.actions[command];
-                        if (command == "inspect") {
-                            checkAttributes(action, [], ["mode", "revealSide", "revealAs", "msg", "targetmsg", "hookermsg", "count", "poisonDeadMessage", "silent"], "Role " + yourRole + "'s " + command + " mode");
-                            if (action.has("revealSide")) {
-                                checkValidValue(action.revealSide, [true, false], "Role " + yourRole + " has an \"inspect\" action with an invalid \"revealSide\" value: ~Value~ (~Valid~).");
+                            if (action.has("recharge")) {
+                                checkType(action.recharge, ["number"], "Role " + yourRole + "'s attribute \"recharge\" for standby action \"" + command + "\"");
                             }
-                            if (action.has("revealAs")) {
-                                if (typeof action.revealAs == "string") {
-                                    if (action.revealAs !== "*") {
-                                        this.checkValidRole(action.revealAs, "role " + yourRole + "'s \"inspect: revealAs\"");
-                                    }
-                                } else if (Array.isArray(action.revealAs)) {
-                                    for (e in action.revealAs) {
-                                        this.checkValidRole(action.revealAs[e], "role " + yourRole + "'s \"inspect: revealAs\"");
-                                    }
-                                }
+                            if (action.has("initialrecharge")) {
+                                checkType(action.initialrecharge, ["number"], "Role " + yourRole + "'s attribute \"initialrecharge\" for standby action \"" + command + "\"");
+                            }
+                        } else if (command == "expose") {
+                            checkAttributes(action, ["target"], ["command", "limit", "msg", "exposemsg", "revealChance", "revealmsg", "recharge", "initialrecharge"], "Role " + yourRole + "'s standby action \"" + e + "\"");
+                            if (action.has("target")) {
+                                checkValidValue(action.target, ["Any", "Self", "AnyButTeam", "AnyButRole", "AnyButSelf"], "Role " + yourRole + "'s standby action \"" + e + "\" has a invalid value for \"target\": %1 (%2)");
+                            }
+                            if (action.has("limit")) {
+                                checkType(action.limit, ["number"], "Role " + yourRole + "'s attribute \"limit\" for standby action \"" + command + "\"");
+                            }
+                            if (action.has("msg")) {
+                                checkType(action.msg, ["string"], "Role " + yourRole + "'s attribute \"msg\" for standby action \"" + command + "\"");
+                            }
+                            if (action.has("exposemsg")) {
+                                checkType(action.exposemsg, ["string"], "Role " + yourRole + "'s attribute \"exposemsg\" for standby action \"" + command + "\"");
+                            }
+                            if (action.has("revealChance")) {
+                                checkType(action.revealChance, ["number"], "Role " + yourRole + "'s attribute \"revealChance\" for standby action \"" + command + "\"");
+                            }
+                            if (action.has("revealmsg")) {
+                                checkType(action.revealmsg, ["string"], "Role " + yourRole + "'s attribute \"revealmsg\" for standby action \"" + command + "\"");
+                            }
+                            if (action.has("recharge")) {
+                                checkType(action.recharge, ["number"], "Role " + yourRole + "'s attribute \"recharge\" for standby action \"" + command + "\"");
+                            }
+                            if (action.has("initialrecharge")) {
+                                checkType(action.initialrecharge, ["number"], "Role " + yourRole + "'s attribute \"initialrecharge\" for standby action \"" + command + "\"");
+                            }
+                        } else if (command == "reveal") {
+                            checkAttributes(action, [], ["command", "limit", "msg", "revealmsg", "recharge", "initialrecharge"], "Role " + yourRole + "'s standby action \"" + e + "\"");
+                            if (action.has("limit")) {
+                                checkType(action.limit, ["number"], "Role " + yourRole + "'s attribute \"limit\" for standby action \"" + command + "\"");
+                            }
+                            if (action.has("msg")) {
+                                checkType(action.msg, ["string"], "Role " + yourRole + "'s attribute \"msg\" for standby action \"" + command + "\"");
+                            }
+                            if (action.has("revealmsg")) {
+                                checkType(action.revealmsg, ["string"], "Role " + yourRole + "'s attribute \"revealmsg\" for standby action \"" + command + "\"");
+                            }
+                            if (action.has("recharge")) {
+                                checkType(action.recharge, ["number"], "Role " + yourRole + "'s attribute \"recharge\" for standby action \"" + command + "\"");
+                            }
+                            if (action.has("initialrecharge")) {
+                                checkType(action.initialrecharge, ["number"], "Role " + yourRole + "'s attribute \"initialrecharge\" for standby action \"" + command + "\"");
                             }
                         } else {
-                            checkAttributes(action, [], ["mode", "msg", "targetmsg", "hookermsg", "count", "poisonDeadMessage", "silent"], "Role " + yourRole + "'s " + command + " mode");
-                        }
-                        if (action.has("mode")) {
-                            var mode = action.mode;
-                            checkType(action.mode, ["string", "object"], "Role " + yourRole + "'s mode for \"" + command + "\"");
-                            if (typeof mode == "string") {
-                                checkValidValue(mode, ["ignore", "ChangeTarget", "killattacker", "killattackerevenifprotected", "poisonattacker", "poisonattackerevenifprotected", "identify", "die"], "Role " + yourRole + "'s " + command + "'s mode has an invalid value: ~Value~ (~Valid~)");
-                            } else if (typeof mode == "object") {
-                                if (mode.has("evadeChance")) {
-                                    checkType(mode.evadeChance, ["number"], "Role " + yourRole + "'s \"evadeChance\" for \"" + command + "\"");
-                                }
-                                if (mode.has("ignore")) {
-                                    if (checkType(mode.ignore, ["array"], "Role " + yourRole + "'s \"ignore\" for \"" + command + "\" mode")) {
-                                        for (e in mode.ignore) {
-                                            this.checkValidRole(mode.ignore[e], "Role " + yourRole + "'s \"" + command + ": ignore\"");
-                                        }
-                                    }
-                                }
-                                if (mode.has("killif")) {
-                                    if (checkType(mode.killif, ["array"], "Role " + yourRole + "'s \"mode: killif\" for \"" + command + "\"")) {
-                                        for (e in mode.killif) {
-                                            this.checkValidRole(mode.killif[e], "Role " + yourRole + "'s \"" + command + ": killif\"");
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        if (action.has("msg")) {
-                            checkType(action.msg, ["string"], "Role " + yourRole + "'s msg for " + command + "'s mode");
-                        }
-                        if (action.has("hookermsg")) {
-                            checkType(action.hookermsg, ["string"], "Role " + yourRole + "'s hookermsg for " + command + "'s mode");
-                        }
-                        if (action.has("targetmsg")) {
-                            checkType(action.targetmsg, ["string"], "Role " + yourRole + "'s targetmsg for " + command + "'s mode");
-                        }
-                        if (action.has("poisonDeadMessage")) {
-                            checkType(action.poisonDeadMessage, ["string"], "Role " + yourRole + "'s poisonDeadMessage for " + command + "'s mode");
-                        }
-                        if (action.has("count")) {
-                            checkType(action.count, ["number"], "Role " + yourRole + "'s count for " + command + "'s mode");
-                        }
-                        if (action.has("silent")) {
-                            checkValidValue(action.silent, [true, false], "Role " + yourRole + " has an \"" + command + "\" mode with an invalid \"silent\" value: ~Value~ (~Valid~).");
-                        }
-                    }
-                }
-                if (role.actions.has("daykill") && checkType(role.actions.daykill, ["object", "string"], "Role " + yourRole + "'s daykill attribute")) {
-                    action = role.actions.daykill;
-                    checkType(action, ["string", "object"], "Role " + yourRole + "'s \"daykill\" mode");
-                    if (typeof action == "string") {
-                        checkValidValue(action, ["evade", "revenge", "bomb", "revealkiller"], "Role " + yourRole + " has a \"daykill\" action with invalid value: ~Value~ (~Valid~).");
-                    } else if (typeof action == "object") {
-                        checkAttributes(action, ["mode"], [], "Role " + yourRole + "'s \"daykill\" action");
-                        if (action.has("mode") && checkType(action.mode, ["object"], "Role " + yourRole + "'s \"daykill\" mode")) {
-                            if (action.mode.has("evadeChance")) {
-                                checkType(action.mode.evadeChance, ["number"], "Role " + yourRole + "'s \"evadeChance\" for \"daykill\"");
-                            }
-                        }
-                    }
-                }
-                if (role.actions.has("daykillrevengemsg") && checkType(role.actions.daykillrevengemsg, ["string"], "Role " + yourRole + "'s daykillrevengemsg attribute")) {
-                    if (!role.actions.has("daykill")) {
-                        addMinorError("Role " + yourRole + " has a \"daykillrevengemsg\" attribute, but no \"daykill\" attribute.");
-                    } else {
-                        checkType(role.actions.daykillrevengemsg, ["string"], "Role " + yourRole + "'s daykillrevengemsg attribute");
-                    }
-                }
-                if (role.actions.has("avoidHax") && checkType(role.actions.avoidHax, ["array"], "Role " + yourRole + "'s avoidHax")) {
-                    action = role.actions.avoidHax;
-                    checkType(action, ["array"], "Role " + yourRole + "'s avoidHax action");
-                    if (Array.isArray(action)) {
-                        for (e in action) {
-                            checkType(action[e], ["string"], "Role " + yourRole + "'s \"avoidHax on " + action[e] + "\"");
-                        }
-                    }
-                }
-                if (role.actions.has("avoidStandbyHax") && checkType(role.actions.avoidStandbyHax, ["array"], "Role " + yourRole + "'s avoidStandbyHax")) {
-                    action = role.actions.avoidStandbyHax;
-                    checkType(action, ["array"], "Role " + yourRole + "'s avoidStandbyHax action");
-                    if (Array.isArray(action)) {
-                        for (e in action) {
-                            checkType(action[e], ["string"], "Role " + yourRole + "'s \"avoidStandbyHax on " + action[e] + "\"");
-                        }
-                    }
-                }
-                if (role.actions.has("initialCondition") && checkType(role.actions.initialCondition, ["object"], "Role " + yourRole + "'s initialCondition attribute")) {
-                    action = role.actions.initialCondition;
-                    checkAttributes(action, [], ["poison", "clearPoison"], "Role " + yourRole + "'s \"initialCondition\" action");
-                    if (action.has("poison")) {
-                        checkAttributes(action.poison, [], ["count", "poisonDeadMessage"], "Role " + yourRole + "'s \"initialCondition: poison\" action");
-                        if (action.poison.has("count")) {
-                            checkType(action.poison.count, ["number"], "Role " + yourRole + "'s \"initialCondition: poison\" action");
-                        }
-                        if (action.poison.has("poisonDeadMessage")) {
-                            checkType(action.poison.poisonDeadMessage, ["string"], "Role " + yourRole + "'s \"initialCondition: poison\" action");
-                        }
-                    }
-                    if (action.has("clearPoison")) {
-                        checkValidValue(action.clearPoison, [true, false], "Role " + yourRole + "'s \"initialCondition\" action has a invalid value for \"clearPoison\": ~Value~ (~Valid~)");
-                    }
-                }
-                if (role.actions.has("startup") && checkType(role.actions.startup, ["string", "object"], "Role " + yourRole + "'s startup attribute")) {
-                    action = role.actions.startup;
-                    if (typeof action == "string") {
-                        checkValidValue(action, ["team-reveal", "role-reveal", "team-reveal-with-roles"], "Role " + yourRole + " has \"startup\" action with invalid value: ~Value~ (~Valid~).");
-                    } else if (typeof action == "object") {
-                        checkAttributes(action, [], ["revealRole", "team-revealif", "revealAs"], "Role " + yourRole + "'s startup attribute");
-                        if (action.has("revealAs")) {
-                            if (checkType(action.revealAs, ["string"], "Role " + yourRole + "'s \"revealAs\" attribute for \"startup\"")) {
-                                this.checkValidRole(action.revealAs, "Role " + yourRole + "'s \"startup: revealAs\"");
-                            }
-                        }
-                        if (action.has("revealRole")) {
-                            checkType(action.revealRole, ["string", "array"], "Role " + yourRole + "'s \"revealRole\" attribute for \"startup\"");
-                            if (typeof action.revealRole == "string") {
-                                this.checkValidRole(action.revealRole, "role " + yourRole + "'s \"startup: revealRole\"");
-                            } else if (!Array.isArray(action.revealRole)) {
-                                for (e in action.revealRole) {
-                                    this.checkValidRole(action.revealRole[e], "Role " + yourRole + "'s \"startup: revealRole\"");
-                                }
-                            }
-                        }
-                        if (action.has("team-revealif")) {
-                            checkType(action["team-revealif"], ["array"], "Role " + yourRole + "'s \"team-revealif\" attribute for \"startup\"");
-                            if (Array.isArray(action["team-revealif"])) {
-                                for (e in action["team-revealif"]) {
-                                    this.checkValidSide(action["team-revealif"][e], "Role " + yourRole + " \"startup: team-revealif\" action");
-                                }
-                            }
-                        }
-                    }
-                }
-                if (role.actions.has("onlist") && checkType(role.actions.onlist, ["string"], "Role " + yourRole + "'s onlist attribute")) {
-                    this.checkValidRole(role.actions.onlist, yourRole + "'s \"onlist\" action");
-                }
-                if (role.actions.has("lynch") && checkType(role.actions.lynch, ["object"], "Role " + yourRole + "'s lynch attribute")) {
-                    checkAttributes(role.actions.lynch, [], ["revealAs", "convertTo", "convertmsg"], "Role " + yourRole + "s \"lynch\" action");
-                    if (role.actions.lynch.has("revealAs")) {
-                        this.checkValidRole(role.actions.lynch.revealAs, "Role " + yourRole + " \"lynch: revealAs\" action");
-                    }
-                    if (role.actions.lynch.has("convertTo")) {
-                        this.checkValidRole(role.actions.lynch.convertTo, "Role " + yourRole + " \"lynch: convertTo\" action");
-                        if (role.actions.lynch.has("convertmsg")) {
-                            checkType(role.actions.lynch.convertmsg, ["string"], "Role " + yourRole + "'s \"convertmsg\" attribute for \"lynch\"");
+                            addMinorError("Role " + yourRole + "'s standby action \"" + command + "\" is not a valid action (Valid standby actions are " + readable(possibleStandbyActions, "and") + ")");
                         }
                     }
                 }
             }
-        };
+            if (role.actions.has("hax") && checkType(role.actions.hax, ["object"], "Role " + yourRole + "'s hax")) {
+                for (e in role.actions.hax) {
+                    checkAttributes(role.actions.hax[e], [], ["revealTeam", "revealPlayer", "revealRole"], "Role " + yourRole + "'s hax on \"" + e + "\"");
+                    if (typeof role.actions.hax[e] == "object") {
+                        if (role.actions.hax[e].has("revealTeam")) {
+                            checkType(role.actions.hax[e].revealTeam, ["number"], "Role " + yourRole + "s hax on " + e + " (revealTeam)");
+                        }
+                        if (role.actions.hax[e].has("revealPlayer")) {
+                            checkType(role.actions.hax[e].revealPlayer, ["number"], "Role " + yourRole + "s hax on " + e + " (revealPlayer)");
+                        }
+                        if (role.actions.hax[e].has("revealRole")) {
+                            checkType(role.actions.hax[e].revealRole, ["number"], "Role " + yourRole + "s hax on " + e + " (revealRole)");
+                        }
+                    }
+                }
+            }
+            if (role.actions.has("standbyHax") && checkType(role.actions.standbyHax, ["object"], "Role " + yourRole + "'s standbyHax")) {
+                for (e in role.actions.standbyHax) {
+                    checkAttributes(role.actions.standbyHax[e], [], ["revealTeam", "revealPlayer", "revealRole"], "Role " + yourRole + "'s standbyHax on \"" + e + "\"");
+                    if (typeof role.actions.standbyHax[e] == "object") {
+                        if (role.actions.standbyHax[e].has("revealTeam")) {
+                            checkType(role.actions.standbyHax[e].revealTeam, ["number"], "Role " + yourRole + "s standbyHax on " + e + " (revealTeam)");
+                        }
+                        if (role.actions.standbyHax[e].has("revealPlayer")) {
+                            checkType(role.actions.standbyHax[e].revealPlayer, ["number"], "Role " + yourRole + "s standbyHax on " + e + " (revealPlayer)");
+                        }
+                        if (role.actions.standbyHax[e].has("revealRole")) {
+                            checkType(role.actions.standbyHax[e].revealRole, ["number"], "Role " + yourRole + "s standbyHax on " + e + " (revealRole)");
+                        }
+                    }
+                }
+            }
+            if (role.actions.has("onDeath") && checkType(role.actions.onDeath, ["object"], "Role " + yourRole + "'s onDeath")) {
+                action = role.actions.onDeath;
+                checkAttributes(action, [], ["killRoles", "poisonRoles", "convertRoles", "exposeRoles", "killmsg", "convertmsg", "poisonmsg", "poisonDeadMessage", "exposemsg"], "Role " + yourRole + "'s onDeath");
+                if (action.has("killRoles") && checkType(action.killRoles, ["array"], "Role " + yourRole + "s onDeath: killRoles")) {
+                    for (e in action.killRoles) {
+                        this.checkValidRole(action.killRoles[e], "Role " + yourRole + "'s \"onDeath: killRoles\"");
+                    }
+                }
+                if (action.has("killmsg")) {
+                    checkType(action.killmsg, ["string"], "Role " + yourRole + "'s onDeath: killmsg");
+                }
+                if (action.has("poisonRoles") && checkType(action.poisonRoles, ["object"], "Role " + yourRole + "s onDeath: poisonRoles")) {
+                    for (e in action.poisonRoles) {
+                        this.checkValidRole(e, "Role " + yourRole + "'s \"onDeath: poisonRoles\"");
+                        checkType(action.poisonRoles[e], ["number"], "Role " + yourRole + "s onDeath: poisonRoles: " + e);
+                    }
+                }
+                if (action.has("poisonmsg")) {
+                    checkType(action.poisonmsg, ["string"], "Role " + yourRole + "'s onDeath: poisonmsg");
+                }
+                if (action.has("convertRoles") && checkType(action.convertRoles, ["object"], "Role " + yourRole + "s onDeath: convertRoles")) {
+                    for (e in action.convertRoles) {
+                        this.checkValidRole(e, "Role " + yourRole + "'s \"onDeath: convertRoles\"");
+                        this.checkValidRole(action.convertRoles[e], "role " + yourRole + "'s \"onDeath: convertRoles\"");
+                    }
+                }
+                if (action.has("convertmsg")) {
+                    checkType(action.convertmsg, ["string"], "Role " + yourRole + "'s onDeath: convertmsg");
+                }
+                if (action.has("exposeRoles") && checkType(action.exposeRoles, ["array"], "Role " + yourRole + "s onDeath: exposeRoles")) {
+                    for (e in action.exposeRoles) {
+                        this.checkValidRole(action.exposeRoles[e], "role " + yourRole + "'s \"onDeath: exposeRoles\"");
+                    }
+                }
+                if (action.has("exposemsg")) {
+                    checkType(action.exposemsg, ["string"], "Role " + yourRole + "'s onDeath: exposemsg");
+                }
+            }
+            if (role.actions.has("vote")) {
+                checkType(role.actions.vote, ["number"], "Role " + yourRole + "s vote");
+            }
+            if (role.actions.has("voteshield")) {
+                checkType(role.actions.voteshield, ["number"], "Role " + yourRole + "'s voteshield");
+            }
+            for (e in possibleNightActions) {
+                if (role.actions.has(possibleNightActions[e])) {
+                    command = possibleNightActions[e];
+                    action = role.actions[command];
+                    if (command == "inspect") {
+                        checkAttributes(action, [], ["mode", "revealSide", "revealAs", "msg", "targetmsg", "hookermsg", "count", "poisonDeadMessage", "silent"], "Role " + yourRole + "'s " + command + " mode");
+                        if (action.has("revealSide")) {
+                            checkValidValue(action.revealSide, [true, false], "Role " + yourRole + " has an \"inspect\" action with an invalid \"revealSide\" value: ~Value~ (~Valid~).");
+                        }
+                        if (action.has("revealAs")) {
+                            if (typeof action.revealAs == "string") {
+                                if (action.revealAs !== "*") {
+                                    this.checkValidRole(action.revealAs, "role " + yourRole + "'s \"inspect: revealAs\"");
+                                }
+                            } else if (Array.isArray(action.revealAs)) {
+                                for (e in action.revealAs) {
+                                    this.checkValidRole(action.revealAs[e], "role " + yourRole + "'s \"inspect: revealAs\"");
+                                }
+                            }
+                        }
+                    } else {
+                        checkAttributes(action, [], ["mode", "msg", "targetmsg", "hookermsg", "count", "poisonDeadMessage", "silent"], "Role " + yourRole + "'s " + command + " mode");
+                    }
+                    if (action.has("mode")) {
+                        var mode = action.mode;
+                        checkType(action.mode, ["string", "object"], "Role " + yourRole + "'s mode for \"" + command + "\"");
+                        if (typeof mode == "string") {
+                            checkValidValue(mode, ["ignore", "ChangeTarget", "killattacker", "killattackerevenifprotected", "poisonattacker", "poisonattackerevenifprotected", "identify", "die"], "Role " + yourRole + "'s " + command + "'s mode has an invalid value: ~Value~ (~Valid~)");
+                        } else if (typeof mode == "object") {
+                            if (mode.has("evadeChance")) {
+                                checkType(mode.evadeChance, ["number"], "Role " + yourRole + "'s \"evadeChance\" for \"" + command + "\"");
+                            }
+                            if (mode.has("ignore")) {
+                                if (checkType(mode.ignore, ["array"], "Role " + yourRole + "'s \"ignore\" for \"" + command + "\" mode")) {
+                                    for (e in mode.ignore) {
+                                        this.checkValidRole(mode.ignore[e], "Role " + yourRole + "'s \"" + command + ": ignore\"");
+                                    }
+                                }
+                            }
+                            if (mode.has("killif")) {
+                                if (checkType(mode.killif, ["array"], "Role " + yourRole + "'s \"mode: killif\" for \"" + command + "\"")) {
+                                    for (e in mode.killif) {
+                                        this.checkValidRole(mode.killif[e], "Role " + yourRole + "'s \"" + command + ": killif\"");
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    if (action.has("msg")) {
+                        checkType(action.msg, ["string"], "Role " + yourRole + "'s msg for " + command + "'s mode");
+                    }
+                    if (action.has("hookermsg")) {
+                        checkType(action.hookermsg, ["string"], "Role " + yourRole + "'s hookermsg for " + command + "'s mode");
+                    }
+                    if (action.has("targetmsg")) {
+                        checkType(action.targetmsg, ["string"], "Role " + yourRole + "'s targetmsg for " + command + "'s mode");
+                    }
+                    if (action.has("poisonDeadMessage")) {
+                        checkType(action.poisonDeadMessage, ["string"], "Role " + yourRole + "'s poisonDeadMessage for " + command + "'s mode");
+                    }
+                    if (action.has("count")) {
+                        checkType(action.count, ["number"], "Role " + yourRole + "'s count for " + command + "'s mode");
+                    }
+                    if (action.has("silent")) {
+                        checkValidValue(action.silent, [true, false], "Role " + yourRole + " has an \"" + command + "\" mode with an invalid \"silent\" value: ~Value~ (~Valid~).");
+                    }
+                }
+            }
+            if (role.actions.has("daykill") && checkType(role.actions.daykill, ["object", "string"], "Role " + yourRole + "'s daykill attribute")) {
+                action = role.actions.daykill;
+                checkType(action, ["string", "object"], "Role " + yourRole + "'s \"daykill\" mode");
+                if (typeof action == "string") {
+                    checkValidValue(action, ["evade", "revenge", "bomb", "revealkiller"], "Role " + yourRole + " has a \"daykill\" action with invalid value: ~Value~ (~Valid~).");
+                } else if (typeof action == "object") {
+                    checkAttributes(action, ["mode"], [], "Role " + yourRole + "'s \"daykill\" action");
+                    if (action.has("mode") && checkType(action.mode, ["object"], "Role " + yourRole + "'s \"daykill\" mode")) {
+                        if (action.mode.has("evadeChance")) {
+                            checkType(action.mode.evadeChance, ["number"], "Role " + yourRole + "'s \"evadeChance\" for \"daykill\"");
+                        }
+                    }
+                }
+            }
+            if (role.actions.has("daykillrevengemsg") && checkType(role.actions.daykillrevengemsg, ["string"], "Role " + yourRole + "'s daykillrevengemsg attribute")) {
+                if (!role.actions.has("daykill")) {
+                    addMinorError("Role " + yourRole + " has a \"daykillrevengemsg\" attribute, but no \"daykill\" attribute.");
+                } else {
+                    checkType(role.actions.daykillrevengemsg, ["string"], "Role " + yourRole + "'s daykillrevengemsg attribute");
+                }
+            }
+            if (role.actions.has("avoidHax") && checkType(role.actions.avoidHax, ["array"], "Role " + yourRole + "'s avoidHax")) {
+                action = role.actions.avoidHax;
+                checkType(action, ["array"], "Role " + yourRole + "'s avoidHax action");
+                if (Array.isArray(action)) {
+                    for (e in action) {
+                        checkType(action[e], ["string"], "Role " + yourRole + "'s \"avoidHax on " + action[e] + "\"");
+                    }
+                }
+            }
+            if (role.actions.has("avoidStandbyHax") && checkType(role.actions.avoidStandbyHax, ["array"], "Role " + yourRole + "'s avoidStandbyHax")) {
+                action = role.actions.avoidStandbyHax;
+                checkType(action, ["array"], "Role " + yourRole + "'s avoidStandbyHax action");
+                if (Array.isArray(action)) {
+                    for (e in action) {
+                        checkType(action[e], ["string"], "Role " + yourRole + "'s \"avoidStandbyHax on " + action[e] + "\"");
+                    }
+                }
+            }
+            if (role.actions.has("initialCondition") && checkType(role.actions.initialCondition, ["object"], "Role " + yourRole + "'s initialCondition attribute")) {
+                action = role.actions.initialCondition;
+                checkAttributes(action, [], ["poison", "clearPoison"], "Role " + yourRole + "'s \"initialCondition\" action");
+                if (action.has("poison")) {
+                    checkAttributes(action.poison, [], ["count", "poisonDeadMessage"], "Role " + yourRole + "'s \"initialCondition: poison\" action");
+                    if (action.poison.has("count")) {
+                        checkType(action.poison.count, ["number"], "Role " + yourRole + "'s \"initialCondition: poison\" action");
+                    }
+                    if (action.poison.has("poisonDeadMessage")) {
+                        checkType(action.poison.poisonDeadMessage, ["string"], "Role " + yourRole + "'s \"initialCondition: poison\" action");
+                    }
+                }
+                if (action.has("clearPoison")) {
+                    checkValidValue(action.clearPoison, [true, false], "Role " + yourRole + "'s \"initialCondition\" action has a invalid value for \"clearPoison\": ~Value~ (~Valid~)");
+                }
+            }
+            if (role.actions.has("startup") && checkType(role.actions.startup, ["string", "object"], "Role " + yourRole + "'s startup attribute")) {
+                action = role.actions.startup;
+                if (typeof action == "string") {
+                    checkValidValue(action, ["team-reveal", "role-reveal", "team-reveal-with-roles"], "Role " + yourRole + " has \"startup\" action with invalid value: ~Value~ (~Valid~).");
+                } else if (typeof action == "object") {
+                    checkAttributes(action, [], ["revealRole", "team-revealif", "revealAs"], "Role " + yourRole + "'s startup attribute");
+                    if (action.has("revealAs")) {
+                        if (checkType(action.revealAs, ["string"], "Role " + yourRole + "'s \"revealAs\" attribute for \"startup\"")) {
+                            this.checkValidRole(action.revealAs, "Role " + yourRole + "'s \"startup: revealAs\"");
+                        }
+                    }
+                    if (action.has("revealRole")) {
+                        checkType(action.revealRole, ["string", "array"], "Role " + yourRole + "'s \"revealRole\" attribute for \"startup\"");
+                        if (typeof action.revealRole == "string") {
+                            this.checkValidRole(action.revealRole, "role " + yourRole + "'s \"startup: revealRole\"");
+                        } else if (!Array.isArray(action.revealRole)) {
+                            for (e in action.revealRole) {
+                                this.checkValidRole(action.revealRole[e], "Role " + yourRole + "'s \"startup: revealRole\"");
+                            }
+                        }
+                    }
+                    if (action.has("team-revealif")) {
+                        checkType(action["team-revealif"], ["array"], "Role " + yourRole + "'s \"team-revealif\" attribute for \"startup\"");
+                        if (Array.isArray(action["team-revealif"])) {
+                            for (e in action["team-revealif"]) {
+                                this.checkValidSide(action["team-revealif"][e], "Role " + yourRole + " \"startup: team-revealif\" action");
+                            }
+                        }
+                    }
+                }
+            }
+            if (role.actions.has("onlist") && checkType(role.actions.onlist, ["string"], "Role " + yourRole + "'s onlist attribute")) {
+                this.checkValidRole(role.actions.onlist, yourRole + "'s \"onlist\" action");
+            }
+            if (role.actions.has("lynch") && checkType(role.actions.lynch, ["object"], "Role " + yourRole + "'s lynch attribute")) {
+                checkAttributes(role.actions.lynch, [], ["revealAs", "convertTo", "convertmsg"], "Role " + yourRole + "s \"lynch\" action");
+                if (role.actions.lynch.has("revealAs")) {
+                    this.checkValidRole(role.actions.lynch.revealAs, "Role " + yourRole + " \"lynch: revealAs\" action");
+                }
+                if (role.actions.lynch.has("convertTo")) {
+                    this.checkValidRole(role.actions.lynch.convertTo, "Role " + yourRole + " \"lynch: convertTo\" action");
+                    if (role.actions.lynch.has("convertmsg")) {
+                        checkType(role.actions.lynch.convertmsg, ["string"], "Role " + yourRole + "'s \"convertmsg\" attribute for \"lynch\"");
+                    }
+                }
+            }
+        }
+    };
 
-        themeProto.checkActions = function () {
-            var r, e, i, role, action, night = [],
-                day = [],
-                roles = this.roles;
+    themeProto.checkActions = function () {
+        var r, e, i, role, action, night = [],
+            day = [],
+            roles = this.roles;
+
+        for (r in roles) {
+            role = roles[r].actions;
+            if (role.has("night")) {
+                for (e in role.night) {
+                    if (!night.has(e)) {
+                        night.push(e);
+                    }
+                }
+            }
+            if (role.has("standby")) {
+                for (e in role.standby) {
+                    if (!day.has(e)) {
+                        day.push(e);
+                    }
+                }
+            }
+        }
+
+        for (r in roles) {
+            role = roles[r].actions;
+            if (role.has("hax")) {
+                for (e in role.hax) {
+                    if (!night.has(e)) {
+                        addMinorError("Your role \"" + r + "\" gets hax on an inexistent " + e + " action.");
+                    }
+                }
+            }
+            if (role.has("avoidHax")) {
+                for (e in role.avoidHax) {
+                    if (!night.has(role.avoidHax[e])) {
+                        addMinorError("Your role \"" + r + "\" avoids hax from an inexistent " + role.avoidHax[e] + " action.");
+                    }
+                }
+            }
+            if (role.has("standbyHax")) {
+                for (e in role.standbyHax) {
+                    if (!day.has(e)) {
+                        addMinorError("Your role \"" + r + "\" gets standby hax on an inexistent " + e + " action.");
+                    }
+                }
+            }
+            if (role.has("avoidStandbyHax")) {
+                for (e in role.avoidStandbyHax) {
+                    if (!day.has(role.avoidStandbyHax[e])) {
+                        addMinorError("Your role \"" + r + "\" avoids standby hax from an inexistent " + role.avoidStandbyHax[e] + " action.");
+                    }
+                }
+            }
+        }
+    }
+
+    themeProto.isValidSide = function (side) {
+        return this.sides.has(side);
+    }
+
+    themeProto.isValidRole = function (role) {
+        return this.roles.has(role);
+    }
+
+    themeProto.checkValidSide = function (side, what) {
+        if (!this.isValidSide(side)) {
+            addFatalError("An invalid side \"" + side + "\" was found in " + what + ". ");
+        }
+    }
+
+    themeProto.checkValidRole = function (role, what) {
+        if (!this.isValidRole(role)) {
+            addFatalError("An invalid role \"" + role + "\" was found in " + what + ". ");
+        }
+    }
+
+    checkValidValue = function (attr, valid, msg) {
+        if (!valid.has(attr)) {
+            addMinorError(msg.format(attr, "Valid values are " + valid.join(", ")));
+        }
+    }
+
+    checkType = function (atr, types, what) {
+        if (types.has(typeof atr)) {
+            return true;
+        }
+        if (types.has("array") && Array.isArray(atr)) {
+            return true;
+        }
+
+        addFatalError(what + " must be a(n) " + readable(types, "or") + ".");
+        return false;
+    }
+
+    checkAttributes = function (obj, mandatory, optional, what, mainObject) {
+        var x, curr;
+        if (typeof obj == "object") {
+            for (x in mandatory) {
+                curr = mandatory[x];
+                if (!obj.has(curr)) {
+                    addFatalError(what + ' is missing the attribute "' + curr + '".');
+                }
+            }
+            for (e in obj) {
+                if (!mandatory.has(e) && !optional.has(e)) {
+                    if (!(e.contains("roles") && mainObject)) { // Roles
+                        addMinorError(what + ' has an extra attribute "' + e + '".');
+                    }
+                }
+            }
+        } else {
+            addFatalError(what + ' is not an object.');
+        }
+    }
+
+    commonNightActions = function (yourRole, action, command, roles) {
+        if (action.has("target")) {
+            checkValidValue(action.target, ["Any", "Self", "AnyButTeam", "AnyButRole", "AnyButSelf", "OnlySelf"], "Role " + yourRole + "'s night action \"" + command + "\" has a invalid value for \"target\": %1 (%2)");
+        }
+        if (action.has("common")) {
+            checkValidValue(action.common, ["Self", "Team", "Role"], "Role " + yourRole + "'s night action \"" + command + "\" has a invalid value for \"common\": %1 (%2)");
+        }
+        if (action.has("priority")) {
+            checkType(action.priority, ["number"], "Role " + yourRole + "'s attribute \"priority\" for night action \"" + command + "\"");
+        }
+        if (action.has("broadcast")) {
+            if (typeof action.broadcast === "string") {
+                checkValidValue(action.broadcast.toLowerCase(), ["none", "team", "role"], "Role " + yourRole + "'s night action \"" + command + "\" has a invalid value for \"broadcast\": %1 (%2)");
+            } else if (Array.isArray(action.broadcast)) {
+                var x, curr, b = action.broadcast,
+                    roleList = [];
+                for (x in roles) {
+                    roleList.push(roles[x].role);
+                }
+
+                for (x in b) {
+                    curr = b[x];
+                    if (!roles.has(curr)) {
+                        addMinorError("Your role " + yourRole + "'s attribute \"broadcast\" has an inexistant role \"" + curr + "\"");
+                    }
+                }
+
+            } else {
+                checkType(action.broadcast, ["number"], /* w/e */ "Role " + yourRole + "'s attribute \"broadcast\" for night action \"" + command + "\"");
+            }
+        }
+        if (action.has("limit")) {
+            checkType(action.limit, ["number"], "Role " + yourRole + "'s attribute \"limit\" for night action \"" + command + "\"");
+        }
+        if (action.has("failChance")) {
+            checkType(action.failChance, ["number"], "Role " + yourRole + "'s attribute \"failChance\" for night action \"" + command + "\"");
+        }
+        if (action.has("recharge")) {
+            checkType(action.recharge, ["number"], "Role " + yourRole + "'s attribute \"recharge\" for night action \"" + command + "\"");
+        }
+        if (action.has("initialrecharge")) {
+            checkType(action.initialrecharge, ["number"], "Role " + yourRole + "'s attribute \"initialrecharge\" for night action \"" + command + "\"");
+        }
+        if (action.has("broadcastmsg")) {
+            checkType(action.broadcastmsg, ["string"], "Role " + yourRole + "'s attribute \"broadcastmsg\" for night action \"" + command + "\"");
+        }
+        if (action.has("suicideChance")) {
+            checkType(action.suicideChance, ["number"], "Role " + yourRole + "'s attribute \"suicideChance\" for night action \"" + command + "\"");
+        }
+        if (action.has("restrict")) {
+            var r, role, action, curr, night = [],
+                roles = this.roles,
+                res = action.restrict;
 
             for (r in roles) {
                 role = roles[r].actions;
@@ -860,347 +947,184 @@
                         }
                     }
                 }
-                if (role.has("standby")) {
-                    for (e in role.standby) {
-                        if (!day.has(e)) {
-                            day.push(e);
-                        }
+            }
+
+            if (Array.isArray(res)) {
+                for (x in res) {
+                    curr = res[x];
+                    if (!night.has(curr)) {
+                        addMinorError("Your role " + yourRole + "'s attribute \"restrict\" has an inexistant role \"" + curr + "\"");
                     }
                 }
             }
 
-            for (r in roles) {
-                role = roles[r].actions;
-                if (role.has("hax")) {
-                    for (e in role.hax) {
-                        if (!night.has(e)) {
-                            addMinorError("Your role \"" + r + "\" gets hax on an inexistent " + e + " action.");
-                        }
+            checkType(res, ["array"], "Role " + yourRole + "'s attribute \"restrict\" for night action \"" + command + "\"");
+        }
+    }
+
+    loadTheme = function (content) {
+        var json, x, y, roleList, cantLose, errorsFound = false,
+            theme;
+        try {
+            json = JSON.parse(content);
+        } catch (err) {
+            fatal("Could not parse JSON.");
+            out("You might want to hone your syntax with <a href='http://jsonlint.com'>JSONLint</a>");
+            return;
+        }
+        theme = new Theme();
+
+        try {
+            checkAttributes(json, ["name", "sides", "roles", /*"roles1"*/ ], ["ticks", "minplayers", "votesniping", "nolynch", "villageCantLoseRoles", "author", "summary", "border", "killmsg", "killusermsg", "lynchmsg", "drawmsg"], "Your theme", true);
+
+
+            checkType(json.name, ["string"], "Your theme's \"name\" attribute");
+            checkType(json.sides, ["array"], "Your theme's \"sides\" attribute");
+            checkType(json.roles, ["array"], "Your theme's \"roles\" attribute");
+
+            if (json.has("author")) {
+                checkType(json.author, ["string", "array"], "Your theme's \"author\" attribute");
+                if (Array.isArray(json.author)) {
+                    for (i in json.author) {
+                        checkType(json.author[i], ["string"], "Every theme author between []");
                     }
                 }
-                if (role.has("avoidHax")) {
-                    for (e in role.avoidHax) {
-                        if (!night.has(role.avoidHax[e])) {
-                            addMinorError("Your role \"" + r + "\" avoids hax from an inexistent " + role.avoidHax[e] + " action.");
-                        }
+            }
+            if (json.has("summary")) {
+                checkType(json.summary, ["string"], "Your theme's \"summary\" attribute");
+            }
+            if (json.has("border")) {
+                checkType(json.border, ["string"], "Your theme's \"border\" attribute");
+            }
+            if (json.has("killmsg")) {
+                checkType(json.killmsg, ["string"], "Your theme's \"killmsg\" attribute");
+            }
+            if (json.has("killusermsg")) {
+                checkType(json.killusermsg, ["string"], "Your theme's \"killusermsg\" attribute");
+            }
+            if (json.has("lynchmsg")) {
+                checkType(json.lynchmsg, ["string"], "Your theme's \"lynchmsg\" attribute");
+            }
+            if (json.has("drawmsg")) {
+                checkType(json.drawmsg, ["string"], "Your theme's \"drawmsg\" attribute");
+            }
+            if (json.has("minplayers")) {
+                checkType(json.minplayers, ["number"], "Your theme's \"minplayers\" attribute");
+            }
+            if (json.has("nolynch")) {
+                checkValidValue(json.nolynch, [true, false], "Your theme has a invalid value for \"nolynch\": ~Value~ (~Valid~)");
+            }
+            if (json.has("votesniping")) {
+                checkValidValue(json.votesniping, [true, false], "Your theme has a invalid value for \"votesniping\": ~Value~ (~Valid~)");
+            }
+            if (json.has("ticks")) {
+                var ticks = json.ticks;
+                checkAttributes(ticks, [], ["night", "standby"], "Your theme's tick attribute");
+                if (checkType(ticks, ["object"], "Your theme's \"ticks\" attribute")) {
+                    if (ticks.has("night")) {
+                        checkType(ticks.night, ["number"], "Your theme's \"ticks: night\" attribute");
+                    }
+                    if (ticks.has("standby")) {
+                        checkType(ticks.standby, ["number"], "Your theme's \"ticks: standby\" attribute");
                     }
                 }
-                if (role.has("standbyHax")) {
-                    for (e in role.standbyHax) {
-                        if (!day.has(e)) {
-                            addMinorError("Your role \"" + r + "\" gets standby hax on an inexistent " + e + " action.");
-                        }
+            }
+
+            // Init from the theme
+            for (x in json.sides) {
+                theme.addSide(json.sides[x]);
+            }
+            for (x in json.roles) {
+                theme.addRole(json.roles[x]);
+            }
+
+            x = 1;
+            while (json.has("roles" + x)) {
+                roleList = json["roles" + x];
+                for (y in roleList) {
+                    if (!theme.isValidRole(roleList[y])) {
+                        addFatalError("Your \"roles" + i + "\" list has an invalid role \"" + roleList[y] + "\".");
                     }
                 }
-                if (role.has("avoidStandbyHax")) {
-                    for (e in role.avoidStandbyHax) {
-                        if (!day.has(role.avoidStandbyHax[e])) {
-                            addMinorError("Your role \"" + r + "\" avoids standby hax from an inexistent " + role.avoidStandbyHax[e] + " action.");
-                        }
-                    }
-                }
-            }
-        }
-
-        themeProto.isValidSide = function (side) {
-            return this.sides.has(side);
-        }
-
-        themeProto.isValidRole = function (role) {
-            return this.roles.has(role);
-        }
-
-        themeProto.checkValidSide = function (side, what) {
-            if (!this.isValidSide(side)) {
-                addFatalError("An invalid side \"" + side + "\" was found in " + what + ". ");
-            }
-        }
-
-        themeProto.checkValidRole = function (role, what) {
-            if (!this.isValidRole(role)) {
-                addFatalError("An invalid role \"" + role + "\" was found in " + what + ". ");
-            }
-        }
-
-        checkValidValue = function (attr, valid, msg) {
-            if (!valid.has(attr)) {
-                addMinorError(msg.format(attr, "Valid values are " + valid.join(", ")));
-            }
-        }
-
-        checkType = function (atr, types, what) {
-            if (types.has(typeof atr)) {
-                return true;
-            }
-            if (types.has("array") && Array.isArray(atr)) {
-                return true;
+                x++;
             }
 
-            addFatalError(what + " must be a(n) " + readable(types, "or") + ".");
-            return false;
-        }
+            if (!json.roles1) {
+                addFatalError("This theme has no roles1, it can not be played.");
+            }
 
-        checkAttributes = function (obj, mandatory, optional, what, mainObject) {
-            var x, curr;
-            if (typeof obj == "object") {
-                for (x in mandatory) {
-                    curr = mandatory[x];
-                    if (!obj.has(curr)) {
-                        addFatalError(what + ' is missing the attribute "' + curr + '".');
-                    }
-                }
-                for (e in obj) {
-                    if (!mandatory.has(e) && !optional.has(e)) {
-                        if (!(e.contains("roles") && mainObject)) { // Roles
-                            addMinorError(what + ' has an extra attribute "' + e + '".');
-                        }
+            if (json.has("villageCantLoseRoles")) {
+                cantLose = json.villageCantLoseRoles;
+                for (x in cantLose) {
+                    if (!theme.isValidRole(cantLose[x])) {
+                        addFatalError("Your \"villageCantLoseRoles\" list contains an invalid role \"" + cantLose[x] + "\".");
                     }
                 }
             } else {
-                addFatalError(what + ' is not an object.');
+                if (theme.sides.has("village")) {
+                    addFatalError("Your theme needs (an empty) \"villageCantLoseRoles\", because you have a side 'village'.");
+                }
             }
+
+            theme.addActions();
+            theme.checkActions();
+        } catch (err) {
+            fatal("Couldn't check the entire code. The following error has occured: " + err);
         }
 
-        commonNightActions = function (yourRole, action, command, roles) {
-            if (action.has("target")) {
-                checkValidValue(action.target, ["Any", "Self", "AnyButTeam", "AnyButRole", "AnyButSelf", "OnlySelf"], "Role " + yourRole + "'s night action \"" + command + "\" has a invalid value for \"target\": %1 (%2)");
-            }
-            if (action.has("common")) {
-                checkValidValue(action.common, ["Self", "Team", "Role"], "Role " + yourRole + "'s night action \"" + command + "\" has a invalid value for \"common\": %1 (%2)");
-            }
-            if (action.has("priority")) {
-                checkType(action.priority, ["number"], "Role " + yourRole + "'s attribute \"priority\" for night action \"" + command + "\"");
-            }
-            if (action.has("broadcast")) {
-                if (typeof action.broadcast === "string") {
-                    checkValidValue(action.broadcast.toLowerCase(), ["none", "team", "role"], "Role " + yourRole + "'s night action \"" + command + "\" has a invalid value for \"broadcast\": %1 (%2)");
-                } else if (Array.isArray(action.broadcast)) {
-                    var x, curr, b = action.broadcast,
-                        roleList = [];
-                    for (x in roles) {
-                        roleList.push(roles[x].role);
-                    }
+        out("");
+        if (!fatalErrors.isEmpty()) {
+            errorsFound = true;
+            out("Fatal errors found in your theme:");
 
-                    for (x in b) {
-                        curr = b[x];
-                        if (!roles.has(curr)) {
-                            addMinorError("Your role " + yourRole + "'s attribute \"broadcast\" has an inexistant role \"" + curr + "\"");
-                        }
-                    }
-
-                } else {
-                    checkType(action.broadcast, ["number"], /* w/e */ "Role " + yourRole + "'s attribute \"broadcast\" for night action \"" + command + "\"");
-                }
-            }
-            if (action.has("limit")) {
-                checkType(action.limit, ["number"], "Role " + yourRole + "'s attribute \"limit\" for night action \"" + command + "\"");
-            }
-            if (action.has("failChance")) {
-                checkType(action.failChance, ["number"], "Role " + yourRole + "'s attribute \"failChance\" for night action \"" + command + "\"");
-            }
-            if (action.has("recharge")) {
-                checkType(action.recharge, ["number"], "Role " + yourRole + "'s attribute \"recharge\" for night action \"" + command + "\"");
-            }
-            if (action.has("initialrecharge")) {
-                checkType(action.initialrecharge, ["number"], "Role " + yourRole + "'s attribute \"initialrecharge\" for night action \"" + command + "\"");
-            }
-            if (action.has("broadcastmsg")) {
-                checkType(action.broadcastmsg, ["string"], "Role " + yourRole + "'s attribute \"broadcastmsg\" for night action \"" + command + "\"");
-            }
-            if (action.has("suicideChance")) {
-                checkType(action.suicideChance, ["number"], "Role " + yourRole + "'s attribute \"suicideChance\" for night action \"" + command + "\"");
-            }
-            if (action.has("restrict")) {
-                var r, role, action, curr, night = [],
-                    roles = this.roles,
-                    res = action.restrict;
-
-                for (r in roles) {
-                    role = roles[r].actions;
-                    if (role.has("night")) {
-                        for (e in role.night) {
-                            if (!night.has(e)) {
-                                night.push(e);
-                            }
-                        }
-                    }
-                }
-
-                if (Array.isArray(res)) {
-                    for (x in res) {
-                        curr = res[x];
-                        if (!night.has(curr)) {
-                            addMinorError("Your role " + yourRole + "'s attribute \"restrict\" has an inexistant role \"" + curr + "\"");
-                        }
-                    }
-                }
-
-                checkType(res, ["array"], "Role " + yourRole + "'s attribute \"restrict\" for night action \"" + command + "\"");
-            }
+            printErrors(fatalErrors);
+        }
+        else {
+            out("No fatal errors found in your theme. Good job!");
         }
 
-        loadTheme = function (content) {
-            var json, x, y, roleList, cantLose, errorsFound = false,
-                theme;
-            try {
-                json = JSON.parse(content);
-            } catch (err) {
-                fatal("Could not parse JSON.");
-                out("You might want to hone your syntax with <a href='http://jsonlint.com'>JSONLint</a>");
+        out("");
+        if (!minorErrors.isEmpty()) {
+            errorsFound = true;
+            out("Minor errors found in your theme:");
+
+            printErrors(minorErrors);
+        } else {
+            out("No minor errors found in your theme. Good job!");
+        }
+
+        if (!errorsFound) {
+            out("");
+            out("No errors found! Your theme should work.");
+        }
+
+        resetErrors();
+
+        out("");
+    }
+
+    checkTheme = function (url) {
+        out("Downloading your theme.");
+
+        sys.webCall(url, function (resp) {
+            if (resp === "") {
+                fatal("The page didn't exist or there was an error with retrieving the content of the page.");
                 return;
             }
-            theme = new Theme();
 
             try {
-                checkAttributes(json, ["name", "sides", "roles", /*"roles1"*/ ], ["ticks", "minplayers", "votesniping", "nolynch", "villageCantLoseRoles", "author", "summary", "border", "killmsg", "killusermsg", "lynchmsg", "drawmsg"], "Your theme", true);
-
-
-                checkType(json.name, ["string"], "Your theme's \"name\" attribute");
-                checkType(json.sides, ["array"], "Your theme's \"sides\" attribute");
-                checkType(json.roles, ["array"], "Your theme's \"roles\" attribute");
-
-                if (json.has("author")) {
-                    checkType(json.author, ["string", "array"], "Your theme's \"author\" attribute");
-                    if (Array.isArray(json.author)) {
-                        for (i in json.author) {
-                            checkType(json.author[i], ["string"], "Every theme author between []");
-                        }
-                    }
-                }
-                if (json.has("summary")) {
-                    checkType(json.summary, ["string"], "Your theme's \"summary\" attribute");
-                }
-                if (json.has("border")) {
-                    checkType(json.border, ["string"], "Your theme's \"border\" attribute");
-                }
-                if (json.has("killmsg")) {
-                    checkType(json.killmsg, ["string"], "Your theme's \"killmsg\" attribute");
-                }
-                if (json.has("killusermsg")) {
-                    checkType(json.killusermsg, ["string"], "Your theme's \"killusermsg\" attribute");
-                }
-                if (json.has("lynchmsg")) {
-                    checkType(json.lynchmsg, ["string"], "Your theme's \"lynchmsg\" attribute");
-                }
-                if (json.has("drawmsg")) {
-                    checkType(json.drawmsg, ["string"], "Your theme's \"drawmsg\" attribute");
-                }
-                if (json.has("minplayers")) {
-                    checkType(json.minplayers, ["number"], "Your theme's \"minplayers\" attribute");
-                }
-                if (json.has("nolynch")) {
-                    checkValidValue(json.nolynch, [true, false], "Your theme has a invalid value for \"nolynch\": ~Value~ (~Valid~)");
-                }
-                if (json.has("votesniping")) {
-                    checkValidValue(json.votesniping, [true, false], "Your theme has a invalid value for \"votesniping\": ~Value~ (~Valid~)");
-                }
-                if (json.has("ticks")) {
-                    var ticks = json.ticks;
-                    checkAttributes(ticks, [], ["night", "standby"], "Your theme's tick attribute");
-                    if (checkType(ticks, ["object"], "Your theme's \"ticks\" attribute")) {
-                        if (ticks.has("night")) {
-                            checkType(ticks.night, ["number"], "Your theme's \"ticks: night\" attribute");
-                        }
-                        if (ticks.has("standby")) {
-                            checkType(ticks.standby, ["number"], "Your theme's \"ticks: standby\" attribute");
-                        }
-                    }
-                }
-
-                // Init from the theme
-                for (x in json.sides) {
-                    theme.addSide(json.sides[x]);
-                }
-                for (x in json.roles) {
-                    theme.addRole(json.roles[x]);
-                }
-
-                x = 1;
-                while (json.has("roles" + x)) {
-                    roleList = json["roles" + x];
-                    for (y in roleList) {
-                        if (!theme.isValidRole(roleList[y])) {
-                            addFatalError("Your \"roles" + i + "\" list has an invalid role \"" + roleList[y] + "\".");
-                        }
-                    }
-                    x++;
-                }
-
-                if (!json.roles1) {
-                    addFatalError("This theme has no roles1, it can not be played.");
-                }
-
-                if (json.has("villageCantLoseRoles")) {
-                    cantLose = json.villageCantLoseRoles;
-                    for (x in cantLose) {
-                        if (!theme.isValidRole(cantLose[x])) {
-                            addFatalError("Your \"villageCantLoseRoles\" list contains an invalid role \"" + cantLose[x] + "\".");
-                        }
-                    }
-                } else {
-                    if (theme.sides.has("village")) {
-                        addFatalError("Your theme needs (an empty) \"villageCantLoseRoles\", because you have a side 'village'.");
-                    }
-                }
-
-                theme.addActions();
-                theme.checkActions();
-            } catch (err) {
-                fatal("Couldn't check the entire code. The following error has occured: " + err);
+                loadTheme(resp);
+            } catch (e) {
+                fatal("Couldn't check your theme: " + e);
             }
 
-            out("");
-            if (!fatalErrors.isEmpty()) {
-                errorsFound = true;
-                out("Fatal errors found in your theme:");
+        });
+    }
 
-                printErrors(fatalErrors);
-            }
-            else {
-                out("No fatal errors found in your theme. Good job!");
-            }
+})();
 
-            out("");
-            if (!minorErrors.isEmpty()) {
-                errorsFound = true;
-                out("Minor errors found in your theme:");
-
-                printErrors(minorErrors);
-            } else {
-                out("No minor errors found in your theme. Good job!");
-            }
-
-            if (!errorsFound) {
-                out("");
-                out("No errors found! Your theme should work.");
-            }
-
-            resetErrors();
-
-            out("");
-        }
-
-        checkTheme = function (url) {
-            out("Downloading your theme.");
-
-            sys.webCall(url, function (resp) {
-                if (resp === "") {
-                    fatal("The page didn't exist or there was an error with retrieving the content of the page.");
-                    return;
-                }
-
-                try {
-                    loadTheme(resp);
-                } catch (e) {
-                    fatal("Couldn't check your theme: " + e);
-                }
-
-            });
-        }
-
-    })();
-
-/* Role List Preview */ (function () {
+/* Role List Preview */
+(function () {
     function MafiaTheme() {}
 
     MafiaTheme.prototype.getBorder = function () {
@@ -1266,241 +1190,241 @@
         }
 
         for (r = 0; r < role_order.length; ++r) {
-                        role = this.roles[role_order[r]];
-                        roles.push("켙ole: " + role.translation);
+            role = this.roles[role_order[r]];
+            roles.push("켙ole: " + role.translation);
 
-                        // check which abilities the role has
-                        var abilities = "",
-                            a, ability;
-                        if ("info" in role) {
-                            abilities += role.info;
-                        } else {
-                            if (role.actions.night) {
-                                for (a in role.actions.night) {
-                                    ability = role.actions.night[a];
-                                    abilities += "Can " + a + " " + ("limit" in ability ? ability.limit + " persons" : "one person") + " during the night. ";
-                                    if ("avoidHax" in role.actions && role.actions.avoidHax.indexOf(a) != -1) {
-                                        abilities += "(Can't be detected by spies.) ";
-                                    }
-                                }
-                            }
-                            if (role.actions.standby) {
-                                for (a in role.actions.standby) {
-                                    ability = role.actions.standby[a];
-                                    abilities += "Can " + a + " " + ("limit" in ability ? ability.limit + " persons" : "one person") + " during the standby. ";
-                                }
-                            }
-                            if ("vote" in role.actions) {
-                                if (typeof role.actions.vote === "number") {
-                                    abilities += "Vote counts as " + role.actions.vote + ". ";
-                                } else if (Array.isArray(role.actions.vote)) {
-                                    abilities += "Vote counts randomly between " + role.actions.vote[0] + " (inclusive) and " + role.actions.vote[1] + " (exclusive). ";
-                                }
-                            }
-                            if ("voteshield" in role.actions) {
-                                if (typeof role.actions.voteshield === "number") {
-                                    abilities += "Receives " + role.actions.voteshield + " extra votes if voted for at all. ";
-                                } else if (Array.isArray(role.actions.voteshield)) {
-                                    abilities += "Receives between " + role.actions.voteshield[0] + " (inclusive) and " + role.actions.voteshield[1] + " (exclusive) extra votes randomly if voted for at all. ";
-                                }
-                            }
-                            if ("kill" in role.actions) {
-                                if (role.actions.kill.mode == "ignore") {
-                                    abilities += "Can't be nightkilled. ";
-                                }
-                                else if (role.actions.kill.mode == "killattackerevenifprotected") {
-                                    abilities += "Revenges nightkills (even when protected). ";
-                                }
-                                else if (role.actions.kill.mode == "killattacker") {
-                                    abilities += "Revenges nightkills. ";
-                                }
-                                else if (role.actions.kill.mode == "poisonattacker" || role.actions.kill.mode == "poisonattackerevenifprotected") {
-                                    abilities += "Poison attacker when killed. ";
-                                }
-                                else if (typeof role.actions.kill.mode == "object") {
-                                    if ("ignore" in role.actions.kill.mode) {
-                                        var ignoreRoles = role.actions.kill.mode.ignore.map(trrole, this);
-                                        abilities += "Can't be nightkilled by " + readable(ignoreRoles, "and") + ". ";
-                                    }
-                                    if ("evadeChance" in role.actions.kill.mode && role.actions.kill.mode.evadeChance > 0) {
-                                        abilities += "Has a " + Math.floor(role.actions.kill.mode.evadeChance * 100) + "% chance of evading nightkills. ";
-                                    }
-                                }
-                            }
-                            if ("daykill" in role.actions) {
-                                if (role.actions.daykill == "evade") {
-                                    abilities += "Can't be daykilled. ";
-                                }
-                                else if (role.actions.daykill == "revenge") {
-                                    abilities += "Counter daykills. ";
-                                }
-                                else if (role.actions.daykill == "bomb") {
-                                    abilities += "Revenges daykills. ";
-                                }
-                                else if (typeof role.actions.daykill == "object" && typeof role.actions.daykill.mode == "object" && role.actions.daykill.mode.evadeChance > 0) {
-                                    abilities += "Has a " + Math.floor(role.actions.daykill.mode.evadeChance * 100) + "% chance of evading daykills. ";
-                                }
-                                else if (role.actions.daykill == "revealkiller") {
-                                    abilities += "Reveals killer when daykilled. ";
-                                }
-                            }
-                            if ("poison" in role.actions) {
-                                if (role.actions.poison.mode == "ignore") {
-                                    abilities += "Can't be poisoned. ";
-                                }
-                                else if (typeof role.actions.poison.mode == "object" && role.actions.poison.mode.evadeChance > 0) {
-                                    abilities += "Has a " + Math.floor(role.actions.poison.mode.evadeChance * 100) + "% chance of evading poison. ";
-                                }
-                            }
-                            if ("hax" in role.actions && Object.keys) {
-                                var haxy = Object.keys(role.actions.hax);
-                                abilities += "Gets hax on " + readable(haxy, "and") + ". ";
-                            }
-                            if ("inspect" in role.actions) {
-                                if ("revealAs" in role.actions.inspect) {
-                                    if (Array.isArray(role.actions.inspect.revealAs)) {
-                                        var revealAs = role.actions.inspect.revealAs.map(trrole, this);
-                                        abilities += "Reveals as " + readable(revealAs, "or") + " when inspected. ";
-                                    } else if (role.actions.inspect.revealAs == "*") {
-                                        abilities += "Reveals as a random role when inspected. ";
-                                    } else {
-                                        abilities += "Reveals as " + this.roles[role.actions.inspect.revealAs].translation + " when inspected. ";
-                                    }
-                                }
-                            }
-                            if ("distract" in role.actions) {
-                                if (role.actions.distract.mode == "ChangeTarget") abilities += "Kills any distractors. ";
-                                if (role.actions.distract.mode == "ignore") abilities += "Ignores any distractors. ";
-                            }
-                            if ("initialCondition" in role.actions) {
-                                if ("poison" in role.actions.initialCondition) {
-                                    abilities += "Dies at the end of night " + (role.actions.initialCondition.poison.count || 2) + ". ";
-                                }
-                            }
-                            if (typeof role.side == "string") {
-                                abilities += "Sided with " + this.trside(role.side) + ". ";
-                            } else if (typeof role.side == "object") {
-                                var plop = Object.keys(role.side.random);
-                                var tran = [];
-                                for (var p = 0; p < plop.length; ++p) {
-                                    tran.push(this.trside(plop[p]));
-                                }
-                                abilities += "Sided with " + readable(tran, "or") + ". ";
-                            }
-                            if (role.hasOwnProperty("winningSides")) {
-                                if (role.winningSides == "*") {
-                                    abilities += "Wins the game in any case. ";
-                                } else if (Array.isArray(role.winningSides)) {
-                                    // Argh give me Function.bind already ;~;
-                                    abilities += "Wins the game with " + readable(role.winningSides.map(trside, this), "or");
-                                }
-                            }
+            // check which abilities the role has
+            var abilities = "",
+                a, ability;
+            if ("info" in role) {
+                abilities += role.info;
+            } else {
+                if (role.actions.night) {
+                    for (a in role.actions.night) {
+                        ability = role.actions.night[a];
+                        abilities += "Can " + a + " " + ("limit" in ability ? ability.limit + " persons" : "one person") + " during the night. ";
+                        if ("avoidHax" in role.actions && role.actions.avoidHax.indexOf(a) != -1) {
+                            abilities += "(Can't be detected by spies.) ";
                         }
-                        roles.push("켂bility: " + abilities);
-
-                        // check on which player counts the role appears
-                        var parts = [];
-                        var end = 0;
-                        for (var i = 1; i <= this.roleLists; ++i) {
-                            role_i = "roles" + i;
-                            var start = this[role_i].indexOf(role.role);
-                            var last = end;
-                            end = this[role_i].length;
-                            if (start >= 0) {
-                                ++start;
-                                start = start > last ? start : 1 + last;
-                                if (parts.length > 0 && parts[parts.length - 1][1] == start - 1) {
-                                    parts[parts.length - 1][1] = end;
-                                } else {
-                                    parts.push([start, end]);
-                                    if (parts.length > 1) {
-                                        parts[parts.length - 2] = parts[parts.length - 2][0] < parts[parts.length - 2][1] ? parts[parts.length - 2].join("-") : parts[parts.length - 2][1];
-                                    }
-                                }
-                            }
-                        }
-                        if (parts.length > 0) {
-                            parts[parts.length - 1] = parts[parts.length - 1][0] < parts[parts.length - 1][1] ? parts[parts.length - 1].join("-") : parts[parts.length - 1][1];
-                        }
-                        roles.push("켊ame: " + parts.join(", ") + " Players");
-
-                        roles.push(sep);
-                    } catch (err) {
-                        throw err;
                     }
                 }
-                this.roleInfo = roles;
-    };
-
-    /* Theme Loading and Storing */
-    MafiaTheme.prototype.trside = function (side) {
-        return this.sideTranslations[side];
-    };
-    MafiaTheme.prototype.trrole = function (role) {
-        return this.roles[role].translation;
-    };
-
-    MafiaTheme.prototype.printInfo = function () {
-        var info = this.roleInfo,
-            x;
-        for (x in info) {
-            println(info[x]);
-        }
-    }
-
-    loadThemeRoles = function (json) {
-        var theme = new MafiaTheme();
-        try {
-            theme.sideTranslations = {};
-            theme.roles = {};
-            theme.nightPriority = [];
-
-            // Init from the theme
-            var i;
-            for (i in json.sides) {
-                theme.addSide(json.sides[i]);
+                if (role.actions.standby) {
+                    for (a in role.actions.standby) {
+                        ability = role.actions.standby[a];
+                        abilities += "Can " + a + " " + ("limit" in ability ? ability.limit + " persons" : "one person") + " during the standby. ";
+                    }
+                }
+                if ("vote" in role.actions) {
+                    if (typeof role.actions.vote === "number") {
+                        abilities += "Vote counts as " + role.actions.vote + ". ";
+                    } else if (Array.isArray(role.actions.vote)) {
+                        abilities += "Vote counts randomly between " + role.actions.vote[0] + " (inclusive) and " + role.actions.vote[1] + " (exclusive). ";
+                    }
+                }
+                if ("voteshield" in role.actions) {
+                    if (typeof role.actions.voteshield === "number") {
+                        abilities += "Receives " + role.actions.voteshield + " extra votes if voted for at all. ";
+                    } else if (Array.isArray(role.actions.voteshield)) {
+                        abilities += "Receives between " + role.actions.voteshield[0] + " (inclusive) and " + role.actions.voteshield[1] + " (exclusive) extra votes randomly if voted for at all. ";
+                    }
+                }
+                if ("kill" in role.actions) {
+                    if (role.actions.kill.mode == "ignore") {
+                        abilities += "Can't be nightkilled. ";
+                    }
+                    else if (role.actions.kill.mode == "killattackerevenifprotected") {
+                        abilities += "Revenges nightkills (even when protected). ";
+                    }
+                    else if (role.actions.kill.mode == "killattacker") {
+                        abilities += "Revenges nightkills. ";
+                    }
+                    else if (role.actions.kill.mode == "poisonattacker" || role.actions.kill.mode == "poisonattackerevenifprotected") {
+                        abilities += "Poison attacker when killed. ";
+                    }
+                    else if (typeof role.actions.kill.mode == "object") {
+                        if ("ignore" in role.actions.kill.mode) {
+                            var ignoreRoles = role.actions.kill.mode.ignore.map(trrole, this);
+                            abilities += "Can't be nightkilled by " + readable(ignoreRoles, "and") + ". ";
+                        }
+                        if ("evadeChance" in role.actions.kill.mode && role.actions.kill.mode.evadeChance > 0) {
+                            abilities += "Has a " + Math.floor(role.actions.kill.mode.evadeChance * 100) + "% chance of evading nightkills. ";
+                        }
+                    }
+                }
+                if ("daykill" in role.actions) {
+                    if (role.actions.daykill == "evade") {
+                        abilities += "Can't be daykilled. ";
+                    }
+                    else if (role.actions.daykill == "revenge") {
+                        abilities += "Counter daykills. ";
+                    }
+                    else if (role.actions.daykill == "bomb") {
+                        abilities += "Revenges daykills. ";
+                    }
+                    else if (typeof role.actions.daykill == "object" && typeof role.actions.daykill.mode == "object" && role.actions.daykill.mode.evadeChance > 0) {
+                        abilities += "Has a " + Math.floor(role.actions.daykill.mode.evadeChance * 100) + "% chance of evading daykills. ";
+                    }
+                    else if (role.actions.daykill == "revealkiller") {
+                        abilities += "Reveals killer when daykilled. ";
+                    }
+                }
+                if ("poison" in role.actions) {
+                    if (role.actions.poison.mode == "ignore") {
+                        abilities += "Can't be poisoned. ";
+                    }
+                    else if (typeof role.actions.poison.mode == "object" && role.actions.poison.mode.evadeChance > 0) {
+                        abilities += "Has a " + Math.floor(role.actions.poison.mode.evadeChance * 100) + "% chance of evading poison. ";
+                    }
+                }
+                if ("hax" in role.actions && Object.keys) {
+                    var haxy = Object.keys(role.actions.hax);
+                    abilities += "Gets hax on " + readable(haxy, "and") + ". ";
+                }
+                if ("inspect" in role.actions) {
+                    if ("revealAs" in role.actions.inspect) {
+                        if (Array.isArray(role.actions.inspect.revealAs)) {
+                            var revealAs = role.actions.inspect.revealAs.map(trrole, this);
+                            abilities += "Reveals as " + readable(revealAs, "or") + " when inspected. ";
+                        } else if (role.actions.inspect.revealAs == "*") {
+                            abilities += "Reveals as a random role when inspected. ";
+                        } else {
+                            abilities += "Reveals as " + this.roles[role.actions.inspect.revealAs].translation + " when inspected. ";
+                        }
+                    }
+                }
+                if ("distract" in role.actions) {
+                    if (role.actions.distract.mode == "ChangeTarget") abilities += "Kills any distractors. ";
+                    if (role.actions.distract.mode == "ignore") abilities += "Ignores any distractors. ";
+                }
+                if ("initialCondition" in role.actions) {
+                    if ("poison" in role.actions.initialCondition) {
+                        abilities += "Dies at the end of night " + (role.actions.initialCondition.poison.count || 2) + ". ";
+                    }
+                }
+                if (typeof role.side == "string") {
+                    abilities += "Sided with " + this.trside(role.side) + ". ";
+                } else if (typeof role.side == "object") {
+                    var plop = Object.keys(role.side.random);
+                    var tran = [];
+                    for (var p = 0; p < plop.length; ++p) {
+                        tran.push(this.trside(plop[p]));
+                    }
+                    abilities += "Sided with " + readable(tran, "or") + ". ";
+                }
+                if (role.hasOwnProperty("winningSides")) {
+                    if (role.winningSides == "*") {
+                        abilities += "Wins the game in any case. ";
+                    } else if (Array.isArray(role.winningSides)) {
+                        // Argh give me Function.bind already ;~;
+                        abilities += "Wins the game with " + readable(role.winningSides.map(trside, this), "or");
+                    }
+                }
             }
-            for (i in json.roles) {
-                theme.addRole(json.roles[i]);
-            }
+            roles.push("켂bility: " + abilities);
 
-            theme.roles1 = json.roles1;
-            i = 2;
-            while (json.has("roles" + i)) {
-                theme["roles" + i] = json["roles" + i];
-                ++i;
+            // check on which player counts the role appears
+            var parts = [];
+            var end = 0;
+            for (var i = 1; i <= this.roleLists; ++i) {
+                role_i = "roles" + i;
+                var start = this[role_i].indexOf(role.role);
+                var last = end;
+                end = this[role_i].length;
+                if (start >= 0) {
+                    ++start;
+                    start = start > last ? start : 1 + last;
+                    if (parts.length > 0 && parts[parts.length - 1][1] == start - 1) {
+                        parts[parts.length - 1][1] = end;
+                    } else {
+                        parts.push([start, end]);
+                        if (parts.length > 1) {
+                            parts[parts.length - 2] = parts[parts.length - 2][0] < parts[parts.length - 2][1] ? parts[parts.length - 2].join("-") : parts[parts.length - 2][1];
+                        }
+                    }
+                }
             }
-            theme.roleLists = i - 1;
-            if (theme.roleLists === 0) {
-                throw "Couldn't parse theme " + json.name + ": No role lists.";
+            if (parts.length > 0) {
+                parts[parts.length - 1] = parts[parts.length - 1][0] < parts[parts.length - 1][1] ? parts[parts.length - 1].join("-") : parts[parts.length - 1][1];
             }
+            roles.push("켊ame: " + parts.join(", ") + " Players");
 
-            theme.generateRoleInfo();
-            theme.printInfo();
+            roles.push(sep);
         } catch (err) {
-            out("Couldn't parse theme " + json.name + ": " + err + ".");
+            throw err;
         }
     }
-    displayThemeRoles = function (url) {
-        out("Downloading your theme.");
+    this.roleInfo = roles;
+};
 
-        sys.webCall(url, function (resp) {
-            if (resp === "") {
-                fatal("The page didn't exist or there was an error with retrieving the content of the page.");
-                return;
-            }
+/* Theme Loading and Storing */
+MafiaTheme.prototype.trside = function (side) {
+    return this.sideTranslations[side];
+};
+MafiaTheme.prototype.trrole = function (role) {
+    return this.roles[role].translation;
+};
 
-            try {
-                loadThemeRoles(JSON.parse(resp));
-            } catch (e) {
-                fatal("Couldn't load your theme: " + e);
-            }
-
-        });
+MafiaTheme.prototype.printInfo = function () {
+    var info = this.roleInfo,
+        x;
+    for (x in info) {
+        println(info[x]);
     }
+}
+
+loadThemeRoles = function (json) {
+    var theme = new MafiaTheme();
+    try {
+        theme.sideTranslations = {};
+        theme.roles = {};
+        theme.nightPriority = [];
+
+        // Init from the theme
+        var i;
+        for (i in json.sides) {
+            theme.addSide(json.sides[i]);
+        }
+        for (i in json.roles) {
+            theme.addRole(json.roles[i]);
+        }
+
+        theme.roles1 = json.roles1;
+        i = 2;
+        while (json.has("roles" + i)) {
+            theme["roles" + i] = json["roles" + i];
+            ++i;
+        }
+        theme.roleLists = i - 1;
+        if (theme.roleLists === 0) {
+            throw "Couldn't parse theme " + json.name + ": No role lists.";
+        }
+
+        theme.generateRoleInfo();
+        theme.printInfo();
+    } catch (err) {
+        out("Couldn't parse theme " + json.name + ": " + err + ".");
+    }
+}
+displayThemeRoles = function (url) {
+    out("Downloading your theme.");
+
+    sys.webCall(url, function (resp) {
+        if (resp === "") {
+            fatal("The page didn't exist or there was an error with retrieving the content of the page.");
+            return;
+        }
+
+        try {
+            loadThemeRoles(JSON.parse(resp));
+        } catch (e) {
+            fatal("Couldn't load your theme: " + e);
+        }
+
+    });
+}
 })();
 
-/* Theme Summary */ 
+/* Theme Summary */
 
 (function () {
     Object.defineProperty(Array.prototype, "list", {
@@ -2028,7 +1952,7 @@
     }
 })();
 
-/* Core */ 
+/* Core */
 
 ({
     beforeSendMessage: function (message, channel) {
