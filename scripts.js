@@ -1,4 +1,4 @@
-/* Settings Help:
+﻿/* Settings Help:
 - If the next line is BOOLEAN, the given value must be:
 true (yes/on)
 false (no/off)

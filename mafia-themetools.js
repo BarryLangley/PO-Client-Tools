@@ -975,7 +975,7 @@
         theme = new Theme();
 
         try {
-            checkAttributes(json, ["name", "sides", "roles", /*"roles1"*/ ], ["ticks", "minplayers", "votesniping", "nolynch", "villageCantLoseRoles", "author", "summary", "border", "killmsg", "killusermsg", "lynchmsg", "drawmsg"], "Your theme", true);
+            checkAttributes(json, ["name", "sides", "roles" /*"roles1"*/ ], ["ticks", "minplayers", "votesniping", "nolynch", "villageCantLoseRoles", "author", "summary", "border", "killmsg", "killusermsg", "lynchmsg", "drawmsg"], "Your theme", true);
 
 
             checkType(json.name, ["string"], "Your theme's \"name\" attribute");
@@ -1189,9 +1189,10 @@
             return this.trside(s);
         }
 
+        try {
         for (r = 0; r < role_order.length; ++r) {
             role = this.roles[role_order[r]];
-            roles.push("±Role: " + role.translation);
+            roles.push("ï¿½Role: " + role.translation);
 
             // check which abilities the role has
             var abilities = "",
@@ -1320,7 +1321,7 @@
                     }
                 }
             }
-            roles.push("±Ability: " + abilities);
+            roles.push("ï¿½Ability: " + abilities);
 
             // check on which player counts the role appears
             var parts = [];
@@ -1346,9 +1347,10 @@
             if (parts.length > 0) {
                 parts[parts.length - 1] = parts[parts.length - 1][0] < parts[parts.length - 1][1] ? parts[parts.length - 1].join("-") : parts[parts.length - 1][1];
             }
-            roles.push("±Game: " + parts.join(", ") + " Players");
+            roles.push("ï¿½Game: " + parts.join(", ") + " Players");
 
             roles.push(sep);
+        } 
         } catch (err) {
             throw err;
         }
@@ -2011,5 +2013,5 @@ displayThemeRoles = function (url) {
                 return;
             }
         }
-    },
+    }
 })
