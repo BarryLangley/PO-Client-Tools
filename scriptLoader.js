@@ -102,7 +102,7 @@ scriptLoader = {
             scriptLoader.print("Type @load <scriptDirectory>:[scriptName] to load a script. scriptName is optional and is 'scripts.js' by default (so it's recommended that the directory has this file).");
             scriptLoader.print("Type @autoload (with the same arguments as @load) to automatically load that script.");
             scriptLoader.print("Type @scripts to display a list of scripts that can be loaded.");
-            scriptLoader.print("Type @eval <script> to evaluate a script [for scripters].");
+            scriptLoader.print("Type @eval <scr" + "ipt> to evaluate a script [for scripters].");
             scriptLoader.print("Type @help to display this message.");
             
             print("");
