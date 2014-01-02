@@ -1,0 +1,30 @@
+{
+    "bitwise": false,
+    "eqeqeq": true,
+    "es3": false,
+    "forin": false,
+    "immed": true,
+    "indent": 2,
+    "latedef": "nofunc",
+    "noempty": true,
+    "nonew": true,
+    "undef": true,
+    "unused": false,
+    "trailing": true,
+    "boss": true,
+    "eqnull": true,
+    "evil": true,
+    "proto": true,
+    "-W015": true,
+    "globals": {
+        "grunt": false,
+        "sys": false,
+        "script": true,
+        "Qt": false,
+        "print": true,
+        "gc": false,
+        "version": false,
+        "global": true,
+        "client": true
+    }
+}

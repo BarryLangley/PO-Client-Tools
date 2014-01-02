@@ -8,8 +8,4 @@ Desktop.ini
 # Recycle Bin used on file shares
 $RECYCLE.BIN/
 
-# In development
-libclient.js
-
-# Ask me for the script
-js-themecreator.js
+node_modules/

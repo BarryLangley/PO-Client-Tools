@@ -1,6 +1,3 @@
-/*jslint continue: true, es5: true, evil: true, forin: true, plusplus: true, sloppy: true, vars: true, regexp: true, newcap: true*/
-/*global sys, script: true, Qt, print: true, client, gc, version*/
-
 var scriptLoader,
     globalEval = this.eval,
     Global = this,
@@ -14,47 +11,47 @@ var scriptLoader,
         loggedIn = false,
         serverName = "",
         playerInfo;
-    
+
     var arraySlice = [].slice;
 
     Network.playerLogin.connect(function (info, tiers) {
         if (loggedIn) {
             return;
         }
-        
+
         loggedIn = true;
-        
+
         playerInfo = {id: info.id, name: info.name, info: info.info, auth: info.auth, flags: info.flags.data, avatar: info.avatar, color: info.color};
-        
+
         if (!serverName) {
             serverName = Client.windowTitle;
         }
     });
-    
+
     Network.serverNameReceived.connect(function (name) {
         if (serverName) {
             return;
         }
-        
+
         serverName = name;
     });
-    
+
     Network.announcement.connect(function (ann) {
         if (announcement) {
             return;
         }
-        
+
         announcement = ann;
     });
-    
+
     scriptLoader = {
         // Script to autoload.
         autoLoad: -1,
-        
+
         // User-defined script folder.
         // 0 if loadMethod is manual-multi
         scriptFolder: -1,
-        
+
         // Method used to load a script.
         // -1: No script has been loaded (yet).
         // manual: By @load or @autoload for the first time.
@@ -62,24 +59,24 @@ var scriptLoader,
         // manual-multi: By @load or @autoload (for the first time), multiple scripts passed.
         // manual-auto: By @autoload, multiple scripts passed.
         loadMethod: -1,
-        
+
         // Hooks added by attach.
         hooks: {},
-        
+
         // Prints a scriptloader message.
         print: function (msg) {
             print("[ScriptLoader]: " + msg);
         },
-        
+
         // Attaches a function to a script event.
         attach: function (event, func) {
             if (!scriptLoader.hooks[event]) {
                 scriptLoader.hooks[event] = [];
             }
-            
+
             scriptLoader.hooks[event].push(func);
         },
-        
+
         // Calls an event's hooks.
         callHooks: function (evt, evtArgs) {
             var args = arraySlice.call(arguments, 1),
@@ -87,11 +84,11 @@ var scriptLoader,
                 sysStopEvent = sys.stopEvent,
                 len,
                 i;
-            
+
             sys.stopEvent = function () {
                 shouldStopEvent = true;
             };
-            
+
             if (scriptLoader.hooks[evt]) {
                 for (i = 0, len = scriptLoader.hooks[evt].length; i < len; i += 1) {
                     try {
@@ -101,27 +98,27 @@ var scriptLoader,
                     }
                 }
             }
-            
+
             sys.stopEvent = sysStopEvent;
             return shouldStopEvent;
         },
-        
+
         // Creates a compatbility function.
         createCompatibilityFunction: function (name) {
             return function (a, b, c, d, e, f, g) {
                 var args = arraySlice.call(arguments, 1);
-            
+
                 if (scriptLoader.callHooks(name, a, b, c, d, e, f, g)) {
                     sys.stopEvent();
                 }
             };
         },
-        
+
         // If there are scripts in that directory.
         doesScriptExist: function (scrDir) {
             return sys.dirsForDirectory(sys.scriptsFolder + scrDir) !== undefined;
         },
-        
+
         // Loads a script.
         loadScript: function (dir, file) {
             var scriptResult,
@@ -131,7 +128,7 @@ var scriptLoader,
             if (script.clientStartUp && script.clientStartUp.isScriptLoader) {
                 delete script.clientStartUp;
             }
-            
+
             try {
                 scriptResult = globalEval(sys.getFileContent(sys.scriptsFolder + dir + "/" + file));
 
@@ -147,17 +144,17 @@ var scriptLoader,
                 if (script.clientStartUp) {
                     script.clientStartUp();
                 }
-                
+
                 scriptLoader.emitSignals();
-    
+
                 scriptLoader.print("Loaded " + dir + "/" + file + "!");
             } catch (e) {
                 scriptLoader.print("Couldn't load " + dir + "/" + file + ": " + e + " on line " + e.lineNumber);
             }
-            
+
             print = printCopy;
         },
-        
+
         // Loads multiple scripts.
         // scripts is an array: [["dir", "file"], ["dir2", "file2"]]
         loadScripts: function (scripts) {
@@ -170,29 +167,29 @@ var scriptLoader,
             if (len < 1) {
                 return;
             }
-            
+
             for (i = 0; i < len; i += 1) {
                 scr = scripts[i];
-                
+
                 try {
                     scriptResult = globalEval(sys.getFileContent(sys.scriptsFolder + scr[0] + "/" + scr[1]));
-    
+
                     for (j in scriptResult) {
                         scriptLoader.attach(j, scriptResult[j]);
                     }
-        
+
                     scriptLoader.print("Loaded " + scr[0] + "/" + scr[1] + "!");
                 } catch (e) {
                     scriptLoader.print("Couldn't load " + scr[0] + "/" + scr[1] + ": " + e + " on line " + e.lineNumber);
                 }
             }
-            
+
             if (script.clientStartUp) {
                 script.clientStartUp(true);
             }
-            
+
             scriptLoader.emitSignals();
-            
+
             print = printCopy;
         },
         // Fix for scripts that use signals.
@@ -204,7 +201,7 @@ var scriptLoader,
             if (serverName) {
                 Network.serverNameReceived(serverName);
             }
-            
+
             if (announcement) {
                 Network.announcement(announcement);
             }
@@ -212,36 +209,36 @@ var scriptLoader,
         commands: {
             load: function (mcmd) {
                 mcmd = mcmd.join(":").split(",");
-                
+
                 var scriptsToLoad = [],
                     len = mcmd.length,
                     scr,
                     i;
-                
+
                 if (len < 1) {
                     scriptLoader.print("Please specify the script's directory.");
                     return;
                 }
-                
+
                 for (i = 0; i < len; i += 1) {
                     scr = mcmd[i].split(":");
-                    
+
                     if (!scriptLoader.doesScriptExist(scr[0])) {
                         scriptLoader.print("Couldn't find '" + scr[0] + "'. Type @scripts for loadable scripts.");
                         continue;
                     }
-                    
+
                     if (!scr[1]) {
                         scr[1] = "scripts.js";
                     }
-                    
+
                     scriptsToLoad.push([scr[0], scr[1]]);
-                    
+
                     scriptLoader.print("Loading " + scr[0] + "/" + scr[1] + ".");
-    
+
                     if (len === 1) {
                         scriptLoader.loadScript(scr[0], scr[1]);
-    
+
                         scriptLoader.scriptFolder = mcmd[0];
                         scriptLoader.loadMethod = "manual";
                     }
@@ -255,42 +252,42 @@ var scriptLoader,
             },
             autoload: function (mcmd, commandData) {
                 mcmd = mcmd.join(":").split(",");
-                
+
                 var scriptsToLoad = [],
                     len = mcmd.length,
                     scr,
                     i;
-                
+
                 if (commandData === "|") {
                     scriptLoader.print("Autoload disabled.");
                     sys.saveVal("scriptLoader-AutoLoad", "|");
                     return;
                 }
-                
+
                 if (len < 1) {
                     scriptLoader.print("Please specify the script's directory.");
                     return;
                 }
-                
+
                 for (i = 0; i < len; i += 1) {
                     scr = mcmd[i].split(":");
-                    
+
                     if (!scriptLoader.doesScriptExist(scr[0])) {
                         scriptLoader.print("Couldn't find '" + scr[0] + "'. Type @scripts for loadable scripts.");
                         continue;
                     }
-                    
+
                     if (!scr[1]) {
                         scr[1] = "scripts.js";
                     }
-                    
+
                     scriptsToLoad.push([scr[0], scr[1]]);
-                    
+
                     scriptLoader.print("Auto-loading " + scr[0] + "/" + scr[1] + ".");
-    
+
                     if (len === 1) {
                         scriptLoader.loadScript(scr[0], scr[1]);
-    
+
                         scriptLoader.scriptFolder = mcmd[0];
                         scriptLoader.loadMethod = "manual";
                     }
@@ -301,7 +298,7 @@ var scriptLoader,
                     scriptLoader.scriptFolder = 0;
                     scriptLoader.loadMethod = "manual-multi";
                 }
-                
+
                 sys.saveVal("scriptLoader-AutoLoad", scriptsToLoad.map(function (dir) {
                     return dir[0] + ":" + dir[1];
                 }).join(","));
@@ -318,18 +315,18 @@ var scriptLoader,
                     scriptLoader.print("Safe scripts must be off.");
                     return;
                 }
-                
+
                 if (scriptLoader.doesScriptExist(mcmd[0])) {
                     scriptLoader.print("Script " + mcmd[0] + " already exists; updating.");
                 }
-                
+
                 mcmd[1] = [].concat(mcmd).slice(1).join(":");
                 sys.webCall(mcmd[1], function (resp) {
                     if (resp === "") {
                         scriptLoader.print("Couldn't install script from " + mcmd[1] + ".");
                         return;
                     }
-                    
+
                     sys.makeDir(sys.scriptsFolder + mcmd[0]);
                     sys.writeToFile(sys.scriptsFolder + mcmd[0] + "/" + "scripts.js", resp);
                     scriptLoader.print("Script " + mcmd[0] + " installed. Type @load " + mcmd[0] + " to load it.");
@@ -371,14 +368,14 @@ script = ({
     clientStartUp: function (hooksOnly) {
         var scriptsToLoad,
             len;
-        
+
         if (hooksOnly) {
             scriptLoader.callHooks("clientStartUp");
             return;
         }
-        
+
         script.clientStartUp.isScriptLoader = true;
-        
+
         if (sys.getVal("scriptLoader-AutoLoad") === "") {
             sys.saveVal("scriptLoader-AutoLoad", "|");
         }
@@ -390,13 +387,13 @@ script = ({
         } else {
             scriptsToLoad = scriptLoader.autoLoad.split(",");
             len = scriptsToLoad.length;
-            
+
             if (len < 1) {
                 scriptLoader.print("Type @help for help.");
                 return;
             } else if (len === 1) {
                 scriptsToLoad[0] = scriptsToLoad[0].split(":");
-                
+
                 scriptLoader.loadScript(scriptsToLoad[0][0], scriptsToLoad[0][1]);
                 scriptLoader.loadMethod = "auto";
             } else {
@@ -435,7 +432,7 @@ script = ({
                 scriptLoader.print("Command " + command + " not found. Valid commands are: " + Object.keys(scriptLoader.commands).join(', '));
             }
         }
-        
+
         if (scriptLoader.callHooks("beforeSendMessage", message, channel)) {
             sys.stopEvent();
         }

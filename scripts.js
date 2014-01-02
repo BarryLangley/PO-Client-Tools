@@ -1,4 +1,3 @@
-/*jslint continue: true, es5: true, evil: true, forin: true, plusplus: true, sloppy: true, vars: true, regexp: true*/
 /*global sys, SESSION, script, print, gc, version, Config, require, module, exports, client,
   PLAYERS:true, border:true, callcount:true, endcalls:true, periodictimers:true, ignoreflash:true,
   reconnectfailed:true, announcement:true, EvalID:true, ignoreNoHtml:true, AutoIdleTimer:true,
@@ -8,7 +7,7 @@
 /* Settings Help:
 - If the setting is in the OBJECT category, the given value must:
     follow this format: {"key1": "value1", "key2": "value2", "key3": "value3"}
-    
+
 - If the setting is in the ARRAY category, the given value must:
     follow this format: ["player1", "player2", "player3"]
 
@@ -28,7 +27,7 @@ var Settings = {
     // ARRAY:
     AutoIgnore: [],
     CommandStarts: ["-", "~"],
-    
+
     // OBJECT:
     Replacements: {
         // [[Topic]]
@@ -42,7 +41,7 @@ var Settings = {
         // $GitHub$
         "\\$(.*?)\\$": "https://github.com/$1"
     },
-    
+
     // BOOLEAN:
     AutoIdle: true,
     FlashOnPMReceived: true,
@@ -50,10 +49,10 @@ var Settings = {
     ShowScriptCheckOK: false,
     ReturnToMenuOnReconnectFailure: false,
     AutoReconnect: false,
-    
+
     // STRING:
     Bot: "~Client~",
-    
+
     // COLOR:
     BotColor: "green",
 };
@@ -152,7 +151,7 @@ function white(channel) {
 function endCalls() {
     var x,
         timers = periodictimers.length;
-    
+
     for (x in periodictimers) {
         sys.stopTimer(periodictimers[x]);
     }
@@ -244,7 +243,7 @@ function FormatError(mess, e) {
     var name = e.name,
         msg = e.message,
         str = name + lineData + ": " + msg;
-    
+
     lastChar = msg[msg.length - 1];
 
     if (lastChar !== "." && lastChar !== "?" && lastChar !== ":" && lastChar !== "!") {
@@ -288,31 +287,31 @@ var commands = {
                 current,
                 next,
                 part;
-            
+
             desc = desc.split(" ");
-        
+
             if (!!args) {
                 str += " ";
             }
-            
+
             for (x in args) {
                 current = args[x];
                 next = x + 1;
-        
+
                 arglist[current] = 1;
                 str += "<b>" + current + "</b>:";
             }
-        
+
             if (!!args) {
                 str += " ";
             } else {
                 str += ": ";
             }
-        
+
             for (x in desc) {
                 current = desc[x];
                 part = current.substring(0, current.length - 1);
-        
+
                 if (arglist[current.toLowerCase()]) {
                     str += "<b>" + current + "</b> ";
                 } else if (arglist[part.toLowerCase()]) {
@@ -321,11 +320,11 @@ var commands = {
                     str += current + " ";
                 }
             }
-        
+
             if (arguments.length === 4) {
                 str += "<i>Aliases: " + aliases.join(", ") + "</i>";
             }
-        
+
             htmlMessage(str);
         }
 
@@ -685,7 +684,7 @@ connect(net.playerLogin, function () {
                 if (!cli.away()) {
                     cli.goAway(true);
                 }
-                
+
                 sys.setTimer(function () {
                     sys.stopTimer(AutoIdleTimer);
                 }, 10);
@@ -751,7 +750,7 @@ connect(net.announcement, function (ann) {
     onPlayerReceived: function (id) {
         var name = cli.name(id).toLowerCase();
         PLAYERS.push(id);
-        
+
         if (Settings.AutoIgnore.indexOf(name) !== -1) {
             cli.ignore(name, true);
         }
@@ -837,4 +836,4 @@ connect(net.announcement, function (ann) {
 
         ignoreflash = false;
     }
-})
+});
