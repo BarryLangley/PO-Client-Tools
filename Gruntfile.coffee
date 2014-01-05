@@ -10,6 +10,12 @@ module.exports = (grunt) ->
 
     # Add files to build here. Keep them in order.
     files = [
+        'calc/base'
+        'calc/pokedex'
+        'calc/setdex'
+        'calc/data'
+        'calc/damage'
+        'calc/ap_calc'
     ]
 
     files = ("battle/#{file}.js" for file in files)
@@ -18,7 +24,7 @@ module.exports = (grunt) ->
         # grunt-contrib-concat
         concat:
             options:
-                separator: ';'
+                separator: ''
             battle:
                 files:
                     'battlescripts.js': [files]

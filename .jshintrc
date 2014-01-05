@@ -25,6 +25,9 @@
         "gc": false,
         "version": false,
         "global": true,
-        "client": true
+        "client": true,
+        "battle": true,
+
+        "Calc": true
     }
 }

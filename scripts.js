@@ -1,6 +1,6 @@
 /*global sys, SESSION, script, print, gc, version, Config, require, module, exports, client,
   PLAYERS:true, border:true, callcount:true, endcalls:true, periodictimers:true, ignoreflash:true,
-  reconnectfailed:true, announcement:true, EvalID:true, ignoreNoHtml:true, AutoIdleTimer:true,
+  reconnectfailed:true, announcement:true, EvalID:true, ignoreNoHtml:true,
   NoHTML:true, ReplacementsOn:true
 */
 
@@ -43,7 +43,6 @@ var Settings = {
     },
 
     // BOOLEAN:
-    AutoIdle: true,
     FlashOnPMReceived: true,
     FlashOnMentioned: true,
     ShowScriptCheckOK: false,
@@ -100,7 +99,6 @@ ensure("reconnectfailed", false);
 ensure("announcement", "");
 ensure("EvalID", -1);
 ensure("ignoreNoHtml", false);
-ensure("AutoIdleTimer", -1);
 ensure("NoHTML", false);
 ensure("ReplacementsOn", true);
 
@@ -678,20 +676,6 @@ if (Settings.ShowScriptCheckOK) {
 
 // Signal Attaching //
 connect(net.playerLogin, function () {
-    if (Settings.AutoIdle) {
-        AutoIdleTimer = sys.setTimer(function goAway() {
-            if (isConnected()) {
-                if (!cli.away()) {
-                    cli.goAway(true);
-                }
-
-                sys.setTimer(function () {
-                    sys.stopTimer(AutoIdleTimer);
-                }, 10);
-            }
-        }, 20, true);
-    }
-
     reconnectfailed = false;
 });
 
