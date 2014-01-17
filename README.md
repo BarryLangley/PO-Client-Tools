@@ -1,9 +1,9 @@
 # TheUnknownOne's Client Tools
 
-## scripts.js
-Version: 1.2.0
+## Confetti (scripts.js)
+Version: 2.0.0-dev
 
-## scriptLoader.js
+## Script Loader (scriptLoader.js)
 
 **Use this as a standalone script; Rejoin after pressing Ok in the Scripts Window if it hadn't loaded for that session.**
 
@@ -12,5 +12,3 @@ This script can load any other script (hopefully). Type @help for help.
 ## License
 
 [MIT](LICENSE.txt).
-
-[battle/calc/](battle/calc)'s source is from [here](http://pokemonshowdown.com/damagecalc/) (and therefore not MIT licensed). Many parts have been rewritten and/or improved.

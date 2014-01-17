@@ -1,823 +1,692 @@
-/*global sys, SESSION, script, print, gc, version, Config, require, module, exports, client,
-  PLAYERS:true, border:true, callcount:true, endcalls:true, periodictimers:true, ignoreflash:true,
-  reconnectfailed:true, announcement:true, EvalID:true, ignoreNoHtml:true,
-  NoHTML:true, ReplacementsOn:true
-*/
+var Client, Global, Network, confetti, poScript,
+  __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; },
+  __slice = [].slice;
 
-/* Settings Help:
-- If the setting is in the OBJECT category, the given value must:
-    follow this format: {"key1": "value1", "key2": "value2", "key3": "value3"}
+Client = client;
 
-- If the setting is in the ARRAY category, the given value must:
-    follow this format: ["player1", "player2", "player3"]
+Network = Client.network();
 
-- If the setting is in the BOOLEAN category, the given value must be one of:
-    true (yes/on)
-    false (no/off)
+Global = this;
 
-- If the setting is in the STRING category, the given value must be:
-    wrapped in quotes ("text", for example)
-
-- If the setting is in the COLOR category, the given value must be:
-    wrapped in quotes (see above)
-    sys.validColor must return true (i.e. it must be a valid color, such as red)
-*/
-
-var Settings = {
-    // ARRAY:
-    AutoIgnore: [],
-    CommandStarts: ["-", "~"],
-
-    // OBJECT:
-    Replacements: {
-        // [[Topic]]
-        "\\[\\[(.*?)\\]\\]": "http://en.wikipedia.com/$1",
-        // [Google!]
-        "\\[(.*?)\\]": "http://google.com/search?q=$1",
-        // >LMGTFY!
-        "\\>(.*?)\\!": "http://lmgtfy.com/?q=$1",
-        // {PoWiki}
-        "\\{(.*?)\\}": "http://pokemon-online.eu/wiki/$1",
-        // $GitHub$
-        "\\$(.*?)\\$": "https://github.com/$1"
+if (typeof confetti !== 'object') {
+  confetti = {
+    initialized: false,
+    cache: {
+      initialized: false
     },
-
-    // BOOLEAN:
-    FlashOnPMReceived: true,
-    FlashOnMentioned: true,
-    ShowScriptCheckOK: false,
-    ReturnToMenuOnReconnectFailure: false,
-    AutoReconnect: false,
-
-    // STRING:
-    Bot: "~Client~",
-
-    // COLOR:
-    BotColor: "green",
-};
-
-// End settings //
-var cli = client;
-var net = cli.network();
-var GLOBAL = this;
-
-if (!sys.validColor(Settings.BotColor)) {
-    Settings.BotColor = "green";
+    players: {},
+    ignores: [],
+    bot: {
+      name: '',
+      color: ''
+    },
+    dataDir: sys.scriptsFolder,
+    cacheFile: 'confetti.json'
+  };
 }
 
-// connect function //
-function connect(ref, func) {
-    ref.connect(func);
-}
-
-function ensure(name, value) {
-    if (typeof GLOBAL[name] === "undefined") {
-        GLOBAL[name] = value;
+(function() {
+  var an, copyArray, escapeRegex, fancyJoin, isAlpha, isPlainObject, noop, random, removeDuplicates, shuffle, stripHtml;
+  random = function(array) {
+    if (Array.isArray(array)) {
+      return array[sys.rand(0, array.length)];
+    } else {
+      return array;
     }
-}
-
-function getVal(name, defaultValue) {
-    var res = sys.getVal(name);
-    if (res === "") {
-        return defaultValue;
+  };
+  copyArray = function(array) {
+    return [].concat(array);
+  };
+  removeDuplicates = function(array) {
+    var dupeless, val, _i, _len;
+    dupeless = [];
+    for (_i = 0, _len = array.length; _i < _len; _i++) {
+      val = array[_i];
+      if (dupeless.indexOf(val) === -1) {
+        dupeless.push(val);
+      }
     }
-
-    return res;
-}
-
-function saveVal(name, content) {
-    sys.saveVal(name, content);
-}
-
-ensure("PLAYERS", []);
-ensure("border", "<font color='mediumblue'><b>\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB</font>");
-ensure("callcount", 0);
-ensure("endcalls", false);
-ensure("periodictimers", []);
-ensure("ignoreflash", false);
-ensure("reconnectfailed", false);
-ensure("announcement", "");
-ensure("EvalID", -1);
-ensure("ignoreNoHtml", false);
-ensure("NoHTML", false);
-ensure("ReplacementsOn", true);
-
-function ownChannels() {
-    var x, current, channelNames = cli.channelNames(),
-        ret = [];
-    for (x in cli.channelNames()) {
-        current = cli.channel(Number(x));
-        if (current) {
-            ret.push(current.id());
-        }
+    return dupeless;
+  };
+  isPlainObject = function(obj) {
+    return Object.prototype.toString.call(obj) === '[object Object]';
+  };
+  shuffle = function(array) {
+    var i, length, t;
+    length = array.length;
+    while (length) {
+      i = Math.floor(Math.random() * length--);
+      t = array[length];
+      array[length] = array[i];
+      array[i] = t;
     }
-
-    return ret;
-}
-
-function ensureChannel(channel) {
-    if (ownChannels().length === 0) {
-        var main = cli.defaultChannel();
-        if (typeof channel !== "undefined") {
-            main = channel;
-        }
-
-        cli.join(main);
-        cli.activateChannel(main);
+    return array;
+  };
+  an = function(what) {
+    var _ref;
+    if ((_ref = what[0]) === 'a' || _ref === 'e' || _ref === 'u' || _ref === 'i' || _ref === 'o') {
+      return "an " + what;
+    } else {
+      return "a " + what;
     }
-}
-
-function htmlMessage(mess, channel) {
-    if (typeof channel !== "number" || !cli.hasChannel(channel)) {
-        channel = cli.currentChannel();
+  };
+  fancyJoin = function(array, delimiter, lastDelimiter) {
+    var element, index, len, str, _i, _len;
+    if (delimiter == null) {
+      delimiter = ', ';
     }
-
-    ignoreNoHtml = true;
-    cli.printChannelMessage(mess, channel, true);
-    ignoreNoHtml = false;
-}
-
-function bot(mess, channel) {
-    ensureChannel(channel);
-    htmlMessage("<font color='" + Settings.BotColor + "'><timestamp/><b>" + Settings.Bot + ":</b></font> " + mess);
-}
-
-function white(channel) {
-    htmlMessage("", channel);
-}
-
-function endCalls() {
-    var x,
-        timers = periodictimers.length;
-
-    for (x in periodictimers) {
-        sys.stopTimer(periodictimers[x]);
+    if (lastDelimiter == null) {
+      lastDelimiter = 'and';
     }
-
-    periodictimers = [];
-    return timers;
-}
-
-function isConnected() {
-    return cli.ownId() !== -1;
-}
-
-function id(str) {
-    if (typeof str === "number") {
-        return str;
+    str = '';
+    len = array.length;
+    if (len === 0) {
+      return '';
+    } else if (len === 1) {
+      return array[0];
+    } else if (len === 2) {
+      return "" + array[0] + " " + lastDelimiter + " " + array[1];
     }
-
-    return client.id(str);
-}
-
-function isMod() {
-    return cli.ownAuth() > 0;
-}
-
-function hasCommandStart(msg) {
-    return Settings.CommandStarts.indexOf(msg[0]) > -1;
-}
-
-function html_escape(str) {
-    if (typeof str !== "string") {
-        str = String(str);
+    for (index = _i = 0, _len = array.length; _i < _len; index = ++_i) {
+      element = array[index];
+      if (len === (index + 1)) {
+        str += "" + lastDelimiter + " " + element;
+        break;
+      } else {
+        str += element + delimiter;
+      }
     }
-
-    return str.replace(/\&/g, "&amp;").replace(/</g, "&lt;").replace(/\>/g, "&gt;");
-}
-
-function fancyJoin(array) {
-    var x, retstr = '',
-        arrlen = array.length;
-
-    if (arrlen === 0 || arrlen === 1) {
-        return array.join("");
-    }
-
-    arrlen--;
-
-    for (x in array) {
-        if (Number(x) === arrlen) {
-            retstr = retstr.substr(0, retstr.lastIndexOf(","));
-            retstr += " or '" + array[x] + "'";
-
-            return retstr;
-        }
-
-        retstr += "'" + array[x] + "', ";
-    }
-
-    return "";
-}
-
-function cut(array, entry, join) {
-    if (!join) {
-        join = ":";
-    }
-
-    return array.splice(entry).join(join);
-}
-
-function millitime() {
-    var now = new Date().getTime();
-    return (new Date()).getTime();
-}
-
-function FormatError(mess, e) {
-    if (typeof mess !== "string") {
-        mess = "";
-    }
-
-    var lastChar = mess[mess.length - 1],
-        lineData = "";
-    if (mess !== "" && lastChar !== "." && lastChar !== "!" && lastChar !== "?" && lastChar !== ":") {
-        mess += ".";
-    }
-
-    if (e.lineNumber !== 1) {
-        lineData = " on line " + e.lineNumber;
-    }
-
-    var name = e.name,
-        msg = e.message,
-        str = name + lineData + ": " + msg;
-
-    lastChar = msg[msg.length - 1];
-
-    if (lastChar !== "." && lastChar !== "?" && lastChar !== ":" && lastChar !== "!") {
-        str += ".";
-    }
-
-    return mess + " " + str;
-}
-
-function html_strip(str) {
+    return str;
+  };
+  stripHtml = function(str) {
     return str.replace(/<\/?[^>]*>/g, "");
-}
+  };
+  escapeRegex = function(str) {
+    return str.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+  };
+  isAlpha = function(chr) {
+    chr = chr.toLowerCase();
+    return chr >= 'a' && chr <= 'z';
+  };
+  noop = function() {};
+  return confetti.util = {
+    random: random,
+    copyArray: copyArray,
+    removeDuplicates: removeDuplicates,
+    isPlainObject: isPlainObject,
+    isAlpha: isAlpha,
+    shuffle: shuffle,
+    an: an,
+    fancyJoin: fancyJoin,
+    stripHtml: stripHtml,
+    escapeRegex: escapeRegex,
+    noop: noop
+  };
+})();
 
-function sendAll(message, channel) {
-    if (typeof channel !== "number" || !cli.hasChannel(channel)) {
-        channel = cli.currentChannel();
+(function() {
+  var read, readJson, readLocal, readLocalJson, write, writeLocal;
+  read = function(file) {
+    sys.appendToFile(file, "");
+    return sys.getFileContent(file);
+  };
+  readJson = function(file) {
+    return JSON.parse(read(file) || '{}');
+  };
+  readLocal = function(file) {
+    return read(confetti.dataDir + file);
+  };
+  readLocalJson = function(file) {
+    return readJson(confetti.dataDir + file);
+  };
+  write = function(file, data) {
+    if (Object.prototype.toString(data) === '[object Object]') {
+      data = JSON.stringify(data);
     }
-    net.sendChanMessage(channel, message);
-}
+    return sys.writeToFile(file, data);
+  };
+  writeLocal = function(file, data) {
+    return write(confetti.dataDir + file, data);
+  };
+  return confetti.io = {
+    read: read,
+    readJson: readJson,
+    readLocal: readLocal,
+    readLocalJson: readLocalJson,
+    write: write,
+    writeLocal: writeLocal,
+    writeLocalJson: writeLocal
+  };
+})();
 
-function PMEval($1) {
-    var ret;
+(function() {
+  var Cache;
+  Cache = (function() {
+    function Cache(file, hash, saved) {
+      var ex;
+      this.file = file != null ? file : confetti.cacheFile;
+      this.hash = hash != null ? hash : {};
+      this.saved = saved != null ? saved : 0;
+      try {
+        this.hash = confetti.io.readLocalJson(this.file);
+      } catch (_error) {
+        ex = _error;
+        confetti.io.writeLocal(this.file, '{}');
+      }
+    }
+
+    Cache.prototype.store = function(key, value, once) {
+      if (once == null) {
+        once = false;
+      }
+      if (!once || (once && typeof this.hash[key] === 'undefined')) {
+        this.hash[key] = value;
+        this.saved += 1;
+      }
+      return this;
+    };
+
+    Cache.prototype.clear = function(key, value) {
+      if (typeof this.hash[key] !== 'undefined') {
+        delete this.hash[key];
+        this.saved += 1;
+      }
+      return this;
+    };
+
+    Cache.prototype.read = function(key) {
+      return this.hash[key];
+    };
+
+    Cache.prototype.get = function(key) {
+      return this.hash[key];
+    };
+
+    Cache.prototype.save = function() {
+      if (this.saved > 0) {
+        confetti.io.writeLocalJson(this.file, this.hash);
+        this.saved = 0;
+      }
+      return this;
+    };
+
+    Cache.prototype.wipe = function() {
+      this.hash = {};
+      confetti.io.writeLocal(this.file, '{}');
+      return this;
+    };
+
+    Cache.prototype.once = true;
+
+    return Cache;
+
+  })();
+  return confetti.Cache = Cache;
+})();
+
+(function() {
+  var create, isIgnored, name;
+  create = function(id) {
+    return {
+      id: id
+    };
+  };
+  isIgnored = function(id) {
+    var _ref;
+    return Client.isIgnored(id) || (_ref = Client.name(id).toLowerCase(), __indexOf.call(confetti.ignores, _ref) >= 0);
+  };
+  name = function(id) {
+    if (typeof id === 'string') {
+      name = Client.name(Client.id(id));
+    } else {
+      name = Client.name(id);
+    }
+    if (name === '~Unknown~') {
+      return id;
+    } else {
+      return name;
+    }
+  };
+  return confetti.player = {
+    create: create,
+    isIgnored: isIgnored,
+    name: name
+  };
+})();
+
+(function() {
+  var channelIds, players;
+  channelIds = function() {
+    var chan, _i, _len, _ref, _results;
+    _ref = Client.myChannels();
+    _results = [];
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      chan = _ref[_i];
+      _results.push(Client.channelId(chan));
+    }
+    return _results;
+  };
+  players = function(chan) {
+    var channel, id;
+    channel = Client.channel(chan);
+    return (function() {
+      var _results;
+      _results = [];
+      for (id in confetti.players) {
+        if (channel.hasPlayer(id)) {
+          _results.push(parseInt(id, 10));
+        }
+      }
+      return _results;
+    })();
+  };
+  return confetti.channel = {
+    channelIds: channelIds,
+    players: players
+  };
+})();
+
+(function() {
+  var bot, html, notification, notify, pm, printm;
+  notify = function(msg) {
+    if (typeof chan !== 'number' || !Client.hasChannel(chan)) {
+      return;
+    }
+    return Network.sendChanMessage(chan, msg);
+  };
+  pm = function(id, msg, encoolType) {
+    if (!confetti.players.hasOwnProperty(id)) {
+      return;
+    }
+    return Network.sendPM(id, msg);
+  };
+  printm = function(msg) {
+    return print(msg);
+  };
+  html = function(msg) {
+    return Client.printHtml(msg);
+  };
+  notification = function(msg) {
+    if (confetti.cache.initialized !== false && confetti.cache.read('notifications') === true) {
+      return Client.trayMessage("Pokémon Online - " + Client.windowTitle, msg);
+    }
+  };
+  bot = function(msg) {
+    return client.printHtml("<font color='" + (confetti.cache.get('botcolor')) + "'><timestamp/><b>" + (confetti.cache.get('botname')) + ":</b></font> " + msg);
+  };
+  return confetti.msg = {
+    notify: notify,
+    pm: pm,
+    print: printm,
+    html: html,
+    notification: notification,
+    bot: bot
+  };
+})();
+
+(function() {
+  var commands, hooks, stophook;
+  hooks = {};
+  stophook = false;
+  confetti.hook = function(name, func) {
+    if (hooks[name] == null) {
+      hooks[name] = [];
+    }
+    return hooks[name].push(func);
+  };
+  confetti.callHooks = function() {
+    var args, event, hook, res, _i, _len, _ref;
+    event = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
+    _ref = hooks[event];
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      hook = _ref[_i];
+      res = hook.apply(null, args);
+      if (res && res.length) {
+        args = res;
+      }
+    }
+    return args;
+  };
+  commands = {};
+  confetti.command = function(name, help, handler) {
+    var complete, desc, usage;
+    usage = "";
+    desc = "";
+    complete = "";
+    if (help.length === 2) {
+      usage = name;
+      desc = help[0];
+      complete = help[1];
+    } else {
+      usage = help[0];
+      desc = help[1];
+      complete = help[2];
+    }
+    return commands[name] = {
+      name: name,
+      help: help,
+      handler: handler,
+      info: {
+        usage: usage,
+        desc: desc,
+        complete: complete
+      }
+    };
+  };
+  confetti.execCommand = function(command, data, message, chan) {
+    if (commands.hasOwnProperty(command)) {
+      return commands[command].handler(data, message, chan);
+    } else {
+      return confetti.msg.bot("The command '" + command + "' doesn't exist, silly!");
+    }
+  };
+  confetti.commands = commands;
+  return confetti.initCache = function() {
+    var once;
+    confetti.cache = new confetti.Cache;
+    once = confetti.cache.once;
+    confetti.cache.store('ignores', [], once).store('botname', '~Confetti', once).store('botcolor', '#095cef', once).store('notifications', true, once).store('commandindicator', '-', once);
+    confetti.callHooks('initCache');
+    return confetti.cache.save();
+  };
+})();
+
+(function() {
+  var chr, encool, index, l33tify, normalLetters, reverseify, smallcap, smallcapsConvert, smallcapsLetters, smallcapsify, spaceify, _i, _len;
+  normalLetters = 'qwertyuiopasdfghjklzxcvbnm'.split('');
+  smallcapsLetters = 'ǫᴡᴇʀᴛʏᴜɪᴏᴘᴀsᴅғɢʜᴊᴋʟᴢxᴄᴠʙɴᴍ'.split('');
+  smallcapsConvert = {};
+  for (index = _i = 0, _len = normalLetters.length; _i < _len; index = ++_i) {
+    chr = normalLetters[index];
+    smallcap = smallcapsLetters[index];
+    smallcapsConvert[chr] = smallcap;
+    smallcapsConvert[chr.toUpperCase()] = smallcap;
+  }
+  smallcapsify = function(msg) {
+    var convert, letter, str, _j, _len1;
+    str = [];
+    for (index = _j = 0, _len1 = msg.length; _j < _len1; index = ++_j) {
+      letter = msg[index];
+      convert = smallcapsConvert[letter];
+      if (convert) {
+        str[index] = convert;
+      } else {
+        str[index] = letter;
+      }
+    }
+    return str.join('');
+  };
+  spaceify = function(msg) {
+    return msg.split('').join(' ');
+  };
+  l33tify = function(msg) {
+    return msg.replace(/\b(hacker|coder|programmer)(s|z)?\b/gi, 'haxor$2').replace(/\b(hack)(ed|s|z)?\b/gi, 'haxor$2').replace(/\b(thank you)\b/gi, 'TY').replace(/\b(luv|love|wuv|like)(s|z)?\b/gi, 'wub$2').replace(/\b(software)(s|z)?\b/gi, 'wares').replace(/\b((is|are|am) +(cool|wicked|awesome|great))\b/gi, 'rocks').replace(/\b((is|are|am) +(\w+) +(cool|wicked|awesome|great))\b/gi, '$3 rocks').replace(/\b(very|extremely)\b/gi, 'totally').replace(/\b(because)\b/gi, 'coz').replace(/\b(due to)\b/gi, 'coz of').replace(/\b(is|am)\b/gi, 'be').replace(/\b(are)\b/gi, 'is').replace(/\b(rock)(s|z)?\b/gi, 'roxor$2').replace(/\b(porn(o(graph(y|ic))?)?)\b/gi, 'pron').replace(/\b(lamer|dork|jerk|moron|idiot)\b/gi, 'loser').replace(/\b(an loser)\b/gi, 'a loser').replace(/\b(what('s)?)\b/gi, 'wot').replace(/\b(that)\b/gi, 'dat').replace(/\b(this)\b/gi, 'dis').replace(/\b(hooray|yippee|yay|yeah)\b/gi, 'woot').replace(/\b(win|own)(s|z)?\b/gi, 'pwn$2').replace(/\b(won|owned)\b/gi, 'pwnt').replace(/\b(suck)(ed|s|z)?\b/gi, 'suxor$2').replace(/\b(was|were|had been)/gi, 'wuz').replace(/\b(elite)/gi, 'leet').replace(/\byou\b/gi, 'joo').replace(/\b(man|dude|guy|boy)(s|z)?\b/gi, 'dood$2').replace(/\b(men)\b/gi, 'doods').replace(/\bstarbucks?\b/gi, 'bizzo').replace(/\b(the)\b/gi, 'teh').replace(/(ing)\b/gi, 'in\'').replace(/\b(stoked|happy|excited|thrilled|stimulated)\b/gi, 'geeked').replace(/\b(unhappy|depressed|miserable|sorry)\b/gi, 'bummed out').replace(/\b(and|an)\b/gi, 'n').replace(/\b(your|hey|hello|hi)\b/gi, 'yo').replace(/\b(might)\b/gi, 'gonna').replace(/\blater\b/gi, 'l8r').replace(/\bare\b/gi, 'R').replace(/\bbe\b/gi, 'b').replace(/\bto\b/gi, '2').replace(/\ba\b/gi, '@').replace(/(\S)l/g, '$1L').replace(/(\S)l/g, '$1L').replace(/a/gi, '4').replace(/\bfor\b/gi, '4').replace(/e/gi, '3').replace(/i/gi, '1').replace(/o/gi, '0').replace(/s\b/gi, 'z');
+  };
+  reverseify = function(msg) {
+    return msg.split('').reverse().join('');
+  };
+  encool = function(msg, type) {
+    if (type == null) {
+      type = confetti.cache.read('encool');
+    }
+    switch (type) {
+      case 'none':
+        return msg;
+      case 'spaces':
+        return spaceify(msg);
+      case 'smallcaps':
+        return smallcapsify(msg);
+      case 'leet':
+        return l33tify(msg);
+      case 'reverse':
+        return reverseify(msg);
+    }
+  };
+  confetti.encool = encool;
+  confetti.hook('initCache', function() {
+    return confetti.cache.store('encool', 'none', confetti.cache.once);
+  });
+  confetti.hook('manipulateOwnMessage', function(message, chan) {
+    return [encool(message), chan];
+  });
+  return confetti.command('encool', ['encool [type]', 'Changes your encool type to (none, space, smallcaps, leet, reverse).', 'setmsg@encool [type]'], function(data) {
+    data = data.toLowerCase();
+    if (!(data === 'none' || data === 'spaces' || data === 'smallcaps' || data === 'leet' || data === 'reverse')) {
+      confetti.msg.bot("That doesn't look right to me!");
+      confetti.msg.bot("Use one of the following types: none, spaces, smallcaps, leet, reverse");
+      return;
+    }
+    if (confetti.cache.read('encool') === data) {
+      confetti.msg.bot("Your encool type is already " + data + "!");
+      return;
+    }
+    confetti.cache.store('encool', data);
+    return confetti.msg.bot("Your encool type is now " + data + "!");
+  });
+})();
+
+(function() {
+  var border, cmd, header;
+  cmd = function(name) {
+    var command, complete, indicator, parts;
+    if (confetti.commands[name]) {
+      command = confetti.commands[name];
+      parts = command.info.complete.split('@');
+      indicator = confetti.cache.get('commandindicator');
+      complete = "<a href='po:" + parts[0] + "/" + indicator + parts[1] + "' style='text-decoration: none; color: green;'>" + indicator + command.info.usage + "</a>";
+      return confetti.msg.html("&bull; " + complete + ": " + command.info.desc);
+    }
+  };
+  header = function(msg, size) {
+    if (size == null) {
+      size = 2;
+    }
+    return confetti.msg.html("<h" + size + ">" + msg + "</h" + size + ">");
+  };
+  border = function(timestamp) {
+    if (timestamp == null) {
+      timestamp = false;
+    }
+    return confetti.msg.html("" + (timestamp ? '<br/><timestamp/><br/>' : '') + "<font color='skyblue'><b>≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈</b></font>" + (timestamp ? '<br/>' : ''));
+  };
+  confetti.command('configcommands', ['Shows various commands that change your settings.', 'send@configcommands'], function() {
+    border();
+    header('Configuration Commands');
+    cmd('botname');
+    cmd('botcolor');
+    cmd('encool');
+    cmd('notifications');
+    cmd('autoreconnect');
+    return border(true);
+  });
+  confetti.command('commands', ['Shows this command list.', 'send@commands'], function() {
+    border();
+    header('Commands');
+    cmd('commands');
+    cmd('configcommands');
+    cmd('reconnect');
+    cmd('eval');
+    return border(true);
+  });
+  confetti.command('notifications', ["Toggles whether if notifications for the script should be shown (tray messages).", 'send@notifications'], function() {
+    if (confetti.cache.read('notifications')) {
+      confetti.cache.store('notifications', false);
+    } else {
+      confetti.cache.store('notifications', true);
+    }
+    return confetti.msg.bot("Notifications are now " + (confetti.cache.read('notifications') ? 'on' : 'off') + ".");
+  });
+  confetti.command('botname', ['botname [name]', "Changes the bot's name to [name].", 'setmsg@botname [name]'], function(data) {
+    if (data.length > 25) {
+      confetti.msg.bot("Uhh, that's too long, I think!");
+      return;
+    }
+    if (confetti.cache.read('botname') === data) {
+      confetti.msg.bot("I'm already already " + data + "!");
+      return;
+    }
+    confetti.cache.store('botname', data);
+    return confetti.msg.bot("I'm now called " + data + "!");
+  });
+  confetti.command('botcolor', ['botcolor [color]', "Changes the bot's color to [color].", 'setmsg@botcolor [color]'], function(data) {
+    data = data.toLowerCase();
+    if (!sys.validColor(data)) {
+      confetti.msg.bot("That doesn't look like a valid color to me!");
+      return;
+    }
+    if (confetti.cache.read('botcolor') === data) {
+      confetti.msg.bot("My color is already " + data + "!");
+      return;
+    }
+    confetti.cache.store('botcolor', data);
+    return confetti.msg.bot("My color is now " + data + "!");
+  });
+  confetti.command('commandindicator', ['commandindicator [char]', "Changes your command indicator (to indicate usage of commands) to [char]. <i>-</i> will remain usable.", 'setmsg@commandindicator [char]'], function() {
+    var data;
+    data = data.toLowerCase();
+    if (data.length !== 1) {
+      confetti.msg.bot("The command indicator has to be one character, nothing more, nothing less!");
+      return;
+    }
+    if (confetti.cache.read('commandindicator') === data) {
+      confetti.msg.bot("The command indicator is already " + data + "!");
+      return;
+    }
+    confetti.cache.store('commandindicator', data);
+    return confetti.msg.bot("The command indicator is now " + data + "!");
+  });
+  return confetti.command('eval', ['eval [code]', "Evaluates a JavaScript Program.", 'setmsg@eval [code]'], function(data) {
+    var ex, res;
     try {
-        ret = eval($1.substring(2, $1.length - 3));
-    } catch (e) {
-        ret = "";
-        print(FormatError("Error in PM:", e));
+      res = eval(data);
+      return confetti.msg.html("<timestamp/><b>Eval returned:</b> " + (sys.htmlEscape(res)));
+    } catch (_error) {
+      ex = _error;
+      confetti.msg.html("<timestamp/><b>Eval error:</b> " + ex + " on line " + ex.lineNumber);
+      if (ex.backtrace != null) {
+        return confetti.msg.html(ex.backtrace.join('<br/>'));
+      }
     }
+  });
+})();
 
-    EvalID = -1;
-    return ret;
+(function() {
+  var attemptToReconnect, attempts, autoReconnectTimer;
+  autoReconnectTimer = -1;
+  attempts = 0;
+  attemptToReconnect = function() {
+    if (attempts > 3) {
+      return false;
+    }
+    attempts += 1;
+    return Client.reconnect();
+  };
+  Network.playerLogin.connect(function() {
+    if (autoReconnectTimer !== -1) {
+      confetti.msg.notification("Reconnected to server!");
+      sys.unsetTimer(autoReconnectTimer);
+      autoReconnectTimer = -1;
+      return attempts = 0;
+    }
+  });
+  Network.disconnected.connect(function() {
+    var forced;
+    if (confetti.cache.get('autoreconnect') === true && autoReconnectTimer === -1 && forced !== true) {
+      confetti.msg.bot("Attempting to reconnect...");
+      confetti.msg.notification("Disconnection detected, attempting to reconnect.");
+      attemptToReconnect();
+      autoReconnectTimer = sys.setTimer(function() {
+        if (autoReconnectTimer === -1) {
+          return;
+        }
+        if (attemptToReconnect() === false) {
+          confetti.msg.bot("Three attempts at reconnecting have failed, stopping.");
+          confetti.msg.notification("Failed to reconnect.");
+          sys.unsetTimer(autoReconnectTimer);
+          return autoReconnectTimer = -1;
+        }
+      }, 5000, true);
+    }
+    return forced = false;
+  });
+  confetti.hook('initCache', function() {
+    return confetti.cache.store('autoreconnect', true, confetti.cache.once);
+  });
+  confetti.command('reconnect', ['Forces a reconnect to the server', 'send@reconnect'], function() {
+    var forced;
+    confetti.msg.bot("Reconnecting to the server...");
+    attempts = 0;
+    forced = true;
+    return Client.reconnect();
+  });
+  return confetti.command('autoreconnect', ["Toggles whether if you should automatically reconnect to the server when detected you've dc'd.", 'send@autoreconnect'], function() {
+    if (confetti.cache.read('autoreconnect')) {
+      confetti.cache.store('autoreconnect', false);
+    } else {
+      confetti.cache.store('autoreconnect', true);
+    }
+    return confetti.msg.bot("Auto reconnect is now " + (confetti.cache.read('autoreconnect') ? 'on' : 'off') + ".");
+  });
+})();
+
+print("Script Check: OK");
+
+if (confetti.initialized) {
+  script.clientStartUp();
 }
 
-// Commands //
-var commands = {
-    commands: function () {
-        function cmd(comnd, args, desc, aliases) {
-            var str = "<font color='green'><b>" + comnd + "</b></font>",
-                x,
-                arglist = {},
-                current,
-                next,
-                part;
-
-            desc = desc.split(" ");
-
-            if (!!args) {
-                str += " ";
-            }
-
-            for (x in args) {
-                current = args[x];
-                next = x + 1;
-
-                arglist[current] = 1;
-                str += "<b>" + current + "</b>:";
-            }
-
-            if (!!args) {
-                str += " ";
-            } else {
-                str += ": ";
-            }
-
-            for (x in desc) {
-                current = desc[x];
-                part = current.substring(0, current.length - 1);
-
-                if (arglist[current.toLowerCase()]) {
-                    str += "<b>" + current + "</b> ";
-                } else if (arglist[part.toLowerCase()]) {
-                    str += "<b>" + part + "</b>" + current[part.length] + " ";
-                } else {
-                    str += current + " ";
-                }
-            }
-
-            if (arguments.length === 4) {
-                str += "<i>Aliases: " + aliases.join(", ") + "</i>";
-            }
-
-            htmlMessage(str);
+poScript = {
+  clientStartUp: function() {
+    var chans, id, player, players;
+    if (!confetti.initialized) {
+      chans = confetti.channel.channelIds();
+      players = ((function() {
+        var _i, _len, _results;
+        _results = [];
+        for (_i = 0, _len = chans.length; _i < _len; _i++) {
+          id = chans[_i];
+          _results.push(confetti.channel.players(id).join(','));
         }
-
-        htmlMessage(border + " <br/>");
-        htmlMessage("<h2>Commands</h2>");
-        htmlMessage("Use " + fancyJoin(Settings.CommandStarts) + " before the following commands in order to use them: <br/>");
-
-        white();
-
-        cmd("pm", ["players", "message"], "Sends a PM to players (use , and a space to seperate them) containing message. Use %name for the current player's name. Code inside <% %> will get evaluated (EvalID is the id of the current player).");
-        cmd("masspm", ["message"], "Sends a PM to everyone containing message. Use %name for the current player's name. Code inside <% %> will get evaluated (EvalID is the id of the current player). Don't use this on big servers as you will go overactive.");
-        cmd("flashall", ["server|channel", "exceptions"], "To flash everyone on the server or channel. Default is channel. Server doesn't work if there are more than 60 people on the server. Separate exceptions with <b>,</b>. Exceptions is a list of player names which won't be pinged.");
-
-        white();
-
-        cmd("id", ["name"], "Displays the id of name.");
-        cmd("color", ["name"], "Displays the hex color of name.");
-        cmd("ipinfo", ["ip"], "Displays the hostname and country of ip.", ["info"]);
-
-        white();
-
-        cmd("periodicsay", ["seconds", "channels", "message"], "Sends message every seconds in channels. Seconds must be a number. Seperate channels with \"<b>,</b>\". The current channel will be used if no channels are specified.");
-        cmd("endcalls", ["type"], "Ends the next called periodic say. Use all as type to cancel all periodic says.");
-
-        white();
-
-        cmd("nohtml", [], "Toggles No HTML. Default value for this is off. Escapes all HTML when on.");
-        cmd("replace", [], "Toggles Replacements. If on (default), performs replacing specified in Settings.Replacements");
-        cmd("announcement", [], "Displays this server's raw announcement (which you can copy).", ["ann"]);
-        cmd("eval", ["code"], "Evaluates code and returns the result (for advanced users ONLY).");
-
-        if (isMod()) { // These require moderator to work properly
-            white();
-
-            cmd("cp", ["player"], "Opens a CP of player.", ["controlpanel"]);
+        return _results;
+      })()).join(',').split(',');
+      for (player in players) {
+        if (!(confetti.players.hasOwnProperty(player) && player)) {
+          confetti.players[player] = confetti.player.create(player);
         }
-
-        htmlMessage("<br/> " + border);
-    },
-
-    masspm: function (mcmd) {
-        var x, mess = cut(mcmd, 0),
-            mid = cli.ownId(),
-            curr_name, curr;
-        for (x in PLAYERS) {
-            if (!isConnected()) {
-                bot("Mass PM failed because you have been disconnected.");
-                return;
-            }
-
-            curr = PLAYERS[x];
-            if (curr === mid) {
-                continue;
-            }
-
-            curr_name = client.name(curr);
-            EvalID = curr;
-            net.sendPM(curr, mess.replace(/<%(.*?)%>/gi, PMEval).replace(/%name/gi, curr_name));
-        }
-
-        bot("Mass PM completed. PM'd " + PLAYERS.length + " players.");
-    },
-
-    pm: function (mcmd) {
-        var x, names = mcmd[0].split(", "),
-            mess = cut(mcmd, 1),
-            curr_id, numpms = 0,
-            mid = cli.ownId();
-        for (x in names) {
-            if (!isConnected()) {
-                bot("PMing failed because you have been disconnected.");
-                return;
-            }
-
-            curr_id = id(names[x]);
-            if (curr_id === -1) {
-                bot("Could not PM " + names[x] + ": The client doesn't have information about him/her.");
-                continue;
-            }
-            if (curr_id === mid) {
-                continue;
-            }
-
-            EvalID = curr_id;
-            net.sendPM(curr_id, mess.replace(/<%(.*?)%>/gi, PMEval).replace(/%name/gi, names[x]));
-            numpms++;
-        }
-
-        bot("PMing completed. PM'd " + numpms + " players.");
-    },
-
-    flashall: function (mcmd) {
-        var playerList = [],
-            x,
-            curr,
-            chan,
-            chanId = cli.currentChannel(),
-            exceptions = [],
-            currname;
-
-        if (mcmd[1] !== undefined) {
-            exceptions = mcmd[1].split(",").map(function (val) {
-                return val.toLowerCase();
-            });
-        }
-
-        if (mcmd[0].toLowerCase() !== "server") {
-            chan = cli.channel(chanId);
-            for (x in PLAYERS) {
-                curr = PLAYERS[x];
-                currname = cli.name(curr);
-                if (chan.hasPlayer(curr) && exceptions.indexOf(currname.toLowerCase()) === -1) {
-                    playerList.push(currname);
-                }
-            }
-        } else if (PLAYERS.length < 61) {
-            for (x in PLAYERS) {
-                curr = cli.name(PLAYERS[x]);
-                if (exceptions.indexOf(curr.toLowerCase()) === -1) {
-                    playerList.push(curr);
-                }
-            }
-        }
-
-        sendAll(playerList.join(" , ") + " FLASH", chanId);
-    },
-
-    eval: function (mcmd) {
-        var code = cut(mcmd, 0);
-        htmlMessage(border);
-        bot("You evaluated the following code:");
-        htmlMessage("<code>" + html_escape(code) + "</code>");
-        htmlMessage(border);
-
-        try {
-            var now = millitime(),
-                result = eval(code),
-                end = millitime();
-
-            bot(html_escape(result));
-
-            var took = end - now,
-                sec = took / 1000,
-                micro = took * 1000;
-
-            bot("Code took " + took + " milliseconds / " + sec + " seconds to run.");
-        } catch (err) {
-            var error = FormatError("", err);
-            bot(error);
-        }
-    },
-
-    cp: function (mcmd) {
-        if (!isMod()) {
-            return;
-        }
-
-        var player = id(mcmd[0]);
-        if (player === -1) {
-            bot("The client doesn't have data of " + mcmd[0]);
-            return;
-        }
-
-        cli.controlPanel(player);
-
-        var name = player;
-        if (typeof name === "number") {
-            name = client.name(player);
-        }
-
-        net.getUserInfo(name);
-        net.getBanList();
-    },
-
-    id: function (mcmd) {
-        var pid = cli.id(mcmd[0]);
-
-        if (pid === -1) {
-            bot("The client doesn't have data of " + mcmd[0]);
-            return;
-        }
-
-        bot("The ID of " + mcmd[0] + " is " + pid + ".");
-    },
-
-    color: function (mcmd) {
-        var pid = id(mcmd[0]);
-
-        if (pid === -1) {
-            bot("The client doesn't have data of " + mcmd[0]);
-            return;
-        }
-
-        bot("The color of " + mcmd[0] + " is " + cli.color(pid) + ".");
-    },
-
-    ipinfo: function (mcmd) {
-        var ip = mcmd[0];
-        if (!/\b(?:\d{1,3}\.){3}\d{1,3}\b/.test(ip)) {
-            bot("Invalid IP.");
-            return;
-        }
-
-        bot("Getting ip info..");
-
-        sys.webCall("http://ip2country.sourceforge.net/ip2c.php?ip=" + ip, function (json_code) {
-            json_code = json_code.replace("ip", '"ip"'); // Fixes malformed JSON
-            json_code = json_code.replace("hostname", '"hostname"');
-            json_code = json_code.replace("country_code", '"country_code"');
-            json_code = json_code.replace("country_name", '"country_name"');
-
-            var code = JSON.parse(json_code);
-
-            bot("Info of " + ip + ":");
-            bot("Hostname: " + code.hostname);
-            bot("Country: " + code.country_name);
-        });
-    },
-
-    nohtml: function () {
-        NoHTML = !NoHTML;
-        saveVal("NoHTML", NoHTML);
-
-        var mode = "on";
-        if (!NoHTML) {
-            mode = "off";
-        }
-
-        bot("No HTML was turned " + mode + ".");
-    },
-
-    replace: function () {
-        ReplacementsOn = !ReplacementsOn;
-        saveVal("ReplacementsOn", ReplacementsOn);
-
-        var mode = "on";
-        if (!ReplacementsOn) {
-            mode = "off";
-        }
-
-        bot("Replacements were turned " + mode + ".");
-    },
-
-    periodicsay: function (mcmd) {
-        var seconds = parseInt(mcmd[0], 10),
-            channels = mcmd[1].split(","),
-            cids = [],
-            cid,
-            i;
-
-        for (i = 0; i < channels.length; ++i) {
-            cid = cli.channelId(channels[i].replace(/(^\s*)|(\s*$)/g, ""));
-            if (cid !== undefined) {
-                cids.push(cid);
-            }
-        }
-        if (cids.length === 0) {
-            cids.push(cli.currentChannel());
-        }
-
-        var message = mcmd.slice(2).join(":");
-
-        function periodicsay_callback(seconds, cids, message, count) {
-            if (!isConnected()) {
-                return;
-            }
-
-            callcount--;
-            if (endcalls) {
-                bot("Periodic say of '" + message + "' has ended.");
-                endcalls = false;
-                callcount--;
-
-                if (callcount < 0) {
-                    callcount = 0;
-                }
-                return;
-            }
-            for (i = 0; i < cids.length; ++i) {
-                cid = cids[i];
-                if (cli.hasChannel(cid)) {
-                    if (!script.beforeSendMessage(message, cid, true)) {
-                        sendAll(message, cid);
-                    }
-                }
-            }
-            if (++count > 100) {
-                bot("Periodic say of '" + message + "' has ended.");
-                callcount = 0;
-                return;
-            }
-
-            callcount++;
-            periodictimers.push(sys.setTimer(function () {
-                periodicsay_callback(seconds, cids, message, count);
-            }, seconds));
-        }
-
-        bot("Starting a new periodic say.");
-        callcount++;
-        periodicsay_callback(seconds, cids, message, 1);
-    },
-
-    endcalls: function (mcmd) {
-        if (!callcount) {
-            bot("You have no periodic calls running.");
-        } else {
-            bot("You have " + callcount + " call(s) running.");
-        }
-
-        var isAll = mcmd[0].toLowerCase() === "all";
-
-        if (!isAll) {
-            if (!endcalls) {
-                endcalls = true;
-                bot("Next periodic say called will end.");
-            } else {
-                endcalls = false;
-                bot("Cancelled the ending of periodic say.");
-            }
-        } else {
-            bot("Cancelled " + endCalls() + " timer(s).");
-            callcount = 0;
-        }
-    },
-
-    announcement: function () {
-        if (!isConnected()) {
-            bot("Not connected.");
-            return;
-        }
-
-        if (announcement === "") {
-            bot("This server doesn't have an announcement");
-            return;
-        }
-
-        bot("Server Announcement: " + html_escape(announcement));
+      }
     }
+    if (confetti.cache.initialized === false) {
+      confetti.initCache();
+    }
+    return confetti.initialized = true;
+  },
+  onPlayerReceived: function(id) {
+    return confetti.players[id] = confetti.player.create(id);
+  },
+  onPlayerRemoved: function(id) {
+    return delete confetti.players[id];
+  },
+  beforeSendMessage: function(message, chan) {
+    var command, data, oldMess, space, _ref, _ref1;
+    if (((_ref = message[0]) === confetti.cache.get('commandindicator') || _ref === '-') && message.length > 1 && confetti.util.isAlpha(message[1])) {
+      space = message.indexOf(' ');
+      command = "";
+      data = "";
+      if (space !== -1) {
+        command = message.substr(1, space - 1);
+        data = message.substr(space + 1);
+      } else {
+        command = message.substr(1);
+      }
+      sys.stopEvent();
+      confetti.execCommand(command, data, message, chan);
+      return;
+    }
+    oldMess = message;
+    _ref1 = confetti.callHooks('manipulateOwnMessage', message, chan), message = _ref1[0], chan = _ref1[1];
+    if (message !== oldMess) {
+      sys.stopEvent();
+      return Network.sendChanMessage(chan, message);
+    }
+  }
 };
-
-var commandaliases = {
-    "controlpanel": "cp",
-    "info": "ipinfo",
-    "ann": "announcement"
-};
-
-if (Settings.ShowScriptCheckOK) {
-    print("Script Check: OK");
-}
-
-// Signal Attaching //
-connect(net.playerLogin, function () {
-    reconnectfailed = false;
-});
-
-connect(net.disconnected, function () {
-    PLAYERS = [];
-    callcount = 0;
-    endcalls = false;
-    ignoreflash = false;
-    endCalls();
-    announcement = "";
-
-    if (reconnectfailed) {
-        if (Settings.ReturnToMenuOnReconnectFailure) {
-            bot("Returning to the menu in 3 seconds..");
-            sys.callLater("cli.done();", 3);
-        } else {
-            bot("Reconnecting failed.");
-        }
-    } else {
-        if (Settings.AutoReconnect) {
-            bot("Automatically reconnecting..");
-            client.reconnect();
-        }
-    }
-
-    reconnectfailed = true;
-});
-
-connect(net.PMReceived, function (id, message) {
-    if (Settings.FlashOnPMReceived && !cli.isIgnored(id)) {
-        cli.channel(cli.currentChannel()).checkFlash("a", "a"); // Flash
-    }
-});
-
-connect(net.reconnectFailure, function (reason) {
-    reconnectfailed = true;
-
-    if (Settings.ReturnToMenuOnReconnectFailure) {
-        bot("Returning to the menu in 3 seconds..");
-        sys.callLater("cli.done();", 3);
-    } else {
-        bot("Reconnecting failed.");
-    }
-});
-
-connect(net.announcement, function (ann) {
-    announcement = ann;
-});
-
-({
-    clientStartUp: function () {
-        NoHTML = getVal("NoHTML", "false") === "true"; // Fix a bug with sys.getVal? & Fix with string storage
-        ReplacementsOn = getVal("ReplacementsOn", "true") === "true";
-    },
-
-    onPlayerReceived: function (id) {
-        var name = cli.name(id).toLowerCase();
-        PLAYERS.push(id);
-
-        if (Settings.AutoIgnore.indexOf(name) !== -1) {
-            cli.ignore(name, true);
-        }
-    },
-
-    onPlayerRemoved: function (id) {
-        PLAYERS.splice(PLAYERS.indexOf(id), 1);
-    },
-
-    beforeSendMessage: function (message, channel, isPeriodicCall) {
-        var is_connected = isConnected();
-
-        if (hasCommandStart(message) && !hasCommandStart(message.substr(1)) && is_connected && message.length > 1) {
-            var commandData = "",
-                command = "",
-                mcmd = [""],
-                tar,
-                pos = message.indexOf(' ');
-
-            if (pos !== -1) {
-                command = message.substring(1, pos).toLowerCase();
-
-                commandData = message.substr(pos + 1);
-                mcmd = commandData.split(':');
-            } else {
-                command = message.substring(1).toLowerCase();
-            }
-
-            if (commandaliases[command]) {
-                command = commandaliases[command];
-            }
-
-            if (commands[command]) {
-                try {
-                    commands[command](mcmd);
-                } catch (e) {
-                    bot(FormatError("The command " + command + " could not be used because of an error:", e));
-                }
-
-                if (!isPeriodicCall) {
-                    sys.stopEvent();
-                }
-
-                return true; // periodic say
-            }
-        } else if (!is_connected) {
-            bot("You are not connected.");
-            return true; // periodic say
-        }
-
-        ignoreflash = true; // periodic say
-        if (ReplacementsOn) {
-            sys.stopEvent();
-
-            var x, replacements = Settings.Replacements;
-            for (x in replacements) {
-                message = message.replace(new RegExp(x, "g"), replacements[x]);
-            }
-
-            net.sendChanMessage(channel, message);
-        }
-    },
-
-    beforeChannelMessage: function (message, channel, html) {
-        if (Settings.FlashOnMentioned && !ignoreflash) {
-            if (!html) {
-                var sendBy = message.substring(0, message.indexOf(":"));
-                if (cli.isIgnored(cli.id(sendBy))) {
-                    ignoreflash = false;
-                    return;
-                }
-            }
-
-            if (message.toLowerCase().indexOf(cli.ownName().toLowerCase()) !== -1) {
-                cli.channel(channel).checkFlash("a", "a"); // Flash
-            }
-        }
-
-        if (NoHTML && html && !ignoreNoHtml) {
-            sys.stopEvent();
-            cli.printChannelMessage(message, channel, false);
-        }
-
-        ignoreflash = false;
-    }
-});

@@ -26,8 +26,10 @@
         "version": false,
         "global": true,
         "client": true,
-        "battle": true,
 
+
+
+        "battle": true,
         "Calc": true
     }
 }
