@@ -15,7 +15,7 @@ do ->
         print msg
 
     html = (msg, chan) ->
-        if typeof chan is 'number'
+        if typeof chan is 'number' and chan isnt -1
             Client.printChannelMessage msg, chan, yes
         else
             Client.printHtml msg

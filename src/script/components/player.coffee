@@ -16,7 +16,7 @@ do ->
         else
             battlingPart = ""
             if battling(id)
-                battlingPart = " - <a href='po:watchplayer/#{id}' style='text-decoration: none; color: blue;'><b>Battling <sub>watch</sub></b></a>"
+                battlingPart = " - <a href='po:watchplayer/#{id}' style='text-decoration: none; color: blue;' title='Watch #{confetti.util.stripquotes(Client.name(id))} battle'><b>Battling</b></a>"
 
             return "(<a href='po:pm/#{id}' style='text-decoration: none; color: green;'><b>Online</b></a>#{battlingPart})"
 
@@ -35,7 +35,7 @@ do ->
         pname = name(id)
         id = Client.id(id) if typeof id is 'string'
 
-        "<b style='color: #{Client.color(id)};'>#{pname}</b>"
+        "<a " + (if typeof id isnt 'string' then 'href=\'po:info/' + id + '\' ' else '') + "style='text-decoration: none; color: #{Client.color(id)};' title='Challenge #{confetti.util.stripquotes(pname)}'><b>#{pname}</b></a>"
 
     confetti.player = {
         create

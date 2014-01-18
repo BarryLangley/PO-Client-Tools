@@ -1,3 +1,22 @@
+# To indicate the script was successfully reloaded, print a simple message.
+if confetti.initialized
+    print "Script Check: OK"
+
+do ->
+    howtouse = ->
+        # 432000 is 5 days in seconds.
+        # If confetti (PO) hasn't been used in the last 5 days (or at all - the initial value is 0),
+        # display a friendly how-to-use message.
+
+        # The reason why we don't do this only once is because people tend to forget. Yeah.
+        if (confetti.cache.get('lastuse') + 345600) < (+sys.time())
+            confetti.msg.bot "Type #{confetti.cache.get('commandindicator')}commands for a list of client commands.", -1
+
+        confetti.cache.store('lastuse', +sys.time()).save()
+        Network.playerLogin.disconnect howtouse
+
+    Network.playerLogin.connect howtouse
+
 poScript =
     # Initialize variables
     clientStartUp: ->

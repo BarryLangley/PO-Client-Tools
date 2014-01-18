@@ -13,10 +13,10 @@ do ->
             confetti.msg.html "&bull; #{complete}: #{command.info.desc}", channel
 
     header = (msg, size = 5) ->
-        confetti.msg.html "<font size='#{size}'><b>#{msg}</b></font><br/><br/>", channel
+        confetti.msg.html "<br/><font size='#{size}'><b>#{msg}</b></font><br/>", channel
 
     border = (timestamp = no) ->
-        confetti.msg.html "#{if timestamp then '<br/><timestamp/><br/>' else ''}<font color='skyblue'><b>≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈</b></font>#{if timestamp then '<br/>'}", channel
+        confetti.msg.html "#{if timestamp then '<br/><timestamp/><br/>' else '<br/>'}<font color='skyblue'><b>≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈</b></font>#{if timestamp then '<br/>' else ''}", channel
 
     # TODO: Hooks for custom commands via plugins
     confetti.command 'configcommands', ['Shows various commands that change your settings.', 'send@configcommands'], (_, chan) ->

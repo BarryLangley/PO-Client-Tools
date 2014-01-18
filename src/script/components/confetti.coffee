@@ -60,6 +60,7 @@ do ->
             .store('botcolor', '#09abdc', once)
             .store('notifications', yes, once)
             .store('commandindicator', '-', once)
+            .store('lastuse', 0, once)
 
         confetti.callHooks 'initCache'
         confetti.cache.save()

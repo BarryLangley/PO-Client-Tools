@@ -41,7 +41,7 @@ do ->
     confetti.hook 'initCache', ->
         confetti.cache.store('autoreconnect', yes, confetti.cache.once)
 
-    confetti.command 'reconnect', ['Forces a reconnect to the server', 'send@reconnect'], ->
+    confetti.command 'reconnect', ['Forces a reconnect to the server.', 'send@reconnect'], ->
         confetti.msg.bot "Reconnecting to the server..."
 
         attempts = 0

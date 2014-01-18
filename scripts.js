@@ -21,7 +21,7 @@ if (typeof confetti !== 'object') {
 }
 
 (function() {
-  var an, copyArray, escapeRegex, fancyJoin, isAlpha, isPlainObject, noop, random, removeDuplicates, shuffle, stripHtml;
+  var an, copyArray, escapeRegex, fancyJoin, isAlpha, isPlainObject, noop, random, removeDuplicates, shuffle, stripHtml, stripquotes;
   random = function(array) {
     if (Array.isArray(array)) {
       return array[sys.rand(0, array.length)];
@@ -99,6 +99,9 @@ if (typeof confetti !== 'object') {
   escapeRegex = function(str) {
     return str.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
   };
+  stripquotes = function(str) {
+    return str.replace(/'/g, "\'");
+  };
   isAlpha = function(chr) {
     chr = chr.toLowerCase();
     return chr >= 'a' && chr <= 'z';
@@ -115,6 +118,7 @@ if (typeof confetti !== 'object') {
     fancyJoin: fancyJoin,
     stripHtml: stripHtml,
     escapeRegex: escapeRegex,
+    stripquotes: stripquotes,
     noop: noop
   };
 })();
@@ -242,7 +246,7 @@ if (typeof confetti !== 'object') {
     } else {
       battlingPart = "";
       if (battling(id)) {
-        battlingPart = " - <a href='po:watchplayer/" + id + "' style='text-decoration: none; color: blue;'><b>Battling <sub>watch</sub></b></a>";
+        battlingPart = " - <a href='po:watchplayer/" + id + "' style='text-decoration: none; color: blue;' title='Watch " + (confetti.util.stripquotes(Client.name(id))) + " battle'><b>Battling</b></a>";
       }
       return "(<a href='po:pm/" + id + "' style='text-decoration: none; color: green;'><b>Online</b></a>" + battlingPart + ")";
     }
@@ -266,7 +270,7 @@ if (typeof confetti !== 'object') {
     if (typeof id === 'string') {
       id = Client.id(id);
     }
-    return "<b style='color: " + (Client.color(id)) + ";'>" + pname + "</b>";
+    return "<a " + (typeof id !== 'string' ? 'href=\'po:info/' + id + '\' ' : '') + ("style='text-decoration: none; color: " + (Client.color(id)) + ";' title='Challenge " + (confetti.util.stripquotes(pname)) + "'><b>" + pname + "</b></a>");
   };
   return confetti.player = {
     create: create,
@@ -327,7 +331,7 @@ if (typeof confetti !== 'object') {
     return print(msg);
   };
   html = function(msg, chan) {
-    if (typeof chan === 'number') {
+    if (typeof chan === 'number' && chan !== -1) {
       return Client.printChannelMessage(msg, chan, true);
     } else {
       return Client.printHtml(msg);
@@ -427,7 +431,7 @@ if (typeof confetti !== 'object') {
     var once;
     confetti.cache = new confetti.Cache;
     once = confetti.cache.once;
-    confetti.cache.store('botname', '±Confetti', once).store('botcolor', '#09abdc', once).store('notifications', true, once).store('commandindicator', '-', once);
+    confetti.cache.store('botname', '±Confetti', once).store('botcolor', '#09abdc', once).store('notifications', true, once).store('commandindicator', '-', once).store('lastuse', 0, once);
     confetti.callHooks('initCache');
     return confetti.cache.save();
   };
@@ -522,13 +526,13 @@ if (typeof confetti !== 'object') {
     if (size == null) {
       size = 5;
     }
-    return confetti.msg.html("<font size='" + size + "'><b>" + msg + "</b></font><br/><br/>", channel);
+    return confetti.msg.html("<br/><font size='" + size + "'><b>" + msg + "</b></font><br/>", channel);
   };
   border = function(timestamp) {
     if (timestamp == null) {
       timestamp = false;
     }
-    return confetti.msg.html("" + (timestamp ? '<br/><timestamp/><br/>' : '') + "<font color='skyblue'><b>≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈</b></font>" + (timestamp ? '<br/>' : void 0), channel);
+    return confetti.msg.html("" + (timestamp ? '<br/><timestamp/><br/>' : '<br/>') + "<font color='skyblue'><b>≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈</b></font>" + (timestamp ? '<br/>' : ''), channel);
   };
   confetti.command('configcommands', ['Shows various commands that change your settings.', 'send@configcommands'], function(_, chan) {
     channel = chan;
@@ -815,7 +819,7 @@ if (typeof confetti !== 'object') {
   confetti.hook('initCache', function() {
     return confetti.cache.store('autoreconnect', true, confetti.cache.once);
   });
-  confetti.command('reconnect', ['Forces a reconnect to the server', 'send@reconnect'], function() {
+  confetti.command('reconnect', ['Forces a reconnect to the server.', 'send@reconnect'], function() {
     var forced;
     confetti.msg.bot("Reconnecting to the server...");
     attempts = 0;
@@ -871,6 +875,22 @@ if (typeof confetti !== 'object') {
     confetti.cache.store('commandindicator', data).save();
     return confetti.msg.bot("Your command indicator is now " + data + "!");
   });
+})();
+
+if (confetti.initialized) {
+  print("Script Check: OK");
+}
+
+(function() {
+  var howtouse;
+  howtouse = function() {
+    if ((confetti.cache.get('lastuse') + 345600) < (+sys.time())) {
+      confetti.msg.bot("Type " + (confetti.cache.get('commandindicator')) + "commands for a list of client commands.", -1);
+    }
+    confetti.cache.store('lastuse', +sys.time()).save();
+    return Network.playerLogin.disconnect(howtouse);
+  };
+  return Network.playerLogin.connect(howtouse);
 })();
 
 poScript = {

@@ -61,6 +61,9 @@ do ->
     escapeRegex = (str) ->
         str.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&')
 
+    stripquotes = (str) ->
+        str.replace(/'/g, "\'")
+
     isAlpha = (chr) ->
         chr = chr.toLowerCase()
         chr >= 'a' and chr <= 'z'
@@ -77,5 +80,6 @@ do ->
         fancyJoin
         stripHtml
         escapeRegex
+        stripquotes
         noop
     }
