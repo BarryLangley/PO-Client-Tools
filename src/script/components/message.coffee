@@ -13,6 +13,8 @@ do ->
         print msg
     html = (msg) ->
         Client.printHtml msg
+    bold = (title, msg = '') ->
+        html "<timestamp/><b>#{title}:</b> #{msg}"
     notification = (msg) ->
         if confetti.cache.initialized isnt no and confetti.cache.read('notifications') is on
             Client.trayMessage "Pokémon Online - #{Client.windowTitle}", msg
@@ -24,6 +26,7 @@ do ->
         pm
         print: printm
         html
+        bold
         notification
         bot
     }

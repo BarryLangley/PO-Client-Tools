@@ -4,12 +4,13 @@ do ->
     attempts = 0
 
     attemptToReconnect = ->
-        if attempts > 3
+        if attempts >= 3
             return no
 
         attempts += 1
         Client.reconnect()
 
+    # TODO: Research auto-accepting passwordDialog
     Network.playerLogin.connect ->
         if autoReconnectTimer isnt -1
             confetti.msg.notification "Reconnected to server!"
@@ -18,7 +19,6 @@ do ->
             autoReconnectTimer = -1
             attempts = 0
 
-    # TODO: Ensure playerLogin is not called when the player is autokicked
     Network.disconnected.connect ->
         if confetti.cache.get('autoreconnect') is on and autoReconnectTimer is -1 and forced isnt yes
             confetti.msg.bot "Attempting to reconnect..."

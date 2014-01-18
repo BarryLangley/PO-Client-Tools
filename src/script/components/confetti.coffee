@@ -47,9 +47,9 @@ do ->
         once = confetti.cache.once
 
         confetti.cache
-            .store('ignores', [], once)
-            .store('botname', '~Confetti', once)
-            .store('botcolor', '#095cef', once)
+            .store('blocked', [], once)
+            .store('botname', '±Confetti', once)
+            .store('botcolor', '#09abdc', once)
             .store('notifications', yes, once)
             .store('commandindicator', '-', once)
 
