@@ -8,6 +8,9 @@ do ->
 
         (Client.player(id).flags & (1 << 2)) > 0
 
+    authToName = (auth) ->
+        ['User', 'Moderator', 'Administrator', 'Owner'][auth] or 'Invisible'
+
     status = (id) ->
         id = Client.id(id) if typeof id is 'string'
 
@@ -40,6 +43,7 @@ do ->
     confetti.player = {
         create
         battling
+        authToName
         status
         name
         fancyName

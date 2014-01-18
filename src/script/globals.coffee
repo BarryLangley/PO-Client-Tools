@@ -14,3 +14,7 @@ if typeof confetti isnt 'object'
 
         dataDir: sys.scriptsFolder
         cacheFile: 'confetti.json'
+        loginTime: 0
+
+Network.playerLogin.connect ->
+    confetti.loginTime = +sys.time()

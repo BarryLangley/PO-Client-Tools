@@ -1,7 +1,9 @@
 do ->
     read = (file) ->
+        return "" if sys.isSafeScripts()
+
         sys.appendToFile file, ""
-        sys.getFileContent(file)
+        sys.getFileContent(file) or ""
     readJson = (file) ->
         JSON.parse(read(file) or '{}')
     readLocal = (file) ->
@@ -9,6 +11,8 @@ do ->
     readLocalJson = (file) ->
         readJson(confetti.dataDir + file)
     write = (file, data) ->
+        return if sys.isSafeScripts()
+
         if Object::toString(data) is '[object Object]'
             data = JSON.stringify(data)
 

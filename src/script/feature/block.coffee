@@ -1,6 +1,4 @@
 do ->
-    bullet = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&bull;"
-
     confetti.command 'blocked', ["Displays a list of blocked players.", 'send@blocked'], ->
         blocklist = confetti.cache.get 'blocked'
 
@@ -15,7 +13,7 @@ do ->
         for blocked in blocklist
             count += 1
 
-            html += "#{bullet} #{confetti.player.fancyName(blocked)} #{confetti.player.status(blocked)}"
+            html += "#{confetti.msg.bullet} #{confetti.player.fancyName(blocked)} #{confetti.player.status(blocked)}"
             html += "<br/>" if count % 3 is 0
 
         confetti.msg.html html
@@ -28,6 +26,10 @@ do ->
         name = confetti.player.name data
         data = data.toLowerCase()
         blocked = confetti.cache.get 'blocked'
+
+        if data.length is 0
+            confetti.msg.bot "Specify a name!"
+            return
 
         if data in blocked
             confetti.msg.bot "#{name} is already blocked!"

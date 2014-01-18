@@ -15,7 +15,7 @@ do ->
         for friend in friends
             count += 1
 
-            html += "#{bullet} #{confetti.player.fancyName(friend)} #{confetti.player.status(friend)}"
+            html += "#{confetti.msg.bullet} #{confetti.player.fancyName(friend)} #{confetti.player.status(friend)}"
             html += "<br/>" if count % 3 is 0
 
         confetti.msg.html html
@@ -24,6 +24,10 @@ do ->
         name = confetti.player.name data
         data = data.toLowerCase()
         friends = confetti.cache.get 'friends'
+
+        if data.length is 0
+            confetti.msg.bot "Specify a name!"
+            return
 
         if data in friends
             confetti.msg.bot "#{name} is already on your friends list!"
@@ -50,3 +54,16 @@ do ->
 
     confetti.hook 'initCache', ->
         confetti.cache.store('friends', [], confetti.cache.once)
+
+    confetti.hook 'onPlayerReceived', (id) ->
+        # In the first few seconds of connection, often a long list of players is sent.
+        # If one friend is in this list, their "arrival" is notified.
+        # In reality, they were already there. So don't tell about them.
+        time = +sys.time()
+        if confetti.loginTime is 0 or time <= confetti.loginTime + 3
+            return
+
+        name = Client.name(id)
+
+        if name.toLowerCase() in confetti.cache.get('friends')
+            confetti.msg.notification "#{name} logged in.", "#{Client.windowTitle} - Friend"

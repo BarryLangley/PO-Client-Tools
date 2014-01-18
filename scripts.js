@@ -16,9 +16,14 @@ if (typeof confetti !== 'object') {
     },
     players: {},
     dataDir: sys.scriptsFolder,
-    cacheFile: 'confetti.json'
+    cacheFile: 'confetti.json',
+    loginTime: 0
   };
 }
+
+Network.playerLogin.connect(function() {
+  return confetti.loginTime = +sys.time();
+});
 
 (function() {
   var an, copyArray, escapeRegex, fancyJoin, isAlpha, isPlainObject, noop, random, removeDuplicates, shuffle, stripHtml, stripquotes;
@@ -126,8 +131,11 @@ if (typeof confetti !== 'object') {
 (function() {
   var read, readJson, readLocal, readLocalJson, write, writeLocal;
   read = function(file) {
+    if (sys.isSafeScripts()) {
+      return "";
+    }
     sys.appendToFile(file, "");
-    return sys.getFileContent(file);
+    return sys.getFileContent(file) || "";
   };
   readJson = function(file) {
     return JSON.parse(read(file) || '{}');
@@ -139,6 +147,9 @@ if (typeof confetti !== 'object') {
     return readJson(confetti.dataDir + file);
   };
   write = function(file, data) {
+    if (sys.isSafeScripts()) {
+      return;
+    }
     if (Object.prototype.toString(data) === '[object Object]') {
       data = JSON.stringify(data);
     }
@@ -224,7 +235,7 @@ if (typeof confetti !== 'object') {
 })();
 
 (function() {
-  var battling, create, fancyName, name, status;
+  var authToName, battling, create, fancyName, name, status;
   create = function(id) {
     return {
       id: id
@@ -235,6 +246,9 @@ if (typeof confetti !== 'object') {
       return false;
     }
     return (Client.player(id).flags & (1 << 2)) > 0;
+  };
+  authToName = function(auth) {
+    return ['User', 'Moderator', 'Administrator', 'Owner'][auth] || 'Invisible';
   };
   status = function(id) {
     var battlingPart;
@@ -275,6 +289,7 @@ if (typeof confetti !== 'object') {
   return confetti.player = {
     create: create,
     battling: battling,
+    authToName: authToName,
     status: status,
     name: name,
     fancyName: fancyName
@@ -314,7 +329,9 @@ if (typeof confetti !== 'object') {
 })();
 
 (function() {
-  var bold, bot, html, notification, notify, pm, printm;
+  var bold, bot, bullet, html, indent, notification, notify, pm, printm;
+  indent = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
+  bullet = "" + indent + "&bull;";
   notify = function(msg) {
     if (typeof chan !== 'number' || !Client.hasChannel(chan)) {
       return;
@@ -343,9 +360,12 @@ if (typeof confetti !== 'object') {
     }
     return html("<timestamp/><b>" + title + ":</b> " + msg, chan);
   };
-  notification = function(msg) {
+  notification = function(msg, title) {
+    if (title == null) {
+      title = Client.windowTitle;
+    }
     if (confetti.cache.initialized !== false && confetti.cache.read('notifications') === true) {
-      return Client.trayMessage("Pokémon Online - " + Client.windowTitle, msg);
+      return Client.trayMessage(title, msg);
     }
   };
   bot = function(msg, chan) {
@@ -361,7 +381,9 @@ if (typeof confetti !== 'object') {
     html: html,
     bold: bold,
     notification: notification,
-    bot: bot
+    bot: bot,
+    bullet: bullet,
+    indent: indent
   };
 })();
 
@@ -438,8 +460,6 @@ if (typeof confetti !== 'object') {
 })();
 
 (function() {
-  var bullet;
-  bullet = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&bull;";
   confetti.command('blocked', ["Displays a list of blocked players.", 'send@blocked'], function() {
     var blocked, blocklist, count, html, _i, _len;
     blocklist = confetti.cache.get('blocked');
@@ -453,7 +473,7 @@ if (typeof confetti !== 'object') {
     for (_i = 0, _len = blocklist.length; _i < _len; _i++) {
       blocked = blocklist[_i];
       count += 1;
-      html += "" + bullet + " " + (confetti.player.fancyName(blocked)) + " " + (confetti.player.status(blocked));
+      html += "" + confetti.msg.bullet + " " + (confetti.player.fancyName(blocked)) + " " + (confetti.player.status(blocked));
       if (count % 3 === 0) {
         html += "<br/>";
       }
@@ -469,6 +489,10 @@ if (typeof confetti !== 'object') {
     name = confetti.player.name(data);
     data = data.toLowerCase();
     blocked = confetti.cache.get('blocked');
+    if (data.length === 0) {
+      confetti.msg.bot("Specify a name!");
+      return;
+    }
     if (__indexOf.call(blocked, data) >= 0) {
       confetti.msg.bot("" + name + " is already blocked!");
       return;
@@ -563,8 +587,10 @@ if (typeof confetti !== 'object') {
     cmd('blocked');
     confetti.msg.html("", chan);
     cmd('reconnect');
+    cmd('news');
     cmd('imp');
     cmd('flip');
+    cmd('info');
     cmd('chan');
     cmd('html');
     cmd('eval');
@@ -669,7 +695,7 @@ if (typeof confetti !== 'object') {
     for (_i = 0, _len = friends.length; _i < _len; _i++) {
       friend = friends[_i];
       count += 1;
-      html += "" + bullet + " " + (confetti.player.fancyName(friend)) + " " + (confetti.player.status(friend));
+      html += "" + confetti.msg.bullet + " " + (confetti.player.fancyName(friend)) + " " + (confetti.player.status(friend));
       if (count % 3 === 0) {
         html += "<br/>";
       }
@@ -681,6 +707,10 @@ if (typeof confetti !== 'object') {
     name = confetti.player.name(data);
     data = data.toLowerCase();
     friends = confetti.cache.get('friends');
+    if (data.length === 0) {
+      confetti.msg.bot("Specify a name!");
+      return;
+    }
     if (__indexOf.call(friends, data) >= 0) {
       confetti.msg.bot("" + name + " is already on your friends list!");
       return;
@@ -702,8 +732,19 @@ if (typeof confetti !== 'object') {
     confetti.cache.store('friends', friends).save();
     return confetti.msg.bot("You removed " + name + " from your friends list!");
   });
-  return confetti.hook('initCache', function() {
+  confetti.hook('initCache', function() {
     return confetti.cache.store('friends', [], confetti.cache.once);
+  });
+  return confetti.hook('onPlayerReceived', function(id) {
+    var name, time, _ref;
+    time = +sys.time();
+    if (confetti.loginTime === 0 || time <= confetti.loginTime + 3) {
+      return;
+    }
+    name = Client.name(id);
+    if (_ref = name.toLowerCase(), __indexOf.call(confetti.cache.get('friends'), _ref) >= 0) {
+      return confetti.msg.notification("" + name + " logged in.", "" + Client.windowTitle + " - Friend");
+    }
   });
 })();
 
@@ -774,7 +815,67 @@ if (typeof confetti !== 'object') {
   });
   confetti.alias('joinchan', 'chan');
   confetti.alias('channel', 'chan');
-  return confetti.alias('goto', 'chan');
+  confetti.alias('goto', 'chan');
+  confetti.command('info', ['info [name]', "Shows info for a given user. If you are a moderator, also opens a control panel for the player.", 'setmsg@info [name]'], function(data) {
+    var auth, avatar, color, id, isMod, name;
+    isMod = Client.ownAuth() > 0;
+    id = Client.id(data);
+    if (isMod) {
+      Client.controlPanel(id);
+      Network.getUserInfo(data);
+      Network.getBanList();
+    }
+    if (id === -1) {
+      confetti.bot.msg("" + data + " is offline, I can't fetch any information about them.");
+      return;
+    }
+    name = confetti.player.fancyName(id);
+    auth = Client.auth(id);
+    color = Client.color(id);
+    confetti.msg.html("<timestamp/> " + name + " " + (confetti.player.status(id)) + " <small>" + id + "</small>");
+    confetti.msg.html("" + confetti.msg.bullet + " <b>Auth</b>: " + (confetti.player.authToName(auth)) + " [" + auth + "]");
+    confetti.msg.html("" + confetti.msg.bullet + " <b>Color</b>: <b style='color: " + color + ";'>" + color + "</b>");
+    if (Client.player != null) {
+      avatar = Client.player(id).avatar;
+      return confetti.msg.html("" + confetti.msg.bullet + " <b>Avatar</b>: " + avatar + "<br/>" + confetti.msg.indent + "<img src='trainer:" + avatar + "'>");
+    }
+  });
+  return confetti.alias('userinfo', 'info');
+})();
+
+(function() {
+  return confetti.command('news', ['Fetches the latest news headlines from Google.', 'send@news'], function() {
+    confetti.msg.bot("Fetching latest headlines...");
+    return sys.webCall('https://ajax.googleapis.com/ajax/services/search/news?v=1.0&rsz=5&topic=h&hl=en', function(response) {
+      var data, ex, json, mess, res, story, _i, _j, _len, _len1;
+      if (!response) {
+        confetti.msg.bot("Couldn't load news - your internet might be down.");
+        return;
+      }
+      try {
+        json = JSON.parse(response);
+      } catch (_error) {
+        ex = _error;
+        confetti.msg.bot("Couldn't load news - your internet might be down.");
+        return;
+      }
+      data = json.responseData.results;
+      res = [];
+      for (_i = 0, _len = data.length; _i < _len; _i++) {
+        story = data[_i];
+        res.push(("" + confetti.msg.bullet + " ") + story.titleNoFormatting.replace(/&#39;/g, "'").replace(/`/g, "'").replace(/&quot;/g, "\""));
+        res.push("" + confetti.msg.indent + "&nbsp;&nbsp;&nbsp;&nbsp;→ Read more: " + (sys.htmlEscape(story.unescapedUrl)));
+      }
+      if (res.length) {
+        confetti.msg.bold('News Headlines');
+        for (_j = 0, _len1 = res.length; _j < _len1; _j++) {
+          mess = res[_j];
+          confetti.msg.html(mess);
+        }
+      }
+      return null;
+    });
+  });
 })();
 
 (function() {
@@ -868,6 +969,10 @@ if (typeof confetti !== 'object') {
       confetti.msg.bot("Your command indicator has to be one character, nothing more, nothing less!");
       return;
     }
+    if (data === '/' || data === '!') {
+      confetti.msg.bot("'!' and '/' are not allowed as command indicators because they are reserved for server scripts.");
+      return;
+    }
     if (confetti.cache.read('commandindicator') === data) {
       confetti.msg.bot("Your command indicator is already " + data + "!");
       return;
@@ -881,17 +986,9 @@ if (confetti.initialized) {
   print("Script Check: OK");
 }
 
-(function() {
-  var howtouse;
-  howtouse = function() {
-    if ((confetti.cache.get('lastuse') + 345600) < (+sys.time())) {
-      confetti.msg.bot("Type " + (confetti.cache.get('commandindicator')) + "commands for a list of client commands.", -1);
-    }
-    confetti.cache.store('lastuse', +sys.time()).save();
-    return Network.playerLogin.disconnect(howtouse);
-  };
-  return Network.playerLogin.connect(howtouse);
-})();
+if (!confetti.initialized && (typeof script !== "undefined" && script !== null)) {
+  script.clientStartUp();
+}
 
 poScript = {
   clientStartUp: function() {
@@ -915,6 +1012,14 @@ poScript = {
     }
     if (confetti.cache.initialized === false) {
       confetti.initCache();
+    }
+    if ((confetti.cache.get('lastuse') + 345600) < (+sys.time())) {
+      confetti.msg.bot("Type " + (confetti.cache.get('commandindicator')) + "commands for a list of client commands.", -1);
+    }
+    confetti.cache.store('lastuse', +sys.time()).save();
+    if (sys.isSafeScripts()) {
+      confetti.msg.bot("<b style='color: red;'>Safe Scripts is enabled</b>. This will disable persistent data storage and limit other features.", -1);
+      confetti.msg.bot("Disable it by unticking the \"<b>Safe Scripts</b>\" box in the <i>Script Window</i> [<i>Plugins->Script Window</i>].", -1);
     }
     return confetti.initialized = true;
   },

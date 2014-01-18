@@ -72,3 +72,31 @@ do ->
     confetti.alias 'joinchan', 'chan'
     confetti.alias 'channel', 'chan'
     confetti.alias 'goto', 'chan'
+
+    confetti.command 'info', ['info [name]', "Shows info for a given user. If you are a moderator, also opens a control panel for the player.", 'setmsg@info [name]'], (data) ->
+        isMod = Client.ownAuth() > 0
+        id = Client.id data
+
+        if isMod
+            Client.controlPanel id
+
+            Network.getUserInfo data
+            Network.getBanList()
+
+        if id is -1
+            confetti.bot.msg "#{data} is offline, I can't fetch any information about them."
+            return
+
+        name = confetti.player.fancyName id
+        auth = Client.auth id
+        color = Client.color id
+
+        confetti.msg.html "<timestamp/> #{name} #{confetti.player.status(id)} <small>#{id}</small>"
+        confetti.msg.html "#{confetti.msg.bullet} <b>Auth</b>: #{confetti.player.authToName(auth)} [#{auth}]"
+        confetti.msg.html "#{confetti.msg.bullet} <b>Color</b>: <b style='color: #{color};'>#{color}</b>"
+
+        if Client.player?
+            avatar = Client.player(id).avatar
+            confetti.msg.html "#{confetti.msg.bullet} <b>Avatar</b>: #{avatar}<br/>#{confetti.msg.indent}<img src='trainer:#{avatar}'>"
+
+    confetti.alias 'userinfo', 'info'

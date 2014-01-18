@@ -57,8 +57,10 @@ do ->
         confetti.msg.html "", chan
 
         cmd 'reconnect'
+        cmd 'news'
         cmd 'imp'
         cmd 'flip'
+        cmd 'info'
         cmd 'chan'
 
         cmd 'html'

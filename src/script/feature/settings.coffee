@@ -37,6 +37,10 @@ do ->
             confetti.msg.bot "Your command indicator has to be one character, nothing more, nothing less!"
             return
 
+        if data in ['/', '!']
+            confetti.msg.bot "'!' and '/' are not allowed as command indicators because they are reserved for server scripts."
+            return
+
         if confetti.cache.read('commandindicator') is data
             confetti.msg.bot "Your command indicator is already #{data}!"
             return
