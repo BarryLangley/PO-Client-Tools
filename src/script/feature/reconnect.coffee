@@ -49,9 +49,5 @@ do ->
         Client.reconnect()
 
     confetti.command 'autoreconnect', ["Toggles whether if you should automatically reconnect to the server when detected you've dc'd.", 'send@autoreconnect'], ->
-        if confetti.cache.read('autoreconnect')
-            confetti.cache.store 'autoreconnect', off
-        else
-            confetti.cache.store 'autoreconnect', on
-
+        confetti.cache.store('autoreconnect', !confetti.cache.read('autoreconnect')).save()
         confetti.msg.bot "Auto reconnect is now #{if confetti.cache.read('autoreconnect') then 'on' else 'off'}."

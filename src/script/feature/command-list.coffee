@@ -1,5 +1,7 @@
 do ->
     # Command list stuff
+    channel = null
+
     cmd = (name) ->
         if confetti.commands[name]
             command = confetti.commands[name]
@@ -8,15 +10,18 @@ do ->
             indicator = confetti.cache.get 'commandindicator'
             complete = "<a href='po:#{parts[0]}/#{indicator}#{parts[1]}' style='text-decoration: none; color: green;'>#{indicator}#{command.info.usage}</a>"
 
-            confetti.msg.html "&bull; #{complete}: #{command.info.desc}"
+            confetti.msg.html "&bull; #{complete}: #{command.info.desc}", channel
 
-    header = (msg, size = 2) ->
-        confetti.msg.html "<font size='#{size}'><b>#{msg}</b></font><br/>"
+    header = (msg, size = 5) ->
+        confetti.msg.html "<font size='#{size}'><b>#{msg}</b></font><br/><br/>", channel
 
     border = (timestamp = no) ->
-        confetti.msg.html "#{if timestamp then '<br/><timestamp/><br/>' else ''}<font color='skyblue'><b>≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈</b></font><br/>"
+        confetti.msg.html "#{if timestamp then '<br/><timestamp/><br/>' else ''}<font color='skyblue'><b>≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈</b></font>#{if timestamp then '<br/>'}", channel
 
-    confetti.command 'configcommands', ['Shows various commands that change your settings.', 'send@configcommands'], ->
+    # TODO: Hooks for custom commands via plugins
+    confetti.command 'configcommands', ['Shows various commands that change your settings.', 'send@configcommands'], (_, chan) ->
+        channel = chan
+
         border()
 
         header 'Configuration Commands'
@@ -29,23 +34,36 @@ do ->
 
         border yes
 
-    confetti.command 'commands', ['Shows this command list.', 'send@commands'], ->
+    confetti.command 'commands', ['Shows this command list.', 'send@commands'], (_, chan) ->
+        channel = chan
         border()
 
         header 'Commands'
-        cmd 'reconnect'
-        cmd 'imp'
-        cmd 'flip'
-        cmd 'html'
-        cmd 'eval'
 
-        header 'Player Blocking', 3
+        header 'Command Lists', 4
+        cmd 'commands'
+        cmd 'configcommands'
+
+        header 'Friends', 4
+        cmd 'friend'
+        cmd 'unfriend'
+        cmd 'friends'
+
+        header 'Player Blocking', 4
         cmd 'block'
         cmd 'unblock'
         cmd 'blocked'
 
-        header 'Command Lists', 3
-        cmd 'commands'
-        cmd 'configcommands'
+        confetti.msg.html "", chan
+
+        cmd 'reconnect'
+        cmd 'imp'
+        cmd 'flip'
+        cmd 'chan'
+
+        cmd 'html'
+        cmd 'eval'
 
         border yes
+
+    confetti.alias 'commandlist', 'commands'

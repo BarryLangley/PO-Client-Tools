@@ -18,9 +18,6 @@ do ->
                 str[index] = letter
         return str.join ''
 
-    spaceify = (msg) ->
-        return msg.split('').join(' ')
-
     l33tify = (msg) ->
         # English-to-l33t Translator (c) 2004-2006 by Lee W. Fastenau
         msg
@@ -74,19 +71,20 @@ do ->
             .replace(/o/gi, '0')
             .replace(/s\b/gi, 'z')
 
-    # Not exactly unicode friendly but very simple.
-    reverseify = (msg) ->
-        msg.split('').reverse().join('')
+    encoolHandlers =
+        none: (msg) -> msg
+        spaces: (msg) -> msg.split('').join(' ')
+        smallcaps: (msg) -> smallcapsify msg
+        leet: (msg) -> l33tify msg
+        l33t: (msg) -> l33tify msg
+        reverse: (msg) -> msg.split('').reverse().join('')
 
     encool = (msg, type = confetti.cache.read('encool')) ->
-        return switch type
-            when 'none' then msg
-            when 'spaces' then spaceify msg
-            when 'smallcaps' then smallcapsify msg
-            when 'leet' then l33tify msg
-            when 'reverse' then reverseify msg
+        encoolHandlers[type or 'none'](msg)
 
     confetti.encool = encool
+    confetti.encool.register = (type, handler) -> encoolHandlers[type] = handler
+
     confetti.hook 'initCache', ->
         confetti.cache.store('encool', 'none', confetti.cache.once)
 
@@ -105,5 +103,5 @@ do ->
             confetti.msg.bot "Your encool type is already #{data}!"
             return
 
-        confetti.cache.store('encool', data)
+        confetti.cache.store('encool', data).save()
         confetti.msg.bot "Your encool type is now #{data}!"

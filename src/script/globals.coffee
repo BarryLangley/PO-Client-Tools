@@ -12,7 +12,5 @@ if typeof confetti isnt 'object'
             initialized: no
         players: {}
 
-        blocked: []
-
         dataDir: sys.scriptsFolder
         cacheFile: 'confetti.json'

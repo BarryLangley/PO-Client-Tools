@@ -21,9 +21,7 @@ poScript =
     # When the client is notified about a player.
     onPlayerReceived: (id) ->
         confetti.players[id] = confetti.player.create(id)
-
-        if Client.name(id).toLowerCase() in confetti.blocked
-            Client.ignore(id, yes)
+        confetti.callHooks 'onPlayerReceived', id
 
     # When the client thinks that player no longer exists.
     onPlayerRemoved: (id) ->

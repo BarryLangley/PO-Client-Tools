@@ -16,6 +16,7 @@ do ->
 
     # Commands
     commands = {}
+    aliases  = {}
 
     confetti.command = (name, help, handler) ->
         usage    = ""
@@ -24,30 +25,37 @@ do ->
 
         if help.length is 2
             usage    = name
-            desc     = help[0]
-            complete = help[1]
+            [desc, complete] = help
         else
-            usage    = help[0]
-            desc     = help[1]
-            complete = help[2]
+            [usage, desc, complete] = help
 
         commands[name] = {name, help, handler, info: {usage, desc, complete}}
 
+    confetti.alias = (alias, command) ->
+        aliases[alias] = command
+
     confetti.execCommand = (command, data, message, chan) ->
+        # Use the alias
+        if aliases.hasOwnProperty(command)
+            command = aliases[command]
+
         if commands.hasOwnProperty(command)
-            commands[command].handler(data, message, chan)
+            commands[command].handler(data, chan, message)
         else
             confetti.msg.bot "The command '#{command}' doesn't exist, silly!"
 
     confetti.commands = commands
+    confetti.aliases  = aliases
 
-    # Cache
+    # Initialize cache
+    # This is done in one function to mimimize the amount of file rewrites (especially on first use).
+    # save is called last and should not be called by one of the hooks
     confetti.initCache = ->
         confetti.cache = new confetti.Cache
         once = confetti.cache.once
 
+        # These are still here as they are part of core functionality (used in components).
         confetti.cache
-            .store('blocked', [], once)
             .store('botname', '±Confetti', once)
             .store('botcolor', '#09abdc', once)
             .store('notifications', yes, once)

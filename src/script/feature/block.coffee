@@ -1,9 +1,22 @@
 do ->
-    confetti.command 'blocked', ["Displays a list of blocked players.", 'send@blocklist'], ->
+    bullet = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&bull;"
+
+    confetti.command 'blocked', ["Displays a list of blocked players.", 'send@blocked'], ->
+        blocklist = confetti.cache.get 'blocked'
+
+        if blocklist.length is 0
+            confetti.msg.bot "There is no one on your block list."
+            return
+
         confetti.msg.bold "Blocked Players"
 
-        html = ""
-        (html += "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&bull; #{confetti.player.name(blocked)}" for blocked in confetti.blocked)
+        html  = ""
+        count = 0
+        for blocked in blocklist
+            count += 1
+
+            html += "#{bullet} #{confetti.player.fancyName(blocked)} #{confetti.player.status(blocked)}"
+            html += "<br/>" if count % 3 is 0
 
         confetti.msg.html html
 
@@ -14,12 +27,14 @@ do ->
 
         name = confetti.player.name data
         data = data.toLowerCase()
-        if data in confetti.blocked
+        blocked = confetti.cache.get 'blocked'
+
+        if data in blocked
             confetti.msg.bot "#{name} is already blocked!"
             return
 
-        confetti.blocked.push data
-        confetti.cache.store('blocked', confetti.blocked)
+        blocked.push data
+        confetti.cache.store('blocked', blocked).save()
 
         id = Client.id data
         Client.ignore(id, yes) if id isnt -1
@@ -29,15 +44,23 @@ do ->
     confetti.command 'unblock', ['unblock [name]', "Unblocks a user.", 'setmsg@unblock [name]'], (data) ->
         data = data.toLowerCase()
         name = confetti.player.name data
+        blocked = confetti.cache.get 'blocked'
 
-        unless data in confetti.blocked
+        unless data in blocked
             confetti.msg.bot "#{name} isn't blocked!"
             return
 
-        confetti.blocked.splice confetti.blocked.indexOf(data), 1
-        confetti.cache.store('blocked', confetti.blocked)
+        blocked.splice blocked.indexOf(data), 1
+        confetti.cache.store('blocked', blocked).save()
 
         id = Client.id data
         Client.ignore(id, no) if id isnt -1
 
         confetti.msg.bot "You are no longer blocking #{name}!"
+
+    confetti.hook 'initCache', ->
+        confetti.cache.store('blocked', [], confetti.cache.once)
+
+    confetti.hook 'onPlayerReceived', (id) ->
+        if Client.name(id).toLowerCase() in confetti.cache.get('blocked')
+            Client.ignore(id, yes)
