@@ -84,7 +84,7 @@ do ->
             Network.getBanList()
 
         if id is -1
-            confetti.bot.msg "#{data} is offline, I can't fetch any information about them."
+            confetti.msg.bot "#{data} is offline, I can't fetch any information about them."
             return
 
         name = confetti.player.fancyName id

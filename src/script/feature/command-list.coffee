@@ -67,6 +67,13 @@ do ->
 
         confetti.callHooks 'commands:block'
 
+        header 'Plugins', 4
+        cmd 'addplugin'
+        cmd 'removeplugin'
+        cmd 'plugins'
+
+        confetti.callHooks 'commands:plugins'
+
         # Custom categories should be done in this hook, afterwards there are the misc. commands.
         confetti.callHooks 'commands:categories'
         confetti.msg.html "", chan

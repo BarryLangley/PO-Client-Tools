@@ -12,8 +12,11 @@ if typeof confetti isnt 'object'
             initialized: no
         players: {}
 
+        pluginsUrl: 'https://raw.github.com/TheUnknownOne/PO-Client-Tools/v2/plugins/'
+
         dataDir: sys.scriptsFolder
         cacheFile: 'confetti.json'
+
         loginTime: 0
 
     Network.playerLogin.connect ->

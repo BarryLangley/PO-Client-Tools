@@ -6,6 +6,12 @@ module.exports = (grunt) ->
         grunt.log.ok 'The following modules will be built:', clientFiles.join(', ').replace(/.js/gi, '')
         grunt.task.run 'coffee:client'
 
+    grunt.registerTask 'build-plugins', 'Builds the client script plugins.', (data) ->
+        grunt.log.ok 'Building plugins...'
+
+        grunt.log.ok 'Building plugin: Insults'
+        grunt.task.run 'coffee:insult-plugin'
+
     grunt.registerTask 'build-battle', 'Builds the battle script source.', (data) ->
         grunt.log.ok 'The following modules will be built:', battleFiles.join(', ').replace(/.js/gi, '')
         grunt.task.run 'concat:battle'
@@ -53,5 +59,11 @@ module.exports = (grunt) ->
                     join: yes
                 files:
                     'scripts.js': clientFiles
+            'insult-plugin':
+                options:
+                    bare: yes
+                    join: yes
+                files:
+                    'plugins/insults/insults.js': 'plugins/insults/insults.coffee'
 
     grunt.initConfig gruntConfig

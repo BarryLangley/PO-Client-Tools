@@ -63,6 +63,30 @@ do ->
             .store('notifications', yes, once)
             .store('commandindicator', '-', once)
             .store('lastuse', 0, once)
+            .store('plugins', [], once)
 
         confetti.callHooks 'initCache'
         confetti.cache.save()
+
+    confetti.initPlugins = ->
+        plugins = confetti.cache.get('plugins')
+
+        return if plugins.length is 0
+        return if sys.isSafeScripts()
+
+        success = no
+        for plugin in plugins
+            src = confetti.io.readLocal "plugin-#{plugin.id}.js"
+            if src
+                try
+                    sys.eval(src, "plugin-#{plugin.id}.js")
+                    success = yes
+                catch ex
+                    print "Couldn't load plugin #{plugin.name}:"
+                    print "#{ex} on line #{ex.lineNumber}"
+                    print ex.backtracetext if ex.backtracetext
+
+        # Call initCache again - plugins might need it.
+        if success
+            confetti.callHooks 'initCache'
+            confetti.cache.save()

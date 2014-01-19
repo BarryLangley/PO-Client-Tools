@@ -2,13 +2,14 @@
 # This is false when the script loads for the first time, so that's why you don't see this message if you just log in.
 if confetti.initialized
     print "Script Check: OK"
+    script.clientStartUp()
 
 # Initializes the script by calling clientStartUp.
 # When the user changes the script, this condition will be true (script already exists, which means something was loaded previously,
 # but confetti was not, so we can initialize it here)
 
 # Script is undefined when the client starts up, so simply detecting that should do the trick.
-if not confetti.initialized and script?
+else if not confetti.initialized and script?
     # Use a one ms timer to wait for the script to be defined
     sys.setTimer ->
         script.clientStartUp()
@@ -29,15 +30,18 @@ poScript =
         if confetti.cache.initialized is no
             confetti.initCache()
 
+        confetti.initPlugins()
+
         # If confetti (PO) hasn't been used in the last 5 days (or at all - the initial value is 0),
         # display a friendly how-to-use message.
 
         # The reason why we don't do this only once is because people tend to forget. Yeah.
         # 432000 is 5 days in seconds.
-        if (confetti.cache.get('lastuse') + 345600) < (+sys.time())
-            confetti.msg.bot "Type #{confetti.cache.get('commandindicator')}commands for a list of client commands.", -1
+        unless confetti.initialized
+            if (confetti.cache.get('lastuse') + 345600) < (+sys.time())
+                confetti.msg.bot "Type #{confetti.cache.get('commandindicator')}commands for a list of client commands.", -1
 
-        confetti.cache.store('lastuse', +sys.time()).save()
+            confetti.cache.store('lastuse', +sys.time()).save()
 
         if sys.isSafeScripts()
             confetti.msg.bot "<b style='color: red;'>Safe Scripts is enabled</b>. This will disable persistent data storage and limit other features.", -1

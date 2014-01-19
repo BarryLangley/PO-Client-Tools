@@ -15,6 +15,7 @@ if (typeof confetti !== 'object') {
       initialized: false
     },
     players: {},
+    pluginsUrl: 'https://raw.github.com/TheUnknownOne/PO-Client-Tools/v2/plugins/',
     dataDir: sys.scriptsFolder,
     cacheFile: 'confetti.json',
     loginTime: 0
@@ -354,7 +355,7 @@ if (typeof confetti !== 'object') {
   indent = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
   bullet = "" + indent + "&bull;";
   poIcon = '<img width="16" height="16" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAADBElEQVR42o2Tf0zNaxzHn+eL9JWrn4hFuIoTuwxnOqd0SUUT92KJRXOb8uNyRNM014+Jml91/XEtFYcZO8YNK3SSX7NK7PrDJWaYM1Nz/WGK1aFzXp462Eyz+9nee7Znn/f7+bw/n88jxDeBHLX61eAtJSRWVZFx+hyLs4rejw9Jfq6L/xVxlQa/VEdZct6H5j1HcR8v74SrqdTmKovLwfB9csSO9cKw3SmNJWgzrxGU9gxzTiur/3Rz4ATYL+EsOER29+SxednSsA05pgAZvhU5djcy8ggyvppe8+8zdeNbCsrg2mXYa+3I/sqzl8k6Wgz73Snn3VWko8jQLLTg35DDspRgPtJ8DJlUT/SGFvZZ4eoVnCl5zk92Jh4cpA3NLJXBS5E/FSIj8tH6p6L5JKD5z0UOzlAVbUZOttJjzm3Sdn7gxN90otQj8KPFLAcsaNL8flGvpqMNWOIhe8co/Izmm0SX+ChlL+YUI5a9YHsx2FRjxVY08UPYiiTRL94tfWLR+iqirk4vs4JJIdIj5DsHGbIcOa6IXrNqSS+Awzbc2XtbgoToHxUtAmLbpB6F9I5C661IXpORvolIfYpHqM80ZNBCZFgucoqN6TnvyS/BNTe3JVDMWlVpCB6X+kz4m5A+MaqjRgJC44hL2UXvkfPUnRLRlRW/2Z4qJv6FIbOJsMQ9jV0tsFrxPnaS4uSMI/QcaETow6k418zFC7As/zHC34hU1uTAFMTIlYgJuYRM28iOwobiL4O0lRN+voL2U6fbmLFgN9ft7/jnelenEUOmIkITCIxcQ2J6CTv3/8vLu7Q/aSD8qz2qqnCtra9RM7Z38GumlfV/VDN9YRFnTjpw3ILmO3C/Fv5rhNbHWLpdxit2LPdu0P6wHi5dhAd18LTBA8dteP2I9tanHZbv/QavJZtuRJ8521bz6KbrzetG3J1w3HG9qbvaUrmrsHpSZ063zOR1dXq8pTFs/Npmo5503KQn7DcHzi6PDVxUG6vPt5sD0mpNwak1ESGmdQEqXfvM+wh5BaahF9XRVgAAAABJRU5ErkJggg=="/>';
-  notify = function(msg) {
+  notify = function(msg, chan) {
     if (typeof chan !== 'number' || !Client.hasChannel(chan)) {
       return;
     }
@@ -485,13 +486,45 @@ if (typeof confetti !== 'object') {
   };
   confetti.commands = commands;
   confetti.aliases = aliases;
-  return confetti.initCache = function() {
+  confetti.initCache = function() {
     var once;
     confetti.cache = new confetti.Cache;
     once = confetti.cache.once;
-    confetti.cache.store('botname', '±Confetti', once).store('botcolor', '#07b581', once).store('notifications', true, once).store('commandindicator', '-', once).store('lastuse', 0, once);
+    confetti.cache.store('botname', '±Confetti', once).store('botcolor', '#07b581', once).store('notifications', true, once).store('commandindicator', '-', once).store('lastuse', 0, once).store('plugins', [], once);
     confetti.callHooks('initCache');
     return confetti.cache.save();
+  };
+  return confetti.initPlugins = function() {
+    var ex, plugin, plugins, src, success, _i, _len;
+    plugins = confetti.cache.get('plugins');
+    if (plugins.length === 0) {
+      return;
+    }
+    if (sys.isSafeScripts()) {
+      return;
+    }
+    success = false;
+    for (_i = 0, _len = plugins.length; _i < _len; _i++) {
+      plugin = plugins[_i];
+      src = confetti.io.readLocal("plugin-" + plugin.id + ".js");
+      if (src) {
+        try {
+          sys["eval"](src, "plugin-" + plugin.id + ".js");
+          success = true;
+        } catch (_error) {
+          ex = _error;
+          print("Couldn't load plugin " + plugin.name + ":");
+          print("" + ex + " on line " + ex.lineNumber);
+          if (ex.backtracetext) {
+            print(ex.backtracetext);
+          }
+        }
+      }
+    }
+    if (success) {
+      confetti.callHooks('initCache');
+      return confetti.cache.save();
+    }
   };
 })();
 
@@ -639,6 +672,11 @@ if (typeof confetti !== 'object') {
     cmd('unblock');
     cmd('blocked');
     confetti.callHooks('commands:block');
+    header('Plugins', 4);
+    cmd('addplugin');
+    cmd('removeplugin');
+    cmd('plugins');
+    confetti.callHooks('commands:plugins');
     confetti.callHooks('commands:categories');
     confetti.msg.html("", chan);
     cmd('reconnect');
@@ -943,7 +981,7 @@ if (typeof confetti !== 'object') {
       Network.getBanList();
     }
     if (id === -1) {
-      confetti.bot.msg("" + data + " is offline, I can't fetch any information about them.");
+      confetti.msg.bot("" + data + " is offline, I can't fetch any information about them.");
       return;
     }
     name = confetti.player.fancyName(id);
@@ -992,6 +1030,126 @@ if (typeof confetti !== 'object') {
       }
       return null;
     });
+  });
+})();
+
+(function() {
+  var findPlugin, hasPlugin;
+  findPlugin = function(id, plugins) {
+    var plugin, _i, _len;
+    if (plugins == null) {
+      plugins = confetti.cache.get('plugins');
+    }
+    id = id.toLowerCase();
+    for (_i = 0, _len = plugins.length; _i < _len; _i++) {
+      plugin = plugins[_i];
+      if (plugin.id === id || plugin.name.toLowerCase() === id) {
+        return plugin;
+      }
+    }
+    return null;
+  };
+  hasPlugin = function(id, plugins) {
+    return findPlugin(id, plugins) !== null;
+  };
+  confetti.command('plugins', ["Displays a list of enabled and available plugins.", 'send@plugins'], function() {
+    var html, plugin, plugins, _i, _len;
+    plugins = confetti.cache.get('plugins');
+    if (plugins.length > 0) {
+      confetti.msg.bold("Loaded Plugins");
+      html = "";
+      for (_i = 0, _len = plugins.length; _i < _len; _i++) {
+        plugin = plugins[_i];
+        html += "" + confetti.msg.bullet + " <b>" + plugin.name + "</b> (" + plugin.id + ") <small>[<a href='po:send/" + (confetti.cache.get('commandindicator')) + "removeplugin " + plugin.name + "' style='text-decoration: none; color: black;'>remove</a>]</small>";
+      }
+      confetti.msg.html(html);
+    }
+    return sys.webCall(confetti.pluginsUrl + 'listing.json', function(resp) {
+      var addremove, ex, json, _j, _len1;
+      try {
+        json = JSON.parse(resp);
+      } catch (_error) {
+        ex = _error;
+        print(ex);
+        confetti.msg.bot("Couldn't load available plugins listing -- check your internet connection.");
+        return;
+      }
+      if (json.length === 0) {
+        confetti.msg.bot("No plugins are available.");
+        return;
+      }
+      confetti.msg.bold("Available Plugins");
+      html = "";
+      for (_j = 0, _len1 = json.length; _j < _len1; _j++) {
+        plugin = json[_j];
+        addremove = "";
+        if (!hasPlugin(plugin.id, plugins)) {
+          addremove = "<small>[<a href='po:send/" + (confetti.cache.get('commandindicator')) + "addplugin " + plugin.name + "' style='text-decoration: none; color: black;'>add</a>]</small>";
+        } else {
+          addremove = "<small>[<a href='po:send/" + (confetti.cache.get('commandindicator')) + "removeplugin " + plugin.name + "' style='text-decoration: none; color: black;'>remove</a>]</small>";
+        }
+        html += "" + confetti.msg.bullet + " <b>" + plugin.name + "</b> (" + plugin.id + ") " + addremove;
+      }
+      return confetti.msg.html(html);
+    });
+  });
+  confetti.command('addplugin', ['addplugin [plugin]', "Adds a plugin.", 'setmsg@addplugin [name]'], function(data) {
+    var name, plugins;
+    plugins = confetti.cache.get('plugins');
+    name = data;
+    data = data.toLowerCase();
+    if (name.length === 0) {
+      confetti.msg.bot("Specify a plugin!");
+      return;
+    }
+    if (hasPlugin(data, plugins)) {
+      confetti.msg.bot("" + name + " is already enabled as a plugin!");
+      return;
+    }
+    confetti.msg.bot("Locating plugin source...");
+    return sys.webCall(confetti.pluginsUrl + 'listing.json', function(resp) {
+      var ex, json, plugin;
+      try {
+        json = JSON.parse(resp);
+      } catch (_error) {
+        ex = _error;
+        confetti.msg.bot("Couldn't load available plugins listing -- check your internet connection.");
+        return;
+      }
+      if (json.length === 0) {
+        confetti.msg.bot("No plugins are available.");
+        return;
+      }
+      plugin = findPlugin(data, json);
+      if (plugin === null) {
+        confetti.msg.bot("That plugin is not available! Use the 'plugins' command to see a list of available plugins.");
+        return;
+      }
+      confetti.msg.bot("Downloading plugin " + plugin.name + "...");
+      return sys.webCall("" + confetti.pluginsUrl + plugin.id + "/" + plugin.id + ".js", function(file) {
+        if (!file) {
+          confetti.msg.bot("Couldn't load plugin source -- check your internet connection.");
+          return;
+        }
+        sys.writeToFile("" + confetti.dataDir + "plugin-" + plugin.id + ".js", file);
+        plugins.push(plugin);
+        confetti.cache.store('plugins', plugins).save();
+        return confetti.msg.bot("Plugin " + plugin.name + " added! Reload to see the effects.");
+      });
+    });
+  });
+  return confetti.command('removeplugin', ['removeplugin [plugin]', "Removes a plugin.", 'setmsg@removeplugin [plugin]'], function(data) {
+    var name, plugins;
+    name = data;
+    data = data.toLowerCase();
+    plugins = confetti.cache.get('plugins');
+    if (!hasPlugin(data, plugins)) {
+      confetti.msg.bot("" + name + " isn't an enabled plugin!");
+      return;
+    }
+    plugins.splice(plugins.indexOf(data), 1);
+    confetti.cache.store('plugins', plugins).save();
+    return confetti.msg.bot("" + name + " was disabled. Reload to see the effects.");
   });
 })();
 
@@ -1101,9 +1259,8 @@ if (typeof confetti !== 'object') {
 
 if (confetti.initialized) {
   print("Script Check: OK");
-}
-
-if (!confetti.initialized && (typeof script !== "undefined" && script !== null)) {
+  script.clientStartUp();
+} else if (!confetti.initialized && (typeof script !== "undefined" && script !== null)) {
   sys.setTimer(function() {
     return script.clientStartUp();
   }, 1, false);
@@ -1132,10 +1289,13 @@ poScript = {
     if (confetti.cache.initialized === false) {
       confetti.initCache();
     }
-    if ((confetti.cache.get('lastuse') + 345600) < (+sys.time())) {
-      confetti.msg.bot("Type " + (confetti.cache.get('commandindicator')) + "commands for a list of client commands.", -1);
+    confetti.initPlugins();
+    if (!confetti.initialized) {
+      if ((confetti.cache.get('lastuse') + 345600) < (+sys.time())) {
+        confetti.msg.bot("Type " + (confetti.cache.get('commandindicator')) + "commands for a list of client commands.", -1);
+      }
+      confetti.cache.store('lastuse', +sys.time()).save();
     }
-    confetti.cache.store('lastuse', +sys.time()).save();
     if (sys.isSafeScripts()) {
       confetti.msg.bot("<b style='color: red;'>Safe Scripts is enabled</b>. This will disable persistent data storage and limit other features.", -1);
       confetti.msg.bot("Disable it by unticking the \"<b>Safe Scripts</b>\" box in the <i>Script Window</i> [<i>Plugins->Script Window</i>].", -1);
