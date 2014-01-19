@@ -16,5 +16,5 @@ if typeof confetti isnt 'object'
         cacheFile: 'confetti.json'
         loginTime: 0
 
-Network.playerLogin.connect ->
-    confetti.loginTime = +sys.time()
+    Network.playerLogin.connect ->
+        confetti.loginTime = +sys.time()

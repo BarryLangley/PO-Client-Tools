@@ -8,6 +8,8 @@ do ->
         hooks[name].push func
 
     confetti.callHooks = (event, args...) ->
+        return args unless hooks.hasOwnProperty(event)
+
         for hook in hooks[event]
             res = hook args...
             args = res if res and res.length
@@ -57,7 +59,7 @@ do ->
         # These are still here as they are part of core functionality (used in components).
         confetti.cache
             .store('botname', '±Confetti', once)
-            .store('botcolor', '#09abdc', once)
+            .store('botcolor', '#07b581', once)
             .store('notifications', yes, once)
             .store('commandindicator', '-', once)
             .store('lastuse', 0, once)

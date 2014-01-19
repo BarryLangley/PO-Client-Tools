@@ -16,7 +16,7 @@ do ->
             res = []
 
             for story in data
-                res.push "#{confetti.msg.bullet} " + story.titleNoFormatting.replace(/&#39;/g, "'").replace(/`/g, "'").replace(/&quot;/g, "\"")
+                res.push "#{confetti.msg.bullet} <b>" + story.titleNoFormatting.replace(/&#39;/g, "'").replace(/`/g, "'").replace(/&quot;/g, "\"") + "</b>"
                 res.push "#{confetti.msg.indent}&nbsp;&nbsp;&nbsp;&nbsp;→ Read more: #{sys.htmlEscape(story.unescapedUrl)}"
 
             if res.length

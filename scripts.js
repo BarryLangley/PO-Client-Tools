@@ -19,14 +19,13 @@ if (typeof confetti !== 'object') {
     cacheFile: 'confetti.json',
     loginTime: 0
   };
+  Network.playerLogin.connect(function() {
+    return confetti.loginTime = +sys.time();
+  });
 }
 
-Network.playerLogin.connect(function() {
-  return confetti.loginTime = +sys.time();
-});
-
 (function() {
-  var an, copyArray, escapeRegex, fancyJoin, isAlpha, isPlainObject, noop, random, removeDuplicates, shuffle, stripHtml, stripquotes;
+  var an, copyArray, escapeRegex, fancyJoin, isAlpha, isPlainObject, noop, random, removeDuplicates, shuffle, sortOnline, stripHtml, stripquotes, truncate;
   random = function(array) {
     if (Array.isArray(array)) {
       return array[sys.rand(0, array.length)];
@@ -104,6 +103,17 @@ Network.playerLogin.connect(function() {
   escapeRegex = function(str) {
     return str.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
   };
+  sortOnline = function(a, b) {
+    return Client.id(b) - Client.id(a);
+  };
+  truncate = function(str, len) {
+    var strlen;
+    strlen = str.length;
+    if (strlen > len) {
+      str = str.substr(0, len) + ("... [" + (strlen - len) + " more]");
+    }
+    return str;
+  };
   stripquotes = function(str) {
     return str.replace(/'/g, "\'");
   };
@@ -122,6 +132,8 @@ Network.playerLogin.connect(function() {
     an: an,
     fancyJoin: fancyJoin,
     stripHtml: stripHtml,
+    sortOnline: sortOnline,
+    truncate: truncate,
     escapeRegex: escapeRegex,
     stripquotes: stripquotes,
     noop: noop
@@ -238,7 +250,8 @@ Network.playerLogin.connect(function() {
   var authToName, battling, create, fancyName, name, status;
   create = function(id) {
     return {
-      id: id
+      id: id,
+      name: Client.name(id)
     };
   };
   battling = function(id) {
@@ -266,25 +279,33 @@ Network.playerLogin.connect(function() {
     }
   };
   name = function(id) {
-    var pname;
+    var pname, storedname, _ref;
     if (typeof id === 'string') {
       pname = Client.name(Client.id(id));
     } else {
       pname = Client.name(id);
     }
     if (pname === '~Unknown~') {
+      storedname = (_ref = confetti.players[id]) != null ? _ref.name : void 0;
+      if (storedname) {
+        return storedname;
+      }
       return id;
     } else {
       return pname;
     }
   };
-  fancyName = function(id) {
-    var pname;
+  fancyName = function(id, tooltip) {
+    var pname, showInfo;
+    if (tooltip == null) {
+      tooltip = true;
+    }
     pname = name(id);
     if (typeof id === 'string') {
       id = Client.id(id);
     }
-    return "<a " + (typeof id !== 'string' ? 'href=\'po:info/' + id + '\' ' : '') + ("style='text-decoration: none; color: " + (Client.color(id)) + ";' title='Challenge " + (confetti.util.stripquotes(pname)) + "'><b>" + pname + "</b></a>");
+    showInfo = typeof id !== 'string' && tooltip;
+    return "<a " + (showInfo ? 'href=\'po:info/' + id + '\' ' : '') + ("style='text-decoration: none; color: " + (Client.color(id)) + ";'") + (showInfo ? ' title="Challenge ' + confetti.util.stripquotes(pname) + '"' : '') + ("><b>" + pname + "</b></a>");
   };
   return confetti.player = {
     create: create,
@@ -329,9 +350,10 @@ Network.playerLogin.connect(function() {
 })();
 
 (function() {
-  var bold, bot, bullet, html, indent, notification, notify, pm, printm;
+  var bold, bot, bullet, html, indent, notification, notify, pm, poIcon, printm;
   indent = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
   bullet = "" + indent + "&bull;";
+  poIcon = '<img width="16" height="16" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAADBElEQVR42o2Tf0zNaxzHn+eL9JWrn4hFuIoTuwxnOqd0SUUT92KJRXOb8uNyRNM014+Jml91/XEtFYcZO8YNK3SSX7NK7PrDJWaYM1Nz/WGK1aFzXp462Eyz+9nee7Znn/f7+bw/n88jxDeBHLX61eAtJSRWVZFx+hyLs4rejw9Jfq6L/xVxlQa/VEdZct6H5j1HcR8v74SrqdTmKovLwfB9csSO9cKw3SmNJWgzrxGU9gxzTiur/3Rz4ATYL+EsOER29+SxednSsA05pgAZvhU5djcy8ggyvppe8+8zdeNbCsrg2mXYa+3I/sqzl8k6Wgz73Snn3VWko8jQLLTg35DDspRgPtJ8DJlUT/SGFvZZ4eoVnCl5zk92Jh4cpA3NLJXBS5E/FSIj8tH6p6L5JKD5z0UOzlAVbUZOttJjzm3Sdn7gxN90otQj8KPFLAcsaNL8flGvpqMNWOIhe8co/Izmm0SX+ChlL+YUI5a9YHsx2FRjxVY08UPYiiTRL94tfWLR+iqirk4vs4JJIdIj5DsHGbIcOa6IXrNqSS+Awzbc2XtbgoToHxUtAmLbpB6F9I5C661IXpORvolIfYpHqM80ZNBCZFgucoqN6TnvyS/BNTe3JVDMWlVpCB6X+kz4m5A+MaqjRgJC44hL2UXvkfPUnRLRlRW/2Z4qJv6FIbOJsMQ9jV0tsFrxPnaS4uSMI/QcaETow6k418zFC7As/zHC34hU1uTAFMTIlYgJuYRM28iOwobiL4O0lRN+voL2U6fbmLFgN9ft7/jnelenEUOmIkITCIxcQ2J6CTv3/8vLu7Q/aSD8qz2qqnCtra9RM7Z38GumlfV/VDN9YRFnTjpw3ILmO3C/Fv5rhNbHWLpdxit2LPdu0P6wHi5dhAd18LTBA8dteP2I9tanHZbv/QavJZtuRJ8521bz6KbrzetG3J1w3HG9qbvaUrmrsHpSZ063zOR1dXq8pTFs/Npmo5503KQn7DcHzi6PDVxUG6vPt5sD0mpNwak1ESGmdQEqXfvM+wh5BaahF9XRVgAAAABJRU5ErkJggg=="/>';
   notify = function(msg) {
     if (typeof chan !== 'number' || !Client.hasChannel(chan)) {
       return;
@@ -354,18 +376,28 @@ Network.playerLogin.connect(function() {
       return Client.printHtml(msg);
     }
   };
-  bold = function(title, msg, chan) {
+  bold = function(title, msg, chan, color) {
     if (msg == null) {
       msg = '';
     }
-    return html("<timestamp/><b>" + title + ":</b> " + msg, chan);
+    if (color == null) {
+      color = 'black';
+    }
+    return html("<timestamp/><b style='color: " + color + ";'>" + title + ":</b> " + msg, chan);
   };
   notification = function(msg, title) {
     if (title == null) {
       title = Client.windowTitle;
     }
     if (confetti.cache.initialized !== false && confetti.cache.read('notifications') === true) {
-      return Client.trayMessage(title, msg);
+      if (Client.windowActive()) {
+        return html("&nbsp;&nbsp;&nbsp;" + poIcon + " <b>" + title + "</b><br/>" + bullet + " " + msg);
+      } else {
+        if (title !== Client.windowTitle) {
+          title = "" + Client.windowTitle + " - " + title;
+        }
+        return Client.trayMessage(title, confetti.util.stripHtml(msg));
+      }
     }
   };
   bot = function(msg, chan) {
@@ -383,7 +415,8 @@ Network.playerLogin.connect(function() {
     notification: notification,
     bot: bot,
     bullet: bullet,
-    indent: indent
+    indent: indent,
+    poIcon: poIcon
   };
 })();
 
@@ -400,6 +433,9 @@ Network.playerLogin.connect(function() {
   confetti.callHooks = function() {
     var args, event, hook, res, _i, _len, _ref;
     event = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
+    if (!hooks.hasOwnProperty(event)) {
+      return args;
+    }
     _ref = hooks[event];
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
       hook = _ref[_i];
@@ -453,7 +489,7 @@ Network.playerLogin.connect(function() {
     var once;
     confetti.cache = new confetti.Cache;
     once = confetti.cache.once;
-    confetti.cache.store('botname', '±Confetti', once).store('botcolor', '#09abdc', once).store('notifications', true, once).store('commandindicator', '-', once).store('lastuse', 0, once);
+    confetti.cache.store('botname', '±Confetti', once).store('botcolor', '#07b581', once).store('notifications', true, once).store('commandindicator', '-', once).store('lastuse', 0, once);
     confetti.callHooks('initCache');
     return confetti.cache.save();
   };
@@ -462,7 +498,7 @@ Network.playerLogin.connect(function() {
 (function() {
   confetti.command('blocked', ["Displays a list of blocked players.", 'send@blocked'], function() {
     var blocked, blocklist, count, html, _i, _len;
-    blocklist = confetti.cache.get('blocked');
+    blocklist = confetti.cache.get('blocked').sort(confetti.util.sortOnline);
     if (blocklist.length === 0) {
       confetti.msg.bot("There is no one on your block list.");
       return;
@@ -491,6 +527,10 @@ Network.playerLogin.connect(function() {
     blocked = confetti.cache.get('blocked');
     if (data.length === 0) {
       confetti.msg.bot("Specify a name!");
+      return;
+    }
+    if (Client.ownName().toLowerCase() === data) {
+      confetti.msg.bot("You can't block yourself!");
       return;
     }
     if (__indexOf.call(blocked, data) >= 0) {
@@ -556,7 +596,16 @@ Network.playerLogin.connect(function() {
     if (timestamp == null) {
       timestamp = false;
     }
-    return confetti.msg.html("" + (timestamp ? '<br/><timestamp/><br/>' : '<br/>') + "<font color='skyblue'><b>≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈</b></font>" + (timestamp ? '<br/>' : ''), channel);
+    confetti.msg.html("" + (timestamp ? '<br/><timestamp/><br/>' : '<br/>') + "<font color='skyblue'><b>≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈</b></font>" + (timestamp ? '<br/>' : ''), channel);
+    if (timestamp) {
+      return channel = null;
+    }
+  };
+  confetti.commandList = {
+    cmd: cmd,
+    header: header,
+    border: border,
+    channel: channel
   };
   confetti.command('configcommands', ['Shows various commands that change your settings.', 'send@configcommands'], function(_, chan) {
     channel = chan;
@@ -568,6 +617,7 @@ Network.playerLogin.connect(function() {
     cmd('notifications');
     cmd('commandindicator');
     cmd('autoreconnect');
+    confetti.callHooks('commands:config');
     return border(true);
   });
   confetti.command('commands', ['Shows this command list.', 'send@commands'], function(_, chan) {
@@ -577,26 +627,73 @@ Network.playerLogin.connect(function() {
     header('Command Lists', 4);
     cmd('commands');
     cmd('configcommands');
+    confetti.callHooks('commands:list');
     header('Friends', 4);
     cmd('friend');
     cmd('unfriend');
     cmd('friends');
+    cmd('friendnotifications');
+    confetti.callHooks('commands:friends');
     header('Player Blocking', 4);
     cmd('block');
     cmd('unblock');
     cmd('blocked');
+    confetti.callHooks('commands:block');
+    confetti.callHooks('commands:categories');
     confetti.msg.html("", chan);
     cmd('reconnect');
+    cmd('define');
     cmd('news');
     cmd('imp');
     cmd('flip');
     cmd('info');
     cmd('chan');
+    confetti.callHooks('commands:misc');
     cmd('html');
     cmd('eval');
+    confetti.callHooks('commands:dev');
     return border(true);
   });
   return confetti.alias('commandlist', 'commands');
+})();
+
+(function() {
+  return confetti.command('define', ['define [term]', 'Attempts to find a definition for the given term.', 'setmsg@define [term]'], function(data, chan) {
+    if (!data) {
+      confetti.msg.bot("You need to give me a term!");
+      return;
+    }
+    confetti.msg.bot("Loading definition...");
+    return sys.webCall("http://api.urbandictionary.com/v0/define?term=" + (encodeURIComponent(data)), function(response) {
+      var def, entry, ex, example, examples, json, list;
+      if (!response) {
+        confetti.msg.bot("Couldn't load the definition - your internet might be down.", chan);
+        return;
+      }
+      try {
+        json = JSON.parse(response);
+      } catch (_error) {
+        ex = _error;
+        confetti.msg.bot("Couldn't load the definition - your internet might be down.", chan);
+        return;
+      }
+      list = json.list;
+      if (json.result_type === 'no_results') {
+        confetti.msg.bot("I couldn't find anything for " + data + "!");
+        return;
+      }
+      entry = confetti.util.random(list);
+      examples = entry.example.split('\n');
+      example = confetti.util.random(examples) || '';
+      def = entry.definition || '';
+      if (def.trim()) {
+        confetti.msg.bold(data, sys.htmlEscape(confetti.util.truncate(def, 500)), chan);
+        if (example.trim()) {
+          return confetti.msg.html("&nbsp;&nbsp;&nbsp;&nbsp;<b>→</b> " + (sys.htmlEscape(confetti.util.truncate(example, 300))), chan);
+        }
+      }
+    });
+  });
 })();
 
 (function() {
@@ -665,7 +762,7 @@ Network.playerLogin.connect(function() {
   });
   return confetti.command('encool', ['encool [type]', 'Changes your encool type to (none, space, smallcaps, leet, reverse).', 'setmsg@encool [type]'], function(data) {
     data = data.toLowerCase();
-    if (!(data === 'none' || data === 'spaces' || data === 'smallcaps' || data === 'leet' || data === 'reverse')) {
+    if (!(data === 'none' || data === 'spaces' || data === 'smallcaps' || data === 'leet' || data === 'l33t' || data === 'reverse')) {
       confetti.msg.bot("That doesn't look right to me!");
       confetti.msg.bot("Use one of the following types: none, spaces, smallcaps, leet, reverse");
       return;
@@ -684,7 +781,7 @@ Network.playerLogin.connect(function() {
   bullet = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&bull;";
   confetti.command('friends', ["Displays your friends list.", 'send@friends'], function() {
     var count, friend, friends, html, _i, _len;
-    friends = confetti.cache.get('friends');
+    friends = confetti.cache.get('friends').sort(confetti.util.sortOnline);
     if (friends.length === 0) {
       confetti.msg.bot("<span title='You have 0 friends.'>There is no one on your friend list.</span>");
       return;
@@ -711,6 +808,10 @@ Network.playerLogin.connect(function() {
       confetti.msg.bot("Specify a name!");
       return;
     }
+    if (Client.ownName().toLowerCase() === data) {
+      confetti.msg.bot("You can't add yourself as a friend!");
+      return;
+    }
     if (__indexOf.call(friends, data) >= 0) {
       confetti.msg.bot("" + name + " is already on your friends list!");
       return;
@@ -732,18 +833,34 @@ Network.playerLogin.connect(function() {
     confetti.cache.store('friends', friends).save();
     return confetti.msg.bot("You removed " + name + " from your friends list!");
   });
-  confetti.hook('initCache', function() {
-    return confetti.cache.store('friends', [], confetti.cache.once);
+  confetti.command('friendnotifications', ["Toggles whether if notifications specific to friends (logins, logouts) should be shown.", 'send@friendnotifications'], function() {
+    confetti.cache.store('friendnotifications', !confetti.cache.read('friendnotifications')).save();
+    return confetti.msg.bot("Friend notifications are now " + (confetti.cache.read('friendnotifications') ? 'on' : 'off') + ".");
   });
-  return confetti.hook('onPlayerReceived', function(id) {
-    var name, time, _ref;
-    time = +sys.time();
-    if (confetti.loginTime === 0 || time <= confetti.loginTime + 3) {
+  confetti.hook('initCache', function() {
+    return confetti.cache.store('friends', [], confetti.cache.once).store('friendnotifications', true, confetti.cache.once);
+  });
+  confetti.hook('onPlayerReceived', function(id) {
+    var name, _ref;
+    if (confetti.loginTime === 0 || +sys.time() <= confetti.loginTime + 3) {
+      return;
+    }
+    if (confetti.cache.get('friendnotifications') === false) {
       return;
     }
     name = Client.name(id);
     if (_ref = name.toLowerCase(), __indexOf.call(confetti.cache.get('friends'), _ref) >= 0) {
-      return confetti.msg.notification("" + name + " logged in.", "" + Client.windowTitle + " - Friend");
+      return confetti.msg.notification("" + (confetti.player.fancyName(id)) + " logged in.", "Friend joined");
+    }
+  });
+  return confetti.hook('onPlayerRemoved', function(id) {
+    var name, _ref;
+    if (confetti.cache.get('friendnotifications') === false) {
+      return;
+    }
+    name = Client.name(id);
+    if (_ref = name.toLowerCase(), __indexOf.call(confetti.cache.get('friends'), _ref) >= 0) {
+      return confetti.msg.notification("" + (confetti.player.fancyName(id, false)) + " logged out.", "Friend left");
     }
   });
 })();
@@ -863,7 +980,7 @@ Network.playerLogin.connect(function() {
       res = [];
       for (_i = 0, _len = data.length; _i < _len; _i++) {
         story = data[_i];
-        res.push(("" + confetti.msg.bullet + " ") + story.titleNoFormatting.replace(/&#39;/g, "'").replace(/`/g, "'").replace(/&quot;/g, "\""));
+        res.push(("" + confetti.msg.bullet + " <b>") + story.titleNoFormatting.replace(/&#39;/g, "'").replace(/`/g, "'").replace(/&quot;/g, "\"") + "</b>");
         res.push("" + confetti.msg.indent + "&nbsp;&nbsp;&nbsp;&nbsp;→ Read more: " + (sys.htmlEscape(story.unescapedUrl)));
       }
       if (res.length) {
@@ -934,7 +1051,7 @@ Network.playerLogin.connect(function() {
 })();
 
 (function() {
-  confetti.command('notifications', ["Toggles whether if notifications for the script should be shown (tray messages).", 'send@notifications'], function() {
+  confetti.command('notifications', ["Toggles whether if notifications should be shown (tray messages).", 'send@notifications'], function() {
     confetti.cache.store('notifications', !confetti.cache.read('notifications')).save();
     return confetti.msg.bot("Notifications are now " + (confetti.cache.read('notifications') ? 'on' : 'off') + ".");
   });
@@ -963,7 +1080,7 @@ Network.playerLogin.connect(function() {
     confetti.cache.store('botcolor', data).save();
     return confetti.msg.bot("My color is now " + data + "!");
   });
-  return confetti.command('commandindicator', ['commandindicator [char]', "Changes your command indicator (to indicate usage of commands) to [char]. '<b>-</b>' will remain usable.", 'setmsg@commandindicator [char]'], function(data) {
+  return confetti.command('commandindicator', ['commandindicator [char]', "Changes your command indicator (to indicate usage of commands) to [char]. <b>-</b> will remain usable, in case you ever forget.", 'setmsg@commandindicator [char]'], function(data) {
     data = data.toLowerCase();
     if (data.length !== 1) {
       confetti.msg.bot("Your command indicator has to be one character, nothing more, nothing less!");
@@ -987,7 +1104,9 @@ if (confetti.initialized) {
 }
 
 if (!confetti.initialized && (typeof script !== "undefined" && script !== null)) {
-  script.clientStartUp();
+  sys.setTimer(function() {
+    return script.clientStartUp();
+  }, 1, false);
 }
 
 poScript = {
@@ -1028,6 +1147,7 @@ poScript = {
     return confetti.callHooks('onPlayerReceived', id);
   },
   onPlayerRemoved: function(id) {
+    confetti.callHooks('onPlayerRemoved', id);
     return delete confetti.players[id];
   },
   beforeSendMessage: function(message, chan) {

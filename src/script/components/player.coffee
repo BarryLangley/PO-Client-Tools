@@ -1,6 +1,6 @@
 do ->
     create = (id) ->
-        {id}
+        {id, name: Client.name(id)}
     # To know if someone is battling, we request their player info,
     # then check if the flags include the "Battling" (2) flag
     battling = (id) ->
@@ -30,15 +30,18 @@ do ->
             pname = Client.name id
 
         if pname is '~Unknown~'
-            return id
+            storedname = confetti.players[id]?.name
+            return storedname if storedname
+            return id # Original name passed
         else
             return pname
 
-    fancyName = (id) ->
+    fancyName = (id, tooltip = yes) ->
         pname = name(id)
         id = Client.id(id) if typeof id is 'string'
+        showInfo = typeof id isnt 'string' and tooltip
 
-        "<a " + (if typeof id isnt 'string' then 'href=\'po:info/' + id + '\' ' else '') + "style='text-decoration: none; color: #{Client.color(id)};' title='Challenge #{confetti.util.stripquotes(pname)}'><b>#{pname}</b></a>"
+        "<a " + (if showInfo then 'href=\'po:info/' + id + '\' ' else '') + "style='text-decoration: none; color: #{Client.color(id)};'" + (if showInfo then (' title="Challenge ' + confetti.util.stripquotes(pname) + '"') else '') + "><b>#{pname}</b></a>"
 
     confetti.player = {
         create

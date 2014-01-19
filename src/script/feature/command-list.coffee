@@ -18,6 +18,10 @@ do ->
     border = (timestamp = no) ->
         confetti.msg.html "#{if timestamp then '<br/><timestamp/><br/>' else '<br/>'}<font color='skyblue'><b>≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈</b></font>#{if timestamp then '<br/>' else ''}", channel
 
+        channel = null if timestamp
+
+    confetti.commandList = {cmd, header, border, channel}
+
     # TODO: Hooks for custom commands via plugins
     confetti.command 'configcommands', ['Shows various commands that change your settings.', 'send@configcommands'], (_, chan) ->
         channel = chan
@@ -32,6 +36,8 @@ do ->
         cmd 'commandindicator'
         cmd 'autoreconnect'
 
+        confetti.callHooks 'commands:config'
+
         border yes
 
     confetti.command 'commands', ['Shows this command list.', 'send@commands'], (_, chan) ->
@@ -44,27 +50,41 @@ do ->
         cmd 'commands'
         cmd 'configcommands'
 
+        confetti.callHooks 'commands:list'
+
         header 'Friends', 4
         cmd 'friend'
         cmd 'unfriend'
         cmd 'friends'
+        cmd 'friendnotifications'
+
+        confetti.callHooks 'commands:friends'
 
         header 'Player Blocking', 4
         cmd 'block'
         cmd 'unblock'
         cmd 'blocked'
 
+        confetti.callHooks 'commands:block'
+
+        # Custom categories should be done in this hook, afterwards there are the misc. commands.
+        confetti.callHooks 'commands:categories'
         confetti.msg.html "", chan
 
         cmd 'reconnect'
+        cmd 'define'
         cmd 'news'
         cmd 'imp'
         cmd 'flip'
         cmd 'info'
         cmd 'chan'
 
+        confetti.callHooks 'commands:misc'
+
         cmd 'html'
         cmd 'eval'
+
+        confetti.callHooks 'commands:dev'
 
         border yes
 

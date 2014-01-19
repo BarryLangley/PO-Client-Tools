@@ -61,6 +61,13 @@ do ->
     escapeRegex = (str) ->
         str.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&')
 
+    sortOnline = (a, b) -> Client.id(b) - Client.id(a)
+    truncate = (str, len) ->
+        strlen = str.length
+        if strlen > len
+            str = str.substr(0, len) + "... [#{strlen - len} more]"
+        return str
+
     stripquotes = (str) ->
         str.replace(/'/g, "\'")
 
@@ -79,6 +86,8 @@ do ->
         an
         fancyJoin
         stripHtml
+        sortOnline
+        truncate
         escapeRegex
         stripquotes
         noop

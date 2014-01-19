@@ -1,6 +1,6 @@
 do ->
     # Settings stuff
-    confetti.command 'notifications', ["Toggles whether if notifications for the script should be shown (tray messages).", 'send@notifications'], ->
+    confetti.command 'notifications', ["Toggles whether if notifications should be shown (tray messages).", 'send@notifications'], ->
         confetti.cache.store('notifications', !confetti.cache.read('notifications')).save()
         confetti.msg.bot "Notifications are now #{if confetti.cache.read('notifications') then 'on' else 'off'}."
 
@@ -30,7 +30,7 @@ do ->
         confetti.cache.store('botcolor', data).save()
         confetti.msg.bot "My color is now #{data}!"
 
-    confetti.command 'commandindicator', ['commandindicator [char]', "Changes your command indicator (to indicate usage of commands) to [char]. '<b>-</b>' will remain usable.", 'setmsg@commandindicator [char]'], (data) ->
+    confetti.command 'commandindicator', ['commandindicator [char]', "Changes your command indicator (to indicate usage of commands) to [char]. <b>-</b> will remain usable, in case you ever forget.", 'setmsg@commandindicator [char]'], (data) ->
         data = data.toLowerCase()
 
         if data.length isnt 1

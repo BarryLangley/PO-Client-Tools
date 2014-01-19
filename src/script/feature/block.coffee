@@ -1,6 +1,6 @@
 do ->
     confetti.command 'blocked', ["Displays a list of blocked players.", 'send@blocked'], ->
-        blocklist = confetti.cache.get 'blocked'
+        blocklist = confetti.cache.get('blocked').sort(confetti.util.sortOnline)
 
         if blocklist.length is 0
             confetti.msg.bot "There is no one on your block list."
@@ -29,6 +29,10 @@ do ->
 
         if data.length is 0
             confetti.msg.bot "Specify a name!"
+            return
+
+        if Client.ownName().toLowerCase() is data
+            confetti.msg.bot "You can't block yourself!"
             return
 
         if data in blocked

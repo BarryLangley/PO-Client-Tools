@@ -1,7 +1,7 @@
 do ->
     bullet = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&bull;"
     confetti.command 'friends', ["Displays your friends list.", 'send@friends'], ->
-        friends = confetti.cache.get 'friends'
+        friends = confetti.cache.get('friends').sort(confetti.util.sortOnline)
 
         if friends.length is 0
             confetti.msg.bot "<span title='You have 0 friends.'>There is no one on your friend list.</span>"
@@ -29,6 +29,10 @@ do ->
             confetti.msg.bot "Specify a name!"
             return
 
+        if Client.ownName().toLowerCase() is data
+            confetti.msg.bot "You can't add yourself as a friend!"
+            return
+
         if data in friends
             confetti.msg.bot "#{name} is already on your friends list!"
             return
@@ -52,18 +56,33 @@ do ->
 
         confetti.msg.bot "You removed #{name} from your friends list!"
 
+    confetti.command 'friendnotifications', ["Toggles whether if notifications specific to friends (logins, logouts) should be shown.", 'send@friendnotifications'], ->
+        confetti.cache.store('friendnotifications', !confetti.cache.read('friendnotifications')).save()
+        confetti.msg.bot "Friend notifications are now #{if confetti.cache.read('friendnotifications') then 'on' else 'off'}."
+
     confetti.hook 'initCache', ->
-        confetti.cache.store('friends', [], confetti.cache.once)
+        confetti.cache
+            .store('friends', [], confetti.cache.once)
+            .store('friendnotifications', yes, confetti.cache.once)
 
     confetti.hook 'onPlayerReceived', (id) ->
         # In the first few seconds of connection, often a long list of players is sent.
         # If one friend is in this list, their "arrival" is notified.
         # In reality, they were already there. So don't tell about them.
-        time = +sys.time()
-        if confetti.loginTime is 0 or time <= confetti.loginTime + 3
+        if confetti.loginTime is 0 or +sys.time() <= confetti.loginTime + 3
+            return
+
+        if confetti.cache.get('friendnotifications') is no
             return
 
         name = Client.name(id)
-
         if name.toLowerCase() in confetti.cache.get('friends')
-            confetti.msg.notification "#{name} logged in.", "#{Client.windowTitle} - Friend"
+            confetti.msg.notification "#{confetti.player.fancyName(id)} logged in.", "Friend joined"
+
+    confetti.hook 'onPlayerRemoved', (id) ->
+        if confetti.cache.get('friendnotifications') is no
+            return
+
+        name = Client.name(id)
+        if name.toLowerCase() in confetti.cache.get('friends')
+            confetti.msg.notification "#{confetti.player.fancyName(id, no)} logged out.", "Friend left"

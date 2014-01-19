@@ -94,7 +94,7 @@ do ->
     confetti.command 'encool', ['encool [type]', 'Changes your encool type to (none, space, smallcaps, leet, reverse).', 'setmsg@encool [type]'], (data) ->
         data = data.toLowerCase()
 
-        if !(data in ['none', 'spaces', 'smallcaps', 'leet', 'reverse'])
+        if !(data in ['none', 'spaces', 'smallcaps', 'leet', 'l33t', 'reverse'])
             confetti.msg.bot "That doesn't look right to me!"
             confetti.msg.bot "Use one of the following types: none, spaces, smallcaps, leet, reverse"
             return

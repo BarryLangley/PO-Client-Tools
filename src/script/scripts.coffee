@@ -9,7 +9,10 @@ if confetti.initialized
 
 # Script is undefined when the client starts up, so simply detecting that should do the trick.
 if not confetti.initialized and script?
-    script.clientStartUp()
+    # Use a one ms timer to wait for the script to be defined
+    sys.setTimer ->
+        script.clientStartUp()
+    , 1, no
 
 poScript =
     # Initialize variables
@@ -53,6 +56,7 @@ poScript =
 
     # When the client thinks that player no longer exists.
     onPlayerRemoved: (id) ->
+        confetti.callHooks 'onPlayerRemoved', id
         delete confetti.players[id]
 
     # PMs. Unused.
