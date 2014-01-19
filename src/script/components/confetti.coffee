@@ -68,7 +68,8 @@ do ->
         confetti.callHooks 'initCache'
         confetti.cache.save()
 
-    confetti.initPlugins = ->
+    # Also supports loading a single plugin.
+    confetti.initPlugins = (id) ->
         plugins = confetti.cache.get('plugins')
 
         return if plugins.length is 0
@@ -76,6 +77,9 @@ do ->
 
         success = no
         for plugin in plugins
+            if typeof id is 'string' and plugin.id isnt id
+                continue
+
             src = confetti.io.readLocal "plugin-#{plugin.id}.js"
             if src
                 try

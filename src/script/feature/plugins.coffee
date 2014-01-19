@@ -89,7 +89,8 @@ do ->
                 plugins.push plugin
                 confetti.cache.store('plugins', plugins).save()
 
-                confetti.msg.bot "Plugin #{plugin.name} added! Reload to see the effects."
+                confetti.msg.bot "Plugin #{plugin.name} added!"
+                confetti.initPlugins plugin.id
 
     confetti.command 'removeplugin', ['removeplugin [plugin]', "Removes a plugin.", 'setmsg@removeplugin [plugin]'], (data) ->
         name = data

@@ -494,7 +494,7 @@ if (typeof confetti !== 'object') {
     confetti.callHooks('initCache');
     return confetti.cache.save();
   };
-  return confetti.initPlugins = function() {
+  return confetti.initPlugins = function(id) {
     var ex, plugin, plugins, src, success, _i, _len;
     plugins = confetti.cache.get('plugins');
     if (plugins.length === 0) {
@@ -506,6 +506,9 @@ if (typeof confetti !== 'object') {
     success = false;
     for (_i = 0, _len = plugins.length; _i < _len; _i++) {
       plugin = plugins[_i];
+      if (typeof id === 'string' && plugin.id !== id) {
+        continue;
+      }
       src = confetti.io.readLocal("plugin-" + plugin.id + ".js");
       if (src) {
         try {
@@ -1134,7 +1137,8 @@ if (typeof confetti !== 'object') {
         sys.writeToFile("" + confetti.dataDir + "plugin-" + plugin.id + ".js", file);
         plugins.push(plugin);
         confetti.cache.store('plugins', plugins).save();
-        return confetti.msg.bot("Plugin " + plugin.name + " added! Reload to see the effects.");
+        confetti.msg.bot("Plugin " + plugin.name + " added!");
+        return confetti.initPlugins(plugin.id);
       });
     });
   });
