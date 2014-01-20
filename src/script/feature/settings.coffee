@@ -47,3 +47,18 @@ do ->
 
         confetti.cache.store('commandindicator', data).save()
         confetti.msg.bot "Your command indicator is now #{data}!"
+
+    # Use setmsg here as this command can be dangerous.
+    confetti.command 'defaults', ['Resets all settings back to their defaults. There might be some plugins that do not support this.', 'setmsg@defaults'], (data) ->
+        if data.toLowerCase() isnt 'sure'
+            commandindicator = confetti.cache.get 'commandindicator'
+            confetti.msg.bot "<a href='po:send/#{commandindicator}defaults sure' style='text-decoration: none; color: black;'>Are you sure that you want to reset your settings? There is no going back. Click this message to confirm (or type <small>#{commandindicator}defaults sure</small>).</a>"
+            return
+
+        # Wipe everything and reset the cache.
+        # Scripts are reloaded for plugins.
+        confetti.cache.wipe()
+        confetti.initCache()
+        confetti.io.reloadScript()
+
+        confetti.msg.bot "Your settings have been reset to their defaults!"

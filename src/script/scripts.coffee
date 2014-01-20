@@ -1,6 +1,6 @@
 # To indicate the script was successfully reloaded, print a simple message.
 # This is false when the script loads for the first time, so that's why you don't see this message if you just log in.
-if confetti.initialized
+if confetti.initialized and not confetti.silentReload
     print "Script Check: OK"
     script.clientStartUp()
 
@@ -15,6 +15,7 @@ else if not confetti.initialized and script?
         script.clientStartUp()
     , 1, no
 
+confetti.silentReload = off
 poScript =
     # Initialize variables
     clientStartUp: ->
@@ -39,7 +40,8 @@ poScript =
         # 432000 is 5 days in seconds.
         unless confetti.initialized
             if (confetti.cache.get('lastuse') + 345600) < (+sys.time())
-                confetti.msg.bot "Type #{confetti.cache.get('commandindicator')}commands for a list of client commands.", -1
+                commandindicator = confetti.cache.get 'commandindicator'
+                confetti.msg.bot "Type <a href='po:send/#{commandindicator}commands' style='text-decoration: none; color: green;'><b>#{commandindicator}commands</b></a> for a list of client commands.", -1
 
             confetti.cache.store('lastuse', +sys.time()).save()
 

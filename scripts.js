@@ -11,6 +11,7 @@ Global = this;
 if (typeof confetti !== 'object') {
   confetti = {
     initialized: false,
+    silentReload: false,
     cache: {
       initialized: false
     },
@@ -142,7 +143,7 @@ if (typeof confetti !== 'object') {
 })();
 
 (function() {
-  var read, readJson, readLocal, readLocalJson, write, writeLocal;
+  var deleteLocal, read, readJson, readLocal, readLocalJson, reloadScript, write, writeLocal;
   read = function(file) {
     if (sys.isSafeScripts()) {
       return "";
@@ -171,6 +172,20 @@ if (typeof confetti !== 'object') {
   writeLocal = function(file, data) {
     return write(confetti.dataDir + file, data);
   };
+  deleteLocal = function(file) {
+    return sys.deleteFile(confetti.dataDir + file);
+  };
+  reloadScript = function(verbose) {
+    var file;
+    if (verbose == null) {
+      verbose = false;
+    }
+    file = read(sys.scriptsFolder + "scripts.js");
+    if (file) {
+      confetti.silentReload = !verbose;
+      return sys.changeScript(file);
+    }
+  };
   return confetti.io = {
     read: read,
     readJson: readJson,
@@ -178,23 +193,25 @@ if (typeof confetti !== 'object') {
     readLocalJson: readLocalJson,
     write: write,
     writeLocal: writeLocal,
-    writeLocalJson: writeLocal
+    writeLocalJson: writeLocal,
+    deleteLocal: deleteLocal,
+    reloadScript: reloadScript
   };
 })();
 
 (function() {
   var Cache;
   Cache = (function() {
-    function Cache(file, hash, saved) {
+    function Cache(file, hash) {
       var ex;
       this.file = file != null ? file : confetti.cacheFile;
       this.hash = hash != null ? hash : {};
-      this.saved = saved != null ? saved : 0;
+      this.saved = 0;
       try {
         this.hash = confetti.io.readLocalJson(this.file);
       } catch (_error) {
         ex = _error;
-        confetti.io.writeLocal(this.file, '{}');
+        confetti.io.writeLocalJson(this.file, {});
       }
     }
 
@@ -202,14 +219,15 @@ if (typeof confetti !== 'object') {
       if (once == null) {
         once = false;
       }
-      if (!once || (once && typeof this.hash[key] === 'undefined')) {
-        this.hash[key] = value;
-        this.saved += 1;
+      if (once && this.hash.hasOwnProperty(key)) {
+        return this;
       }
+      this.hash[key] = value;
+      this.saved += 1;
       return this;
     };
 
-    Cache.prototype.clear = function(key, value) {
+    Cache.prototype.remove = function(key, value) {
       if (typeof this.hash[key] !== 'undefined') {
         delete this.hash[key];
         this.saved += 1;
@@ -235,7 +253,8 @@ if (typeof confetti !== 'object') {
 
     Cache.prototype.wipe = function() {
       this.hash = {};
-      confetti.io.writeLocal(this.file, '{}');
+      this.saved = 0;
+      confetti.io.writeLocalJson(this.file, {});
       return this;
     };
 
@@ -610,95 +629,6 @@ if (typeof confetti !== 'object') {
 })();
 
 (function() {
-  var border, channel, cmd, header;
-  channel = null;
-  cmd = function(name) {
-    var command, complete, indicator, parts;
-    if (confetti.commands[name]) {
-      command = confetti.commands[name];
-      parts = command.info.complete.split('@');
-      indicator = confetti.cache.get('commandindicator');
-      complete = "<a href='po:" + parts[0] + "/" + indicator + parts[1] + "' style='text-decoration: none; color: green;'>" + indicator + command.info.usage + "</a>";
-      return confetti.msg.html("&bull; " + complete + ": " + command.info.desc, channel);
-    }
-  };
-  header = function(msg, size) {
-    if (size == null) {
-      size = 5;
-    }
-    return confetti.msg.html("<br/><font size='" + size + "'><b>" + msg + "</b></font><br/>", channel);
-  };
-  border = function(timestamp) {
-    if (timestamp == null) {
-      timestamp = false;
-    }
-    confetti.msg.html("" + (timestamp ? '<br/><timestamp/><br/>' : '<br/>') + "<font color='skyblue'><b>≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈</b></font>" + (timestamp ? '<br/>' : ''), channel);
-    if (timestamp) {
-      return channel = null;
-    }
-  };
-  confetti.commandList = {
-    cmd: cmd,
-    header: header,
-    border: border,
-    channel: channel
-  };
-  confetti.command('configcommands', ['Shows various commands that change your settings.', 'send@configcommands'], function(_, chan) {
-    channel = chan;
-    border();
-    header('Configuration Commands');
-    cmd('botname');
-    cmd('botcolor');
-    cmd('encool');
-    cmd('notifications');
-    cmd('commandindicator');
-    cmd('autoreconnect');
-    confetti.callHooks('commands:config');
-    return border(true);
-  });
-  confetti.command('commands', ['Shows this command list.', 'send@commands'], function(_, chan) {
-    channel = chan;
-    border();
-    header('Commands');
-    header('Command Lists', 4);
-    cmd('commands');
-    cmd('configcommands');
-    confetti.callHooks('commands:list');
-    header('Friends', 4);
-    cmd('friend');
-    cmd('unfriend');
-    cmd('friends');
-    cmd('friendnotifications');
-    confetti.callHooks('commands:friends');
-    header('Player Blocking', 4);
-    cmd('block');
-    cmd('unblock');
-    cmd('blocked');
-    confetti.callHooks('commands:block');
-    header('Plugins', 4);
-    cmd('addplugin');
-    cmd('removeplugin');
-    cmd('plugins');
-    confetti.callHooks('commands:plugins');
-    confetti.callHooks('commands:categories');
-    confetti.msg.html("", chan);
-    cmd('reconnect');
-    cmd('define');
-    cmd('news');
-    cmd('imp');
-    cmd('flip');
-    cmd('info');
-    cmd('chan');
-    confetti.callHooks('commands:misc');
-    cmd('html');
-    cmd('eval');
-    confetti.callHooks('commands:dev');
-    return border(true);
-  });
-  return confetti.alias('commandlist', 'commands');
-})();
-
-(function() {
   return confetti.command('define', ['define [term]', 'Attempts to find a definition for the given term.', 'setmsg@define [term]'], function(data, chan) {
     if (!data) {
       confetti.msg.bot("You need to give me a term!");
@@ -735,6 +665,37 @@ if (typeof confetti !== 'object') {
       }
     });
   });
+})();
+
+(function() {
+  confetti.command('dictionary', ['dictionary [word]', 'Searches for the given word in an online dictionary.', 'setmsg@dictionary [word]'], function(data, chan) {
+    var getResults;
+    if (!data) {
+      confetti.msg.bot("You have to give me a word to define!");
+      return;
+    }
+    getResults = function(code, resultCode) {
+      if (!code.primaries) {
+        confetti.msg.bot("Couldn't find any definitions for " + code.query + ".", chan);
+        return;
+      }
+      return confetti.msg.bold(code.query, (code.primaries[0].entries[1] || code.primaries[0].entries[0]).terms[0].text, chan);
+    };
+    confetti.msg.bot("Loading definition...");
+    return sys.webCall("http://www.google.com/dictionary/json?callback=getResults&sl=en&tl=en&q=" + (encodeURIComponent(data)), function(response) {
+      var ex;
+      if (!response) {
+        response = ")";
+      }
+      try {
+        return eval(response);
+      } catch (_error) {
+        ex = _error;
+        return confetti.msg.bot("Couldn't load a definition, check your internet connection.", chan);
+      }
+    });
+  });
+  return confetti.alias('dict', 'dictionary');
 })();
 
 (function() {
@@ -907,6 +868,99 @@ if (typeof confetti !== 'object') {
 })();
 
 (function() {
+  var border, channel, cmd, header;
+  channel = null;
+  cmd = function(name) {
+    var command, complete, indicator, parts;
+    if (confetti.commands[name]) {
+      command = confetti.commands[name];
+      parts = command.info.complete.split('@');
+      indicator = confetti.cache.get('commandindicator');
+      complete = "<a href='po:" + parts[0] + "/" + indicator + parts[1] + "' style='text-decoration: none; color: green;'>" + indicator + command.info.usage + "</a>";
+      return confetti.msg.html("&bull; " + complete + ": " + command.info.desc, channel);
+    }
+  };
+  header = function(msg, size) {
+    if (size == null) {
+      size = 5;
+    }
+    return confetti.msg.html("<br/><font size='" + size + "'><b>" + msg + "</b></font><br/>", channel);
+  };
+  border = function(timestamp) {
+    if (timestamp == null) {
+      timestamp = false;
+    }
+    confetti.msg.html("" + (timestamp ? '<br/><timestamp/><br/>' : '<br/>') + "<font color='skyblue'><b>≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈</b></font>" + (timestamp ? '<br/>' : ''), channel);
+    if (timestamp) {
+      return channel = null;
+    }
+  };
+  confetti.commandList = {
+    cmd: cmd,
+    header: header,
+    border: border,
+    channel: channel
+  };
+  confetti.command('configcommands', ['Shows various commands that change your settings.', 'send@configcommands'], function(_, chan) {
+    channel = chan;
+    border();
+    header('Configuration Commands');
+    cmd('botname');
+    cmd('botcolor');
+    cmd('encool');
+    cmd('notifications');
+    cmd('commandindicator');
+    cmd('autoreconnect');
+    confetti.callHooks('commands:config');
+    confetti.msg.html("", chan);
+    cmd('defaults');
+    return border(true);
+  });
+  confetti.command('commands', ['Shows this command list.', 'send@commands'], function(_, chan) {
+    channel = chan;
+    border();
+    header('Commands');
+    header('Command Lists', 4);
+    cmd('commands');
+    cmd('configcommands');
+    confetti.callHooks('commands:list');
+    header('Friends', 4);
+    cmd('friend');
+    cmd('unfriend');
+    cmd('friends');
+    cmd('friendnotifications');
+    confetti.callHooks('commands:friends');
+    header('Blocking', 4);
+    cmd('block');
+    cmd('unblock');
+    cmd('blocked');
+    confetti.callHooks('commands:block');
+    header('Plugins', 4);
+    cmd('addplugin');
+    cmd('removeplugin');
+    cmd('plugins');
+    confetti.callHooks('commands:plugins');
+    confetti.callHooks('commands:categories');
+    confetti.msg.html("", chan);
+    cmd('reconnect');
+    cmd('define');
+    cmd('translate');
+    cmd('dictionary');
+    cmd('news');
+    cmd('imp');
+    cmd('flip');
+    cmd('info');
+    cmd('chan');
+    confetti.callHooks('commands:misc');
+    cmd('html');
+    cmd('eval');
+    confetti.callHooks('commands:dev');
+    return border(true);
+  });
+  return confetti.alias('commandlist', 'commands');
+})();
+
+(function() {
   confetti.command('eval', ['eval [code]', "Evaluates a JavaScript Program.", 'setmsg@eval [code]'], function(data, chan) {
     var ex, res;
     try {
@@ -1055,7 +1109,7 @@ if (typeof confetti !== 'object') {
   hasPlugin = function(id, plugins) {
     return findPlugin(id, plugins) !== null;
   };
-  confetti.command('plugins', ["Displays a list of enabled and available plugins.", 'send@plugins'], function() {
+  confetti.command('plugins', ["Displays a list of enabled and available plugins.", 'send@plugins'], function(_, chan) {
     var html, plugin, plugins, _i, _len;
     plugins = confetti.cache.get('plugins');
     if (plugins.length > 0) {
@@ -1074,14 +1128,14 @@ if (typeof confetti !== 'object') {
       } catch (_error) {
         ex = _error;
         print(ex);
-        confetti.msg.bot("Couldn't load available plugins listing -- check your internet connection.");
+        confetti.msg.bot("Couldn't load available plugins listing -- check your internet connection.", chan);
         return;
       }
       if (json.length === 0) {
-        confetti.msg.bot("No plugins are available.");
+        confetti.msg.bot("No plugins are available.", chan);
         return;
       }
-      confetti.msg.bold("Available Plugins");
+      confetti.msg.bold("Available Plugins", '', chan);
       html = "";
       for (_j = 0, _len1 = json.length; _j < _len1; _j++) {
         plugin = json[_j];
@@ -1093,10 +1147,10 @@ if (typeof confetti !== 'object') {
         }
         html += "" + confetti.msg.bullet + " <b>" + plugin.name + "</b> (" + plugin.id + ") " + addremove;
       }
-      return confetti.msg.html(html);
+      return confetti.msg.html(html, chan);
     });
   });
-  confetti.command('addplugin', ['addplugin [plugin]', "Adds a plugin.", 'setmsg@addplugin [name]'], function(data) {
+  confetti.command('addplugin', ['addplugin [plugin]', "Adds a plugin.", 'setmsg@addplugin [name]'], function(data, chan) {
     var name, plugins;
     plugins = confetti.cache.get('plugins');
     name = data;
@@ -1116,44 +1170,47 @@ if (typeof confetti !== 'object') {
         json = JSON.parse(resp);
       } catch (_error) {
         ex = _error;
-        confetti.msg.bot("Couldn't load available plugins listing -- check your internet connection.");
+        confetti.msg.bot("Couldn't load available plugins listing -- check your internet connection.", chan);
         return;
       }
       if (json.length === 0) {
-        confetti.msg.bot("No plugins are available.");
+        confetti.msg.bot("No plugins are available.", chan);
         return;
       }
       plugin = findPlugin(data, json);
       if (plugin === null) {
-        confetti.msg.bot("That plugin is not available! Use the 'plugins' command to see a list of available plugins.");
+        confetti.msg.bot("That plugin is not available! Use the 'plugins' command to see a list of available plugins.", chan);
         return;
       }
-      confetti.msg.bot("Downloading plugin " + plugin.name + "...");
+      confetti.msg.bot("Downloading plugin " + plugin.name + "...", chan);
       return sys.webCall("" + confetti.pluginsUrl + plugin.id + "/" + plugin.id + ".js", function(file) {
         if (!file) {
-          confetti.msg.bot("Couldn't load plugin source -- check your internet connection.");
+          confetti.msg.bot("Couldn't load plugin source -- check your internet connection.", chan);
           return;
         }
         sys.writeToFile("" + confetti.dataDir + "plugin-" + plugin.id + ".js", file);
         plugins.push(plugin);
         confetti.cache.store('plugins', plugins).save();
-        confetti.msg.bot("Plugin " + plugin.name + " added!");
+        confetti.msg.bot("Plugin " + plugin.name + " added!", chan);
         return confetti.initPlugins(plugin.id);
       });
     });
   });
   return confetti.command('removeplugin', ['removeplugin [plugin]', "Removes a plugin.", 'setmsg@removeplugin [plugin]'], function(data) {
-    var name, plugins;
+    var name, plugin, plugins;
     name = data;
     data = data.toLowerCase();
     plugins = confetti.cache.get('plugins');
-    if (!hasPlugin(data, plugins)) {
+    plugin = findPlugin(data, plugins);
+    if (plugin === null) {
       confetti.msg.bot("" + name + " isn't an enabled plugin!");
       return;
     }
-    plugins.splice(plugins.indexOf(data), 1);
+    plugins.splice(plugins.indexOf(plugin), 1);
     confetti.cache.store('plugins', plugins).save();
-    return confetti.msg.bot("" + name + " was disabled. Reload to see the effects.");
+    confetti.io.deleteLocal("plugin-" + plugin.id + ".js");
+    confetti.io.reloadScript();
+    return confetti.msg.bot("Plugin " + name + " removed.");
   });
 })();
 
@@ -1242,7 +1299,7 @@ if (typeof confetti !== 'object') {
     confetti.cache.store('botcolor', data).save();
     return confetti.msg.bot("My color is now " + data + "!");
   });
-  return confetti.command('commandindicator', ['commandindicator [char]', "Changes your command indicator (to indicate usage of commands) to [char]. <b>-</b> will remain usable, in case you ever forget.", 'setmsg@commandindicator [char]'], function(data) {
+  confetti.command('commandindicator', ['commandindicator [char]', "Changes your command indicator (to indicate usage of commands) to [char]. <b>-</b> will remain usable, in case you ever forget.", 'setmsg@commandindicator [char]'], function(data) {
     data = data.toLowerCase();
     if (data.length !== 1) {
       confetti.msg.bot("Your command indicator has to be one character, nothing more, nothing less!");
@@ -1259,9 +1316,60 @@ if (typeof confetti !== 'object') {
     confetti.cache.store('commandindicator', data).save();
     return confetti.msg.bot("Your command indicator is now " + data + "!");
   });
+  return confetti.command('defaults', ['Resets all settings back to their defaults. There might be some plugins that do not support this.', 'setmsg@defaults'], function(data) {
+    var commandindicator;
+    if (data.toLowerCase() !== 'sure') {
+      commandindicator = confetti.cache.get('commandindicator');
+      confetti.msg.bot("<a href='po:send/" + commandindicator + "defaults sure' style='text-decoration: none; color: black;'>Are you sure that you want to reset your settings? There is no going back. Click this message to confirm (or type <small>" + commandindicator + "defaults sure</small>).</a>");
+      return;
+    }
+    confetti.cache.wipe();
+    confetti.initCache();
+    confetti.io.reloadScript();
+    return confetti.msg.bot("Your settings have been reset to their defaults!");
+  });
 })();
 
-if (confetti.initialized) {
+(function() {
+  var clearDuplicateCommas;
+  clearDuplicateCommas = /,,/g;
+  confetti.command('translate', ['translate [message]:[to language code]-[from language code]', "Translates a message from a language to another one. [from language code] is optional and might even be ignored, it's purely a hint (note the dash). Language codes are two letters, for example <b>en</b> (English).", 'setmsg@translate [message]:[to]-[from]'], function(data, chan) {
+    var from, languageParts, message, parts, to, url;
+    parts = data.split(':');
+    message = parts[0];
+    languageParts = parts[1].split('-');
+    to = languageParts[0];
+    from = languageParts[1] || '';
+    if (!(message && to)) {
+      confetti.msg.bot("You have to specify a message and a language to translate to (message:es, for example).");
+      return false;
+    }
+    url = "http://translate.google.com/translate_a/t?client=t&text=" + (encodeURIComponent(message)) + "&hl=en&ie=UTF-8&oe=UTF-8&multires=1&otf=1&pc=1&trs=1&ssel=3&tsel=6&sc=1&tl=" + (encodeURIComponent(to));
+    if (from) {
+      url += "&sl=" + (encodeURIComponent(from));
+    }
+    confetti.msg.bot("Translating '" + message + "' to " + to + "!");
+    return sys.webCall(url, function(response) {
+      var ex, json;
+      if (!response) {
+        response = ")";
+      }
+      response = response.replace(clearDuplicateCommas, ',').replace(clearDuplicateCommas, ',');
+      try {
+        json = JSON.parse(response);
+      } catch (_error) {
+        ex = _error;
+        confetti.msg.bot("Failed to receive a reply -- check your internet connection", chan);
+        return;
+      }
+      return confetti.msg.bot("'" + message + "' is '" + json[0][0][0] + "' in '" + (to.toUpperCase()) + "'.", chan);
+    });
+  });
+  confetti.alias('trans', 'translate');
+  return confetti.alias('tr', 'translate');
+})();
+
+if (confetti.initialized && !confetti.silentReload) {
   print("Script Check: OK");
   script.clientStartUp();
 } else if (!confetti.initialized && (typeof script !== "undefined" && script !== null)) {
@@ -1270,9 +1378,11 @@ if (confetti.initialized) {
   }, 1, false);
 }
 
+confetti.silentReload = false;
+
 poScript = {
   clientStartUp: function() {
-    var chans, id, player, players;
+    var chans, commandindicator, id, player, players;
     if (!confetti.initialized) {
       chans = confetti.channel.channelIds();
       players = ((function() {
@@ -1296,7 +1406,8 @@ poScript = {
     confetti.initPlugins();
     if (!confetti.initialized) {
       if ((confetti.cache.get('lastuse') + 345600) < (+sys.time())) {
-        confetti.msg.bot("Type " + (confetti.cache.get('commandindicator')) + "commands for a list of client commands.", -1);
+        commandindicator = confetti.cache.get('commandindicator');
+        confetti.msg.bot("Type <a href='po:send/" + commandindicator + "commands' style='text-decoration: none; color: green;'><b>" + commandindicator + "commands</b></a> for a list of client commands.", -1);
       }
       confetti.cache.store('lastuse', +sys.time()).save();
     }

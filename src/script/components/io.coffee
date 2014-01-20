@@ -19,6 +19,13 @@ do ->
         sys.writeToFile(file, data)
     writeLocal = (file, data) ->
         write(confetti.dataDir + file, data)
+    deleteLocal = (file) ->
+        sys.deleteFile confetti.dataDir + file
+    reloadScript = (verbose = no) ->
+        file = read(sys.scriptsFolder + "scripts.js")
+        if file
+            confetti.silentReload = !verbose
+            sys.changeScript file
 
     confetti.io = {
         read
@@ -28,4 +35,6 @@ do ->
         write
         writeLocal
         writeLocalJson: writeLocal # Write serializes objects automatically.
+        deleteLocal
+        reloadScript
     }

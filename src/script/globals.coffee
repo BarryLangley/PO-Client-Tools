@@ -7,11 +7,13 @@ Global = this
 if typeof confetti isnt 'object'
     confetti =
         initialized: no
+        silentReload: off
 
         cache:
             initialized: no
         players: {}
 
+        # TODO: A command to change this
         pluginsUrl: 'https://raw.github.com/TheUnknownOne/PO-Client-Tools/v2/plugins/'
 
         dataDir: sys.scriptsFolder

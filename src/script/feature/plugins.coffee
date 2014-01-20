@@ -9,7 +9,7 @@ do ->
         return null
     hasPlugin = (id, plugins) -> findPlugin(id, plugins) isnt null
 
-    confetti.command 'plugins', ["Displays a list of enabled and available plugins.", 'send@plugins'], ->
+    confetti.command 'plugins', ["Displays a list of enabled and available plugins.", 'send@plugins'], (_, chan) ->
         plugins = confetti.cache.get 'plugins'
         if plugins.length > 0
             confetti.msg.bold "Loaded Plugins"
@@ -25,14 +25,14 @@ do ->
                 json = JSON.parse resp
             catch ex
                 print ex
-                confetti.msg.bot "Couldn't load available plugins listing -- check your internet connection."
+                confetti.msg.bot "Couldn't load available plugins listing -- check your internet connection.", chan
                 return
 
             if json.length is 0
-                confetti.msg.bot "No plugins are available."
+                confetti.msg.bot "No plugins are available.", chan
                 return
 
-            confetti.msg.bold "Available Plugins"
+            confetti.msg.bold "Available Plugins", '', chan
 
             html = ""
             for plugin in json
@@ -45,10 +45,9 @@ do ->
 
                 html += "#{confetti.msg.bullet} <b>#{plugin.name}</b> (#{plugin.id}) #{addremove}"
 
-            confetti.msg.html html
+            confetti.msg.html html, chan
 
-    # TODO: Make loading/unloading easier (automatic).
-    confetti.command 'addplugin', ['addplugin [plugin]', "Adds a plugin.", 'setmsg@addplugin [name]'], (data) ->
+    confetti.command 'addplugin', ['addplugin [plugin]', "Adds a plugin.", 'setmsg@addplugin [name]'], (data, chan) ->
         plugins = confetti.cache.get 'plugins'
         name = data
         data = data.toLowerCase()
@@ -66,22 +65,22 @@ do ->
             try
                 json = JSON.parse resp
             catch ex
-                confetti.msg.bot "Couldn't load available plugins listing -- check your internet connection."
+                confetti.msg.bot "Couldn't load available plugins listing -- check your internet connection.", chan
                 return
 
             if json.length is 0
-                confetti.msg.bot "No plugins are available."
+                confetti.msg.bot "No plugins are available.", chan
                 return
 
             plugin = findPlugin data, json
             if plugin is null
-                confetti.msg.bot "That plugin is not available! Use the 'plugins' command to see a list of available plugins."
+                confetti.msg.bot "That plugin is not available! Use the 'plugins' command to see a list of available plugins.", chan
                 return
 
-            confetti.msg.bot "Downloading plugin #{plugin.name}..."
+            confetti.msg.bot "Downloading plugin #{plugin.name}...", chan
             sys.webCall "#{confetti.pluginsUrl}#{plugin.id}/#{plugin.id}.js", (file) ->
                 if not file
-                    confetti.msg.bot "Couldn't load plugin source -- check your internet connection."
+                    confetti.msg.bot "Couldn't load plugin source -- check your internet connection.", chan
                     return
 
                 sys.writeToFile "#{confetti.dataDir}plugin-#{plugin.id}.js", file
@@ -89,19 +88,23 @@ do ->
                 plugins.push plugin
                 confetti.cache.store('plugins', plugins).save()
 
-                confetti.msg.bot "Plugin #{plugin.name} added!"
+                confetti.msg.bot "Plugin #{plugin.name} added!", chan
                 confetti.initPlugins plugin.id
 
     confetti.command 'removeplugin', ['removeplugin [plugin]', "Removes a plugin.", 'setmsg@removeplugin [plugin]'], (data) ->
         name = data
         data = data.toLowerCase()
         plugins = confetti.cache.get 'plugins'
+        plugin  = findPlugin(data, plugins)
 
-        unless hasPlugin(data, plugins)
+        if plugin is null
             confetti.msg.bot "#{name} isn't an enabled plugin!"
             return
 
-        plugins.splice plugins.indexOf(data), 1
+        plugins.splice plugins.indexOf(plugin), 1
         confetti.cache.store('plugins', plugins).save()
 
-        confetti.msg.bot "#{name} was disabled. Reload to see the effects."
+        confetti.io.deleteLocal "plugin-#{plugin.id}.js"
+        confetti.io.reloadScript()
+
+        confetti.msg.bot "Plugin #{name} removed."

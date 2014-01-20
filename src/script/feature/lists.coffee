@@ -38,6 +38,9 @@ do ->
 
         confetti.callHooks 'commands:config'
 
+        confetti.msg.html "", chan
+        cmd 'defaults'
+
         border yes
 
     confetti.command 'commands', ['Shows this command list.', 'send@commands'], (_, chan) ->
@@ -60,7 +63,7 @@ do ->
 
         confetti.callHooks 'commands:friends'
 
-        header 'Player Blocking', 4
+        header 'Blocking', 4
         cmd 'block'
         cmd 'unblock'
         cmd 'blocked'
@@ -80,6 +83,8 @@ do ->
 
         cmd 'reconnect'
         cmd 'define'
+        cmd 'translate'
+        cmd 'dictionary'
         cmd 'news'
         cmd 'imp'
         cmd 'flip'
