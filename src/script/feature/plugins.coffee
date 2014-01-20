@@ -9,6 +9,19 @@ do ->
         return null
     hasPlugin = (id, plugins) -> findPlugin(id, plugins) isnt null
 
+    confetti.command 'plugincommands', ['Shows various commands related to plugins.', 'send@plugincommands'], (_, chan) ->
+        confetti.commandList.border no, chan
+
+        confetti.commandList.header 'Plugin Commands', 5, chan
+        confetti.commandList.cmd 'plugins', chan
+        confetti.commandList.cmd 'addplugin', chan
+        confetti.commandList.cmd 'removeplugin', chan
+
+        confetti.callHooks 'commands:plugins'
+
+        confetti.commandList.border yes, chan
+
+    # TODO: Updateplugins
     confetti.command 'plugins', ["Displays a list of enabled and available plugins.", 'send@plugins'], (_, chan) ->
         plugins = confetti.cache.get 'plugins'
         if plugins.length > 0

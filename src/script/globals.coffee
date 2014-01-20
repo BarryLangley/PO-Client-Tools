@@ -14,6 +14,7 @@ if typeof confetti isnt 'object'
         players: {}
 
         # TODO: A command to change this
+        scriptUrl: 'https://raw.github.com/TheUnknownOne/PO-Client-Tools/v2/'
         pluginsUrl: 'https://raw.github.com/TheUnknownOne/PO-Client-Tools/v2/plugins/'
 
         dataDir: sys.scriptsFolder

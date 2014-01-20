@@ -13,7 +13,7 @@ do ->
     write = (file, data) ->
         return if sys.isSafeScripts()
 
-        if Object::toString(data) is '[object Object]'
+        if typeof data is 'object' and Object::toString(data) is '[object Object]'
             data = JSON.stringify(data)
 
         sys.writeToFile(file, data)

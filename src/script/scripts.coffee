@@ -2,7 +2,7 @@
 # This is false when the script loads for the first time, so that's why you don't see this message if you just log in.
 if confetti.initialized and not confetti.silentReload
     print "Script Check: OK"
-    script.clientStartUp()
+    script.clientStartUp() if script?.clientStartUp?
 
 # Initializes the script by calling clientStartUp.
 # When the user changes the script, this condition will be true (script already exists, which means something was loaded previously,

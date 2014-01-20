@@ -2,7 +2,7 @@ do ->
     # Command list stuff
     channel = null
 
-    cmd = (name) ->
+    cmd = (name, chan = channel) ->
         if confetti.commands[name]
             command = confetti.commands[name]
 
@@ -10,19 +10,18 @@ do ->
             indicator = confetti.cache.get 'commandindicator'
             complete = "<a href='po:#{parts[0]}/#{indicator}#{parts[1]}' style='text-decoration: none; color: green;'>#{indicator}#{command.info.usage}</a>"
 
-            confetti.msg.html "&bull; #{complete}: #{command.info.desc}", channel
+            confetti.msg.html "&bull; #{complete}: #{command.info.desc}", chan
 
-    header = (msg, size = 5) ->
-        confetti.msg.html "<br/><font size='#{size}'><b>#{msg}</b></font><br/>", channel
+    header = (msg, size = 5, chan = channel) ->
+        confetti.msg.html "<br/><font size='#{size}'><b>#{msg}</b></font><br/>", chan
 
-    border = (timestamp = no) ->
-        confetti.msg.html "#{if timestamp then '<br/><timestamp/><br/>' else '<br/>'}<font color='skyblue'><b>≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈</b></font>#{if timestamp then '<br/>' else ''}", channel
+    border = (timestamp = no, chan = channel) ->
+        confetti.msg.html "#{if timestamp then '<br/><timestamp/><br/>' else '<br/>'}<font color='skyblue'><b>≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈</b></font>#{if timestamp then '<br/>' else ''}", chan
 
         channel = null if timestamp
 
-    confetti.commandList = {cmd, header, border, channel}
+    confetti.commandList = {cmd, header, border}
 
-    # TODO: Hooks for custom commands via plugins
     confetti.command 'configcommands', ['Shows various commands that change your settings.', 'send@configcommands'], (_, chan) ->
         channel = chan
 
@@ -52,6 +51,8 @@ do ->
         header 'Command Lists', 4
         cmd 'commands'
         cmd 'configcommands'
+        cmd 'scriptcommands'
+        cmd 'plugincommands'
 
         confetti.callHooks 'commands:list'
 
@@ -69,13 +70,6 @@ do ->
         cmd 'blocked'
 
         confetti.callHooks 'commands:block'
-
-        header 'Plugins', 4
-        cmd 'addplugin'
-        cmd 'removeplugin'
-        cmd 'plugins'
-
-        confetti.callHooks 'commands:plugins'
 
         # Custom categories should be done in this hook, afterwards there are the misc. commands.
         confetti.callHooks 'commands:categories'

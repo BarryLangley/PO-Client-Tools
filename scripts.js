@@ -16,6 +16,7 @@ if (typeof confetti !== 'object') {
       initialized: false
     },
     players: {},
+    scriptUrl: 'https://raw.github.com/TheUnknownOne/PO-Client-Tools/v2/',
     pluginsUrl: 'https://raw.github.com/TheUnknownOne/PO-Client-Tools/v2/plugins/',
     dataDir: sys.scriptsFolder,
     cacheFile: 'confetti.json',
@@ -164,7 +165,7 @@ if (typeof confetti !== 'object') {
     if (sys.isSafeScripts()) {
       return;
     }
-    if (Object.prototype.toString(data) === '[object Object]') {
+    if (typeof data === 'object' && Object.prototype.toString(data) === '[object Object]') {
       data = JSON.stringify(data);
     }
     return sys.writeToFile(file, data);
@@ -870,27 +871,36 @@ if (typeof confetti !== 'object') {
 (function() {
   var border, channel, cmd, header;
   channel = null;
-  cmd = function(name) {
+  cmd = function(name, chan) {
     var command, complete, indicator, parts;
+    if (chan == null) {
+      chan = channel;
+    }
     if (confetti.commands[name]) {
       command = confetti.commands[name];
       parts = command.info.complete.split('@');
       indicator = confetti.cache.get('commandindicator');
       complete = "<a href='po:" + parts[0] + "/" + indicator + parts[1] + "' style='text-decoration: none; color: green;'>" + indicator + command.info.usage + "</a>";
-      return confetti.msg.html("&bull; " + complete + ": " + command.info.desc, channel);
+      return confetti.msg.html("&bull; " + complete + ": " + command.info.desc, chan);
     }
   };
-  header = function(msg, size) {
+  header = function(msg, size, chan) {
     if (size == null) {
       size = 5;
     }
-    return confetti.msg.html("<br/><font size='" + size + "'><b>" + msg + "</b></font><br/>", channel);
+    if (chan == null) {
+      chan = channel;
+    }
+    return confetti.msg.html("<br/><font size='" + size + "'><b>" + msg + "</b></font><br/>", chan);
   };
-  border = function(timestamp) {
+  border = function(timestamp, chan) {
     if (timestamp == null) {
       timestamp = false;
     }
-    confetti.msg.html("" + (timestamp ? '<br/><timestamp/><br/>' : '<br/>') + "<font color='skyblue'><b>≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈</b></font>" + (timestamp ? '<br/>' : ''), channel);
+    if (chan == null) {
+      chan = channel;
+    }
+    confetti.msg.html("" + (timestamp ? '<br/><timestamp/><br/>' : '<br/>') + "<font color='skyblue'><b>≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈</b></font>" + (timestamp ? '<br/>' : ''), chan);
     if (timestamp) {
       return channel = null;
     }
@@ -898,8 +908,7 @@ if (typeof confetti !== 'object') {
   confetti.commandList = {
     cmd: cmd,
     header: header,
-    border: border,
-    channel: channel
+    border: border
   };
   confetti.command('configcommands', ['Shows various commands that change your settings.', 'send@configcommands'], function(_, chan) {
     channel = chan;
@@ -923,6 +932,8 @@ if (typeof confetti !== 'object') {
     header('Command Lists', 4);
     cmd('commands');
     cmd('configcommands');
+    cmd('scriptcommands');
+    cmd('plugincommands');
     confetti.callHooks('commands:list');
     header('Friends', 4);
     cmd('friend');
@@ -935,11 +946,6 @@ if (typeof confetti !== 'object') {
     cmd('unblock');
     cmd('blocked');
     confetti.callHooks('commands:block');
-    header('Plugins', 4);
-    cmd('addplugin');
-    cmd('removeplugin');
-    cmd('plugins');
-    confetti.callHooks('commands:plugins');
     confetti.callHooks('commands:categories');
     confetti.msg.html("", chan);
     cmd('reconnect');
@@ -1109,6 +1115,15 @@ if (typeof confetti !== 'object') {
   hasPlugin = function(id, plugins) {
     return findPlugin(id, plugins) !== null;
   };
+  confetti.command('plugincommands', ['Shows various commands related to plugins.', 'send@plugincommands'], function(_, chan) {
+    confetti.commandList.border(false, chan);
+    confetti.commandList.header('Plugin Commands', 5, chan);
+    confetti.commandList.cmd('plugins', chan);
+    confetti.commandList.cmd('addplugin', chan);
+    confetti.commandList.cmd('removeplugin', chan);
+    confetti.callHooks('commands:plugins');
+    return confetti.commandList.border(true, chan);
+  });
   confetti.command('plugins', ["Displays a list of enabled and available plugins.", 'send@plugins'], function(_, chan) {
     var html, plugin, plugins, _i, _len;
     plugins = confetti.cache.get('plugins');
@@ -1278,6 +1293,37 @@ if (typeof confetti !== 'object') {
 })();
 
 (function() {
+  var updateScript;
+  updateScript = function(cb) {
+    return sys.webCall(confetti.scriptUrl + 'scripts.js', function(file) {
+      if (!file) {
+        confetti.msg.bot("Couldn't load script, check your internet connection.");
+        return;
+      }
+      confetti.io.write(sys.scriptsFolder + 'scripts.js', file);
+      confetti.io.reloadScript(true);
+      return confetti.msg.bot("Script updated!");
+    });
+  };
+  confetti.command('scriptcommands', ['Shows various commands related to the script.', 'send@scriptcommands'], function(_, chan) {
+    confetti.commandList.border(false, chan);
+    confetti.commandList.header('Script Commands', 5, chan);
+    confetti.commandList.cmd('updatescript', chan);
+    confetti.callHooks('commands:script');
+    return confetti.commandList.border(true, chan);
+  });
+  confetti.command('updatescript', ['Updates the script to the latest available version.', 'send@updatescript'], function() {
+    if (sys.isSafeScripts()) {
+      confetti.msg.bot("Please disable Safe Scripts before using this command.");
+      return;
+    }
+    confetti.msg.bot("Updating script...");
+    return updateScript();
+  });
+  return confetti.alias('updatescripts', 'updatescript');
+})();
+
+(function() {
   confetti.command('notifications', ["Toggles whether if notifications should be shown (tray messages).", 'send@notifications'], function() {
     confetti.cache.store('notifications', !confetti.cache.read('notifications')).save();
     return confetti.msg.bot("Notifications are now " + (confetti.cache.read('notifications') ? 'on' : 'off') + ".");
@@ -1379,7 +1425,9 @@ if (typeof confetti !== 'object') {
 
 if (confetti.initialized && !confetti.silentReload) {
   print("Script Check: OK");
-  script.clientStartUp();
+  if ((typeof script !== "undefined" && script !== null ? script.clientStartUp : void 0) != null) {
+    script.clientStartUp();
+  }
 } else if (!confetti.initialized && (typeof script !== "undefined" && script !== null)) {
   sys.setTimer(function() {
     return script.clientStartUp();
