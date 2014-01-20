@@ -6,11 +6,13 @@ do ->
     attemptToReconnect = ->
         if attempts >= 3
             return no
+        # If there is a password dialog, mark it "stop trying".
+        if Client.findChildren('passwordDialog').length > 0
+            return yes
 
         attempts += 1
         Client.reconnect()
 
-    # TODO: Research auto-accepting passwordDialog
     Network.playerLogin.connect ->
         if autoReconnectTimer isnt -1
             confetti.msg.notification "Reconnected to server!"
@@ -25,15 +27,20 @@ do ->
             confetti.msg.notification "Disconnection detected, attempting to reconnect."
 
             attemptToReconnect()
-            autoReconnectTimer = sys.setTimer ->
-                return if autoReconnectTimer is -1
+            stopTrying = no
 
-                if attemptToReconnect() is no
+            autoReconnectTimer = sys.setTimer ->
+                return if autoReconnectTimer is -1 or stopTrying is yes
+
+                reconnectEffect = attemptToReconnect()
+                if reconnectEffect is no
                     confetti.msg.bot "Three attempts at reconnecting have failed, stopping."
                     confetti.msg.notification "Failed to reconnect."
 
                     sys.unsetTimer autoReconnectTimer
                     autoReconnectTimer = -1
+                else if reconnectEffect is yes
+                    stopTrying = yes
             , 5000, yes
 
         forced = no

@@ -61,7 +61,8 @@ do ->
     escapeRegex = (str) ->
         str.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&')
 
-    sortOnline = (a, b) -> Client.id(b) - Client.id(a)
+    # For use with Array::sort
+    sortOnline = (a, b) -> Client.id(b)
     truncate = (str, len) ->
         strlen = str.length
         if strlen > len

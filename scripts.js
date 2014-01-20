@@ -106,7 +106,7 @@ if (typeof confetti !== 'object') {
     return str.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
   };
   sortOnline = function(a, b) {
-    return Client.id(b) - Client.id(a);
+    return Client.id(b);
   };
   truncate = function(str, len) {
     var strlen;
@@ -551,14 +551,14 @@ if (typeof confetti !== 'object') {
 })();
 
 (function() {
-  confetti.command('blocked', ["Displays a list of blocked players.", 'send@blocked'], function() {
+  confetti.command('blocked', ["Displays a list of blocked players.", 'send@blocked'], function(_, chan) {
     var blocked, blocklist, count, html, _i, _len;
-    blocklist = confetti.cache.get('blocked').sort(confetti.util.sortOnline);
+    blocklist = confetti.cache.get('blocked').sort().sort(confetti.util.sortOnline);
     if (blocklist.length === 0) {
       confetti.msg.bot("There is no one on your block list.");
       return;
     }
-    confetti.msg.bold("Blocked Players");
+    confetti.msg.bold("Blocked Players", '', chan);
     html = "";
     count = 0;
     for (_i = 0, _len = blocklist.length; _i < _len; _i++) {
@@ -569,7 +569,7 @@ if (typeof confetti !== 'object') {
         html += "<br/>";
       }
     }
-    return confetti.msg.html(html);
+    return confetti.msg.html(html, chan);
   });
   confetti.command('block', ['block [name]', "Blocks a user by automatically ignoring them.", 'setmsg@block [name]'], function(data) {
     var blocked, id, name;
@@ -781,14 +781,14 @@ if (typeof confetti !== 'object') {
 (function() {
   var bullet;
   bullet = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&bull;";
-  confetti.command('friends', ["Displays your friends list.", 'send@friends'], function() {
+  confetti.command('friends', ["Displays your friends list.", 'send@friends'], function(_, chan) {
     var count, friend, friends, html, _i, _len;
-    friends = confetti.cache.get('friends').sort(confetti.util.sortOnline);
+    friends = confetti.cache.get('friends').sort().sort(confetti.util.sortOnline);
     if (friends.length === 0) {
       confetti.msg.bot("<span title='You have 0 friends.'>There is no one on your friend list.</span>");
       return;
     }
-    confetti.msg.bold("Your friends");
+    confetti.msg.bold("Your friends", '', chan);
     html = "";
     count = 0;
     for (_i = 0, _len = friends.length; _i < _len; _i++) {
@@ -799,7 +799,7 @@ if (typeof confetti !== 'object') {
         html += "<br/>";
       }
     }
-    return confetti.msg.html(html);
+    return confetti.msg.html(html, chan);
   });
   confetti.command('friend', ['friend [name]', "Adds [name] to your friend list.", 'setmsg@friend [name]'], function(data) {
     var friends, name;
@@ -1222,6 +1222,9 @@ if (typeof confetti !== 'object') {
     if (attempts >= 3) {
       return false;
     }
+    if (Client.findChildren('passwordDialog').length > 0) {
+      return true;
+    }
     attempts += 1;
     return Client.reconnect();
   };
@@ -1234,20 +1237,25 @@ if (typeof confetti !== 'object') {
     }
   });
   Network.disconnected.connect(function() {
-    var forced;
+    var forced, stopTrying;
     if (confetti.cache.get('autoreconnect') === true && autoReconnectTimer === -1 && forced !== true) {
       confetti.msg.bot("Attempting to reconnect...");
       confetti.msg.notification("Disconnection detected, attempting to reconnect.");
       attemptToReconnect();
+      stopTrying = false;
       autoReconnectTimer = sys.setTimer(function() {
-        if (autoReconnectTimer === -1) {
+        var reconnectEffect;
+        if (autoReconnectTimer === -1 || stopTrying === true) {
           return;
         }
-        if (attemptToReconnect() === false) {
+        reconnectEffect = attemptToReconnect();
+        if (reconnectEffect === false) {
           confetti.msg.bot("Three attempts at reconnecting have failed, stopping.");
           confetti.msg.notification("Failed to reconnect.");
           sys.unsetTimer(autoReconnectTimer);
           return autoReconnectTimer = -1;
+        } else if (reconnectEffect === true) {
+          return stopTrying = true;
         }
       }, 5000, true);
     }
@@ -1446,6 +1454,41 @@ poScript = {
     if (message !== oldMess) {
       sys.stopEvent();
       return Network.sendChanMessage(chan, message);
+    }
+  },
+  beforeChannelMessage: function(message, chan, html) {
+    var from, fromId, id, line, name, ownId, playerMessage, _ref;
+    ownId = Client.ownId();
+    if (ownId === -1) {
+      return;
+    }
+    if (html) {
+      message = confetti.util.stripHtml(message).trim();
+    }
+    from = message.substring(0, message.indexOf(":")).trim();
+    fromId = Client.id(from);
+    if (html && ((_ref = from.charAt(0)) === '~' || _ref === '+')) {
+      from = from.substr(1).trim();
+      fromId = Client.id(from);
+    } else if (html && message.substr(0, 3).trim() === '***') {
+      line = message.substr(3).trim();
+      for (id in confetti.players) {
+        name = Client.name(id);
+        if (line.substring(0, name.length) === name) {
+          from = name;
+          fromId = id;
+          break;
+        }
+      }
+    }
+    if (fromId === -1) {
+      return;
+    } else if (ownId === fromId) {
+      return;
+    }
+    playerMessage = message.substring(message.indexOf(":") + 2);
+    if (Client.isIgnored(fromId)) {
+      sys.stopEvent();
     }
   }
 };

@@ -96,5 +96,40 @@ poScript =
             sys.stopEvent()
             Network.sendChanMessage chan, message
 
-    # Messages from others. Unused.
-    # beforeChannelMessage: (message, chan, html) ->
+    # Messages from others.
+    beforeChannelMessage: (message, chan, html) ->
+        ownId = Client.ownId()
+        if ownId is -1
+            return
+
+        if html
+            message = confetti.util.stripHtml(message).trim()
+
+        from = message.substring(0, message.indexOf(":")).trim()
+        fromId = Client.id(from)
+
+        # Try to remove ~ and + from the name if it's html
+        if html and from.charAt(0) in ['~', '+']
+            from = from.substr(1).trim()
+            fromId = Client.id from
+        # Try to remove /me ***'s
+        else if html and message.substr(0, 3).trim() is '***'
+            line = message.substr(3).trim()
+            # Should be improved
+            for id of confetti.players
+                name = Client.name(id)
+                if line.substring(0, name.length) is name
+                    from = name
+                    fromId = id
+                    break
+
+        if fromId is -1
+            return
+        else if ownId is fromId
+            return
+
+        playerMessage = message.substring(message.indexOf(":") + 2)
+        # Blocking for /me & servers which use html messages.
+        if Client.isIgnored(fromId)
+            sys.stopEvent()
+            return
