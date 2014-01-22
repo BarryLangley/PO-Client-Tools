@@ -12,12 +12,18 @@ if (typeof confetti !== 'object') {
   confetti = {
     initialized: false,
     silentReload: false,
+    version: {
+      major: 2,
+      minor: 0,
+      patch: 0,
+      build: 0
+    },
     cache: {
       initialized: false
     },
     players: {},
-    scriptUrl: 'https://raw.github.com/TheUnknownOne/PO-Client-Tools/v2/',
-    pluginsUrl: 'https://raw.github.com/TheUnknownOne/PO-Client-Tools/v2/plugins/',
+    scriptUrl: 'https://raw.github.com/TheUnknownOne/PO-Client-Tools/master/',
+    pluginsUrl: 'https://raw.github.com/TheUnknownOne/PO-Client-Tools/master/plugins/',
     dataDir: sys.scriptsFolder,
     cacheFile: 'confetti.json',
     loginTime: 0

@@ -1,7 +1,9 @@
-# TheUnknownOne's Client Tools
+# Client Tools
 
 ## Confetti (scripts.js)
-Version: 2.0.0-dev
+Version: 2.0.0
+
+See the thread on the forums for more information.
 
 ## Script Loader (scriptLoader.js)
 
