@@ -2,6 +2,7 @@ do ->
     # Automatic reconnect
     autoReconnectTimer = -1
     attempts = 0
+    stopTrying = no
 
     attemptToReconnect = ->
         if attempts >= 3
@@ -20,6 +21,7 @@ do ->
             sys.unsetTimer autoReconnectTimer
             autoReconnectTimer = -1
             attempts = 0
+            stopTrying = no
 
     Network.disconnected.connect ->
         if confetti.cache.get('autoreconnect') is on and autoReconnectTimer is -1 and forced isnt yes
@@ -27,8 +29,6 @@ do ->
             confetti.msg.notification "Disconnection detected, attempting to reconnect."
 
             attemptToReconnect()
-            stopTrying = no
-
             autoReconnectTimer = sys.setTimer ->
                 return if autoReconnectTimer is -1 or stopTrying is yes
 
@@ -39,6 +39,7 @@ do ->
 
                     sys.unsetTimer autoReconnectTimer
                     autoReconnectTimer = -1
+                    stopTrying = no
                 else if reconnectEffect is yes
                     stopTrying = yes
             , 5000, yes

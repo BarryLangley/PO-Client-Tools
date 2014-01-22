@@ -1241,9 +1241,10 @@ if (typeof confetti !== 'object') {
 })();
 
 (function() {
-  var attemptToReconnect, attempts, autoReconnectTimer;
+  var attemptToReconnect, attempts, autoReconnectTimer, stopTrying;
   autoReconnectTimer = -1;
   attempts = 0;
+  stopTrying = false;
   attemptToReconnect = function() {
     if (attempts >= 3) {
       return false;
@@ -1259,16 +1260,16 @@ if (typeof confetti !== 'object') {
       confetti.msg.notification("Reconnected to server!");
       sys.unsetTimer(autoReconnectTimer);
       autoReconnectTimer = -1;
-      return attempts = 0;
+      attempts = 0;
+      return stopTrying = false;
     }
   });
   Network.disconnected.connect(function() {
-    var forced, stopTrying;
+    var forced;
     if (confetti.cache.get('autoreconnect') === true && autoReconnectTimer === -1 && forced !== true) {
       confetti.msg.bot("Attempting to reconnect...");
       confetti.msg.notification("Disconnection detected, attempting to reconnect.");
       attemptToReconnect();
-      stopTrying = false;
       autoReconnectTimer = sys.setTimer(function() {
         var reconnectEffect;
         if (autoReconnectTimer === -1 || stopTrying === true) {
@@ -1279,7 +1280,8 @@ if (typeof confetti !== 'object') {
           confetti.msg.bot("Three attempts at reconnecting have failed, stopping.");
           confetti.msg.notification("Failed to reconnect.");
           sys.unsetTimer(autoReconnectTimer);
-          return autoReconnectTimer = -1;
+          autoReconnectTimer = -1;
+          return stopTrying = false;
         } else if (reconnectEffect === true) {
           return stopTrying = true;
         }
