@@ -1601,11 +1601,12 @@ poScript = {
     }
   },
   beforeChannelMessage: function(message, chan, html) {
-    var auth, authSymbol, color, dirty, finishedMessage, from, fromId, fromSrc, id, line, name, ownId, playerMessage, _ref, _ref1, _ref2, _ref3;
+    var auth, authSymbol, color, dirty, finishedMessage, from, fromId, fromSrc, id, line, name, originalMessage, ownId, playerMessage, _ref, _ref1, _ref2, _ref3;
     ownId = Client.ownId();
     if (ownId === -1) {
       return;
     }
+    originalMessage = message;
     if (html) {
       message = confetti.util.stripHtml(message).trim();
     }
@@ -1625,7 +1626,7 @@ poScript = {
         }
       }
     }
-    playerMessage = sys.htmlEscape(message.substring(message.indexOf(":") + 2));
+    playerMessage = originalMessage.substring(originalMessage.indexOf(":") + 2);
     if (fromId === -1) {
       dirty = false;
       _ref1 = confetti.callHooks('manipulateChanBotMessage', fromSrc, message, playerMessage, chan, html), fromSrc = _ref1[0], message = _ref1[1], playerMessage = _ref1[2], chan = _ref1[3], html = _ref1[4];
@@ -1664,7 +1665,10 @@ poScript = {
           authSymbol = ['', ''];
         }
       }
-      playerMessage = Client.channel(chan).addChannelLinks(playerMessage);
+      if (!html) {
+        playerMessage = sys.htmlEscape(playerMessage);
+        playerMessage = Client.channel(chan).addChannelLinks(playerMessage);
+      }
       finishedMessage = "<font color='" + color + "'><timestamp/>" + authSymbol[0] + "<b>" + from + ":" + authSymbol[1] + "</b></font> " + playerMessage;
       Client.printChannelMessage(finishedMessage, chan, html);
       return sys.stopEvent();

@@ -102,6 +102,7 @@ poScript =
         if ownId is -1
             return
 
+        originalMessage = message
         if html
             message = confetti.util.stripHtml(message).trim()
 
@@ -123,7 +124,7 @@ poScript =
                     fromId = id
                     break
 
-        playerMessage = sys.htmlEscape(message.substring(message.indexOf(":") + 2))
+        playerMessage = originalMessage.substring(originalMessage.indexOf(":") + 2)
 
         # Message manipulation part, pretty messy.
         if fromId is -1
@@ -162,7 +163,12 @@ poScript =
                 else
                     authSymbol = ['', '']
 
-            playerMessage = Client.channel(chan).addChannelLinks(playerMessage)
+            # Servers with custom HTML will have escaped themselves.
+            # And of course the HTML wouldn't render if we wouldn't do this
+            unless html
+                playerMessage = sys.htmlEscape(playerMessage)
+                playerMessage = Client.channel(chan).addChannelLinks(playerMessage)
+
             finishedMessage = "<font color='#{color}'><timestamp/>#{authSymbol[0]}<b>#{from}:#{authSymbol[1]}</b></font> #{playerMessage}"
 
             Client.printChannelMessage finishedMessage, chan, html
