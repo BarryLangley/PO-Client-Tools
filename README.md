@@ -3,7 +3,7 @@
 ## Confetti (scripts.js)
 Version: 2.0.0
 
-See the thread on the forums for more information.
+See the [thread](http://pokemon-online.eu/forums/showthread.php?24230-Confetti-Another-client-script) on the forums for more information.
 
 ## Script Loader (scriptLoader.js)
 
