@@ -64,6 +64,13 @@ do ->
 
         confetti.callHooks 'commands:friends'
 
+        header 'Tracking', 4
+        cmd 'track'
+        cmd 'untrack'
+        cmd 'tracked'
+
+        confetti.callHooks 'commands:track'
+
         header 'Blocking', 4
         cmd 'block'
         cmd 'unblock'

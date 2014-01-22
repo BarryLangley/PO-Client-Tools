@@ -26,7 +26,7 @@ do ->
         complete = ""
 
         if help.length is 2
-            usage    = name
+            usage = name
             [desc, complete] = help
         else
             [usage, desc, complete] = help
@@ -37,7 +37,7 @@ do ->
         aliases[alias] = command
 
     confetti.execCommand = (command, data, message, chan) ->
-        # Use the alias
+        # Use the alias if available
         if aliases.hasOwnProperty(command)
             command = aliases[command]
 

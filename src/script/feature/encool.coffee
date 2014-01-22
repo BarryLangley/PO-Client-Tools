@@ -88,8 +88,11 @@ do ->
     confetti.hook 'initCache', ->
         confetti.cache.store('encool', 'none', confetti.cache.once)
 
-    confetti.hook 'manipulateOwnMessage', (message, chan) ->
-        [encool(message), chan]
+    confetti.hook 'manipulateOwnMessage', (message, chan, dirty) ->
+        mess = encool(message)
+        dirty = dirty or (mess isnt message)
+
+        [mess, chan, dirty]
 
     confetti.command 'encool', ['encool [type]', 'Changes your encool type to (none, space, smallcaps, leet, reverse).', 'setmsg@encool [type]'], (data) ->
         data = data.toLowerCase()

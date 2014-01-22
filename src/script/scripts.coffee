@@ -88,11 +88,11 @@ poScript =
             return
 
         # Message manipulation
-        oldMess = message
-        [message, chan] = confetti.callHooks 'manipulateOwnMessage', message, chan
+        dirty = no
+        [message, chan, dirty] = confetti.callHooks 'manipulateOwnMessage', message, chan, dirty
 
         # If the message has changed
-        if message isnt oldMess
+        if dirty
             sys.stopEvent()
             Network.sendChanMessage chan, message
 
@@ -105,7 +105,7 @@ poScript =
         if html
             message = confetti.util.stripHtml(message).trim()
 
-        from = message.substring(0, message.indexOf(":")).trim()
+        from = fromSrc = message.substring(0, message.indexOf(":")).trim()
         fromId = Client.id(from)
 
         # Try to remove ~ and + from the name if it's html
@@ -123,13 +123,47 @@ poScript =
                     fromId = id
                     break
 
-        if fromId is -1
-            return
-        else if ownId is fromId
-            return
+        playerMessage = sys.htmlEscape(message.substring(message.indexOf(":") + 2))
 
-        playerMessage = message.substring(message.indexOf(":") + 2)
-        # Blocking for /me & servers which use html messages.
-        if Client.isIgnored(fromId)
-            sys.stopEvent()
+        # Message manipulation part, pretty messy.
+        if fromId is -1
+            dirty = no
+            [fromSrc, message, playerMessage, chan, html] = confetti.callHooks 'manipulateChanBotMessage', fromSrc, message, playerMessage, chan, html
+            if dirty
+                Client.printChannelMessage(message, chan, html)
+                sys.stopEvent()
             return
+        else if ownId isnt fromId
+            # Blocking for /me & servers which use html messages.
+            if Client.isIgnored(fromId)
+                sys.stopEvent()
+                return
+
+        dirty = no
+        color = Client.color(fromId)
+        auth  = Client.auth(fromId)
+        authSymbol = ['', '']
+
+        if auth > 4
+            auth = 4
+        else if auth < 0
+            auth = 0
+
+        [from, fromId, message, playerMessage, [color, auth, authSymbol], chan, html, dirty] =
+            confetti.callHooks('manipulateChanPlayerMessage', from, fromId, message, playerMessage, [color, auth, authSymbol], chan, html, dirty)
+
+        if dirty
+            color = Client.color(fromId) unless color
+            auth  = Client.auth(fromId) unless auth?
+
+            unless authSymbol[0] and authSymbol[1]
+                if auth > 0 && auth < 4
+                    authSymbol = ['+<i>', '</i>']
+                else
+                    authSymbol = ['', '']
+
+            playerMessage = Client.channel(chan).addChannelLinks(playerMessage)
+            finishedMessage = "<font color='#{color}'><timestamp/>#{authSymbol[0]}<b>#{from}:#{authSymbol[1]}</b></font> #{playerMessage}"
+
+            Client.printChannelMessage finishedMessage, chan, html
+            sys.stopEvent()

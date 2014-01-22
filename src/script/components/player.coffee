@@ -38,10 +38,11 @@ do ->
 
     fancyName = (id, tooltip = yes) ->
         pname = name(id)
-        id = Client.id(id) if typeof id is 'string'
-        showInfo = typeof id isnt 'string' and tooltip
+        pid = if typeof id is 'string' then Client.id(id) else id
 
-        "<a " + (if showInfo then 'href=\'po:info/' + id + '\' ' else '') + "style='text-decoration: none; color: #{Client.color(id)};'" + (if showInfo then (' title="Challenge ' + confetti.util.stripquotes(pname) + '"') else '') + "><b>#{pname}</b></a>"
+        showInfo = pid isnt -1 and tooltip
+
+        "<a " + (if showInfo then 'href=\'po:info/' + pid + '\' ' else '') + "style='text-decoration: none; color: #{Client.color(pid)};'" + (if showInfo then (' title="Challenge ' + confetti.util.stripquotes(pname) + '"') else '') + "><b>#{pname}</b></a>"
 
     confetti.player = {
         create

@@ -27,12 +27,13 @@ do ->
     bold = (title, msg = '', chan, color = 'black') ->
         html "<timestamp/><b style='color: #{color};'>#{title}:</b> #{msg}", chan
 
-    notification = (msg, title = Client.windowTitle) ->
+    notification = (msg, title = Client.windowTitle, allowActive = yes) ->
         if confetti.cache.initialized isnt no and confetti.cache.read('notifications') is on
             if Client.windowActive()
-                html "&nbsp;&nbsp;&nbsp;#{poIcon} <b>#{title}</b><br/>#{bullet} #{msg}"
+                if allowActive
+                    html "&nbsp;&nbsp;&nbsp;#{poIcon} <b>#{title}</b><br/>#{bullet} #{msg}"
             else
-                # Prefix with the server name in tray messages - so the user knows where it's coming from.
+                # Prefix the server name in tray message, so the user knows what server it's coming from.
                 if title isnt Client.windowTitle
                     title = "#{Client.windowTitle} - #{title}"
 

@@ -22,6 +22,7 @@ do ->
         confetti.commandList.border yes, chan
 
     # TODO: Updateplugins
+    # TODO: Possibility for local plugins
     confetti.command 'plugins', ["Displays a list of enabled and available plugins.", 'send@plugins'], (_, chan) ->
         plugins = confetti.cache.get 'plugins'
         if plugins.length > 0

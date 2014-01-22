@@ -317,16 +317,14 @@ if (typeof confetti !== 'object') {
     }
   };
   fancyName = function(id, tooltip) {
-    var pname, showInfo;
+    var pid, pname, showInfo;
     if (tooltip == null) {
       tooltip = true;
     }
     pname = name(id);
-    if (typeof id === 'string') {
-      id = Client.id(id);
-    }
-    showInfo = typeof id !== 'string' && tooltip;
-    return "<a " + (showInfo ? 'href=\'po:info/' + id + '\' ' : '') + ("style='text-decoration: none; color: " + (Client.color(id)) + ";'") + (showInfo ? ' title="Challenge ' + confetti.util.stripquotes(pname) + '"' : '') + ("><b>" + pname + "</b></a>");
+    pid = typeof id === 'string' ? Client.id(id) : id;
+    showInfo = pid !== -1 && tooltip;
+    return "<a " + (showInfo ? 'href=\'po:info/' + pid + '\' ' : '') + ("style='text-decoration: none; color: " + (Client.color(pid)) + ";'") + (showInfo ? ' title="Challenge ' + confetti.util.stripquotes(pname) + '"' : '') + ("><b>" + pname + "</b></a>");
   };
   return confetti.player = {
     create: create,
@@ -406,13 +404,18 @@ if (typeof confetti !== 'object') {
     }
     return html("<timestamp/><b style='color: " + color + ";'>" + title + ":</b> " + msg, chan);
   };
-  notification = function(msg, title) {
+  notification = function(msg, title, allowActive) {
     if (title == null) {
       title = Client.windowTitle;
     }
+    if (allowActive == null) {
+      allowActive = true;
+    }
     if (confetti.cache.initialized !== false && confetti.cache.read('notifications') === true) {
       if (Client.windowActive()) {
-        return html("&nbsp;&nbsp;&nbsp;" + poIcon + " <b>" + title + "</b><br/>" + bullet + " " + msg);
+        if (allowActive) {
+          return html("&nbsp;&nbsp;&nbsp;" + poIcon + " <b>" + title + "</b><br/>" + bullet + " " + msg);
+        }
       } else {
         if (title !== Client.windowTitle) {
           title = "" + Client.windowTitle + " - " + title;
@@ -760,8 +763,11 @@ if (typeof confetti !== 'object') {
   confetti.hook('initCache', function() {
     return confetti.cache.store('encool', 'none', confetti.cache.once);
   });
-  confetti.hook('manipulateOwnMessage', function(message, chan) {
-    return [encool(message), chan];
+  confetti.hook('manipulateOwnMessage', function(message, chan, dirty) {
+    var mess;
+    mess = encool(message);
+    dirty = dirty || (mess !== message);
+    return [mess, chan, dirty];
   });
   return confetti.command('encool', ['encool [type]', 'Changes your encool type to (none, space, smallcaps, leet, reverse).', 'setmsg@encool [type]'], function(data) {
     data = data.toLowerCase();
@@ -941,6 +947,11 @@ if (typeof confetti !== 'object') {
     cmd('friends');
     cmd('friendnotifications');
     confetti.callHooks('commands:friends');
+    header('Tracking', 4);
+    cmd('track');
+    cmd('untrack');
+    cmd('tracked');
+    confetti.callHooks('commands:track');
     header('Blocking', 4);
     cmd('block');
     cmd('unblock');
@@ -1385,6 +1396,91 @@ if (typeof confetti !== 'object') {
 })();
 
 (function() {
+  var bullet;
+  bullet = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&bull;";
+  confetti.command('tracked', ["Displays a list of tracked players.", 'send@tracked'], function(_, chan) {
+    var alt, alts, html, name, names, tracked, _i, _len;
+    tracked = confetti.cache.get('tracked');
+    if (Object.keys(tracked).length === 0) {
+      confetti.msg.bot("There is no one on your tracking list.");
+      return;
+    }
+    confetti.msg.bold("Tracked players", '', chan);
+    html = "";
+    names = {};
+    for (alt in tracked) {
+      name = tracked[alt];
+      if (names[name] == null) {
+        names[name] = [];
+      }
+      names[name].push(alt);
+    }
+    for (name in names) {
+      alts = names[name];
+      html += "" + confetti.msg.bullet + " " + (confetti.player.fancyName(name)) + " " + (confetti.player.status(name)) + " as:<br/>";
+      alts = alts.sort().sort(confetti.util.sortOnline);
+      for (_i = 0, _len = alts.length; _i < _len; _i++) {
+        alt = alts[_i];
+        html += "" + confetti.msg.indent + " " + confetti.msg.bullet + " " + (confetti.player.fancyName(alt)) + " " + (confetti.player.status(alt)) + "<br/>";
+      }
+    }
+    return confetti.msg.html(html, chan);
+  });
+  confetti.alias('tracking', 'tracked');
+  confetti.alias('trackinglist', 'tracked');
+  confetti.command('track', ['track [alt]:[name]', "Adds [alt] as an alt of [name] to your tracking list.", 'setmsg@track [alt]:[name]'], function(data) {
+    var alt, altName, name, parts, tracked;
+    parts = data.split(':');
+    if (parts[1] == null) {
+      parts[1] = '';
+    }
+    alt = parts[0], name = parts[1];
+    alt = alt.toLowerCase().trim();
+    name = name.trim();
+    altName = confetti.player.name(alt);
+    tracked = confetti.cache.get('tracked');
+    if (alt.length === 0 || name.length === 0) {
+      confetti.msg.bot("Specify both the alt and the name!");
+      return;
+    }
+    if (tracked.hasOwnProperty(alt)) {
+      confetti.msg.bot("" + altName + " is already on your tracking list!");
+      return;
+    }
+    tracked[alt] = name;
+    confetti.cache.store('tracked', tracked).save();
+    return confetti.msg.bot("" + altName + " is now on your tracking list!");
+  });
+  confetti.command('untrack', ['untrack [alt]', "Removes [alt] from your tracking list.", 'setmsg@untrack [alt]'], function(data) {
+    var name, tracked;
+    data = data.toLowerCase();
+    name = confetti.player.name(data);
+    tracked = confetti.cache.get('tracked');
+    if (!tracked.hasOwnProperty(data)) {
+      confetti.msg.bot("" + name + " isn't on your tracking list!");
+      return;
+    }
+    delete tracked[data];
+    confetti.cache.store('tracked', tracked).save();
+    return confetti.msg.bot("You removed " + name + " from your tracking list!");
+  });
+  confetti.hook('initCache', function() {
+    return confetti.cache.store('tracked', {}, confetti.cache.once);
+  });
+  return confetti.hook('manipulateChanPlayerMessage', function(from, fromId, message, playerMessage, _arg, chan, html, dirty) {
+    var auth, authSymbol, color, tracked, trackedName;
+    color = _arg[0], auth = _arg[1], authSymbol = _arg[2];
+    tracked = confetti.cache.get('tracked');
+    trackedName = from.toLowerCase();
+    if (tracked.hasOwnProperty(trackedName)) {
+      from = "<span title='" + (confetti.util.stripquotes(from)) + "'>" + tracked[trackedName] + "</span>";
+      dirty = true;
+    }
+    return [from, fromId, message, playerMessage, [color, auth, authSymbol], chan, html, dirty];
+  });
+})();
+
+(function() {
   var clearDuplicateCommas;
   clearDuplicateCommas = /,,/g;
   confetti.command('translate', ['translate [message]:[to language code]-[from language code]', "Translates a message from a language to another one. [from language code] is optional and might even be ignored, it's purely a hint (note the dash). Language codes are two letters, for example <b>en</b> (English).", 'setmsg@translate [message]:[to]-[from]'], function(data, chan) {
@@ -1482,7 +1578,7 @@ poScript = {
     return delete confetti.players[id];
   },
   beforeSendMessage: function(message, chan) {
-    var command, data, oldMess, space, _ref, _ref1;
+    var command, data, dirty, space, _ref, _ref1;
     if (((_ref = message[0]) === confetti.cache.get('commandindicator') || _ref === '-') && message.length > 1 && confetti.util.isAlpha(message[1])) {
       space = message.indexOf(' ');
       command = "";
@@ -1497,15 +1593,15 @@ poScript = {
       confetti.execCommand(command, data, message, chan);
       return;
     }
-    oldMess = message;
-    _ref1 = confetti.callHooks('manipulateOwnMessage', message, chan), message = _ref1[0], chan = _ref1[1];
-    if (message !== oldMess) {
+    dirty = false;
+    _ref1 = confetti.callHooks('manipulateOwnMessage', message, chan, dirty), message = _ref1[0], chan = _ref1[1], dirty = _ref1[2];
+    if (dirty) {
       sys.stopEvent();
       return Network.sendChanMessage(chan, message);
     }
   },
   beforeChannelMessage: function(message, chan, html) {
-    var from, fromId, id, line, name, ownId, playerMessage, _ref;
+    var auth, authSymbol, color, dirty, finishedMessage, from, fromId, fromSrc, id, line, name, ownId, playerMessage, _ref, _ref1, _ref2, _ref3;
     ownId = Client.ownId();
     if (ownId === -1) {
       return;
@@ -1513,7 +1609,7 @@ poScript = {
     if (html) {
       message = confetti.util.stripHtml(message).trim();
     }
-    from = message.substring(0, message.indexOf(":")).trim();
+    from = fromSrc = message.substring(0, message.indexOf(":")).trim();
     fromId = Client.id(from);
     if (html && ((_ref = from.charAt(0)) === '~' || _ref === '+')) {
       from = from.substr(1).trim();
@@ -1529,14 +1625,49 @@ poScript = {
         }
       }
     }
+    playerMessage = sys.htmlEscape(message.substring(message.indexOf(":") + 2));
     if (fromId === -1) {
+      dirty = false;
+      _ref1 = confetti.callHooks('manipulateChanBotMessage', fromSrc, message, playerMessage, chan, html), fromSrc = _ref1[0], message = _ref1[1], playerMessage = _ref1[2], chan = _ref1[3], html = _ref1[4];
+      if (dirty) {
+        Client.printChannelMessage(message, chan, html);
+        sys.stopEvent();
+      }
       return;
-    } else if (ownId === fromId) {
-      return;
+    } else if (ownId !== fromId) {
+      if (Client.isIgnored(fromId)) {
+        sys.stopEvent();
+        return;
+      }
     }
-    playerMessage = message.substring(message.indexOf(":") + 2);
-    if (Client.isIgnored(fromId)) {
-      sys.stopEvent();
+    dirty = false;
+    color = Client.color(fromId);
+    auth = Client.auth(fromId);
+    authSymbol = ['', ''];
+    if (auth > 4) {
+      auth = 4;
+    } else if (auth < 0) {
+      auth = 0;
+    }
+    _ref2 = confetti.callHooks('manipulateChanPlayerMessage', from, fromId, message, playerMessage, [color, auth, authSymbol], chan, html, dirty), from = _ref2[0], fromId = _ref2[1], message = _ref2[2], playerMessage = _ref2[3], (_ref3 = _ref2[4], color = _ref3[0], auth = _ref3[1], authSymbol = _ref3[2]), chan = _ref2[5], html = _ref2[6], dirty = _ref2[7];
+    if (dirty) {
+      if (!color) {
+        color = Client.color(fromId);
+      }
+      if (auth == null) {
+        auth = Client.auth(fromId);
+      }
+      if (!(authSymbol[0] && authSymbol[1])) {
+        if (auth > 0 && auth < 4) {
+          authSymbol = ['+<i>', '</i>'];
+        } else {
+          authSymbol = ['', ''];
+        }
+      }
+      playerMessage = Client.channel(chan).addChannelLinks(playerMessage);
+      finishedMessage = "<font color='" + color + "'><timestamp/>" + authSymbol[0] + "<b>" + from + ":" + authSymbol[1] + "</b></font> " + playerMessage;
+      Client.printChannelMessage(finishedMessage, chan, html);
+      return sys.stopEvent();
     }
   }
 };
