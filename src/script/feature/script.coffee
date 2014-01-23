@@ -1,5 +1,5 @@
 do ->
-    differentVersion = (ov, nv) ->
+    differentVersion = (ov, nv = confetti.version) ->
         return no if typeof ov isnt 'object' or typeof nv isnt 'object'
         ov.release isnt nv.release || ov.major isnt nv.major || ov.minor isnt nv.minor
     updateScript = ->

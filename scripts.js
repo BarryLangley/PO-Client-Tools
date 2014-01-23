@@ -26,7 +26,7 @@ if (typeof confetti !== 'object') {
 confetti.version = {
   release: 2,
   major: 0,
-  minor: 1
+  minor: 2
 };
 
 confetti.scriptUrl = 'https://raw.github.com/TheUnknownOne/PO-Client-Tools/master/';
@@ -992,6 +992,7 @@ confetti.cacheFile = 'confetti.json';
     cmd('track');
     cmd('untrack');
     cmd('tracked');
+    cmd('trackingresolve');
     confetti.callHooks('commands:track');
     header('Blocking', 4);
     cmd('block');
@@ -1352,6 +1353,9 @@ confetti.cacheFile = 'confetti.json';
 (function() {
   var differentVersion, updateScript;
   differentVersion = function(ov, nv) {
+    if (nv == null) {
+      nv = confetti.version;
+    }
     if (typeof ov !== 'object' || typeof nv !== 'object') {
       return false;
     }
@@ -1502,7 +1506,7 @@ confetti.cacheFile = 'confetti.json';
     alt = parts[0], name = parts[1];
     alt = alt.toLowerCase().trim();
     name = name.trim();
-    altName = confetti.player.name(alt);
+    altName = confetti.player.name(alt, false);
     tracked = confetti.cache.get('tracked');
     if (alt.length === 0 || name.length === 0) {
       confetti.msg.bot("Specify both the alt and the name!");
@@ -1514,12 +1518,12 @@ confetti.cacheFile = 'confetti.json';
     }
     tracked[alt] = name;
     confetti.cache.store('tracked', tracked).save();
-    return confetti.msg.bot("" + altName + " is now on your tracking list as an alt of " + (confetti.player.name(name)) + "!");
+    return confetti.msg.bot("" + altName + " is now on your tracking list as an alt of " + (confetti.player.name(name, false)) + "!");
   });
   confetti.command('untrack', ['untrack [alt]', "Removes [alt] from your tracking list.", 'setmsg@untrack [alt]'], function(data) {
     var name, tracked;
     data = data.toLowerCase();
-    name = confetti.player.name(data);
+    name = confetti.player.name(data, false);
     tracked = confetti.cache.get('tracked');
     if (!tracked.hasOwnProperty(data)) {
       confetti.msg.bot("" + name + " isn't on your tracking list!");
@@ -1628,7 +1632,7 @@ confettiScript = {
     }
     confetti.initPlugins();
     if (!confetti.initialized) {
-      if ((confetti.cache.get('lastuse') + 345600) < (+sys.time())) {
+      if ((confetti.cache.get('lastuse') + 432000) < (+sys.time())) {
         commandindicator = confetti.cache.get('commandindicator');
         confetti.msg.bot("Type <a href='po:send/" + commandindicator + "commands' style='text-decoration: none; color: green;'><b>" + commandindicator + "commands</b></a> for a list of client commands.", -1);
       }

@@ -39,7 +39,7 @@ do ->
 
         alt     = alt.toLowerCase().trim()
         name    = name.trim()
-        altName = confetti.player.name(alt)
+        altName = confetti.player.name(alt, no)
 
         tracked = confetti.cache.get 'tracked'
 
@@ -54,11 +54,11 @@ do ->
         tracked[alt] = name
         confetti.cache.store('tracked', tracked).save()
 
-        confetti.msg.bot "#{altName} is now on your tracking list as an alt of #{confetti.player.name(name)}!"
+        confetti.msg.bot "#{altName} is now on your tracking list as an alt of #{confetti.player.name(name, no)}!"
 
     confetti.command 'untrack', ['untrack [alt]', "Removes [alt] from your tracking list.", 'setmsg@untrack [alt]'], (data) ->
         data = data.toLowerCase()
-        name = confetti.player.name data
+        name = confetti.player.name(data, no)
         tracked = confetti.cache.get 'tracked'
 
         unless tracked.hasOwnProperty(data)

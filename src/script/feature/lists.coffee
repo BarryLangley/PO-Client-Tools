@@ -67,6 +67,7 @@ do ->
         cmd 'track'
         cmd 'untrack'
         cmd 'tracked'
+        cmd 'trackingresolve'
 
         confetti.callHooks 'commands:track'
 
