@@ -1,7 +1,9 @@
 do ->
-    differentVersion = (ov, nv) -> ov.release isnt nv.release || ov.major isnt nv.major || ov.minor isnt nv.minor
+    differentVersion = (ov, nv) ->
+        return no if typeof ov isnt 'object' or typeof nv isnt 'object'
+        ov.release isnt nv.release || ov.major isnt nv.major || ov.minor isnt nv.minor
     updateScript = ->
-        oldVersion = confetti.version
+        oldVersion = {release: confetti.version.release, major: confetti.version.major, minor: confetti.version.minor}
         sys.webCall confetti.scriptUrl + 'scripts.js', (file) ->
             unless file
                 confetti.msg.bot "Couldn't load script, check your internet connection."

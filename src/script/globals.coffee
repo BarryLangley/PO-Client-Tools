@@ -9,22 +9,22 @@ if typeof confetti isnt 'object'
         initialized: no
         silentReload: off
 
-        version:
-            release: 2
-            major: 0
-            minor: 1
         cache:
             initialized: no
         players: {}
-
-        # TODO: A command to change this
-        scriptUrl: 'https://raw.github.com/TheUnknownOne/PO-Client-Tools/master/'
-        pluginsUrl: 'https://raw.github.com/TheUnknownOne/PO-Client-Tools/master/plugins/'
-
-        dataDir: sys.scriptsFolder
-        cacheFile: 'confetti.json'
 
         loginTime: 0
 
     Network.playerLogin.connect ->
         confetti.loginTime = +sys.time()
+
+confetti.version =
+    release: 2
+    major: 0
+    minor: 1
+
+# TODO: A command to change this
+confetti.scriptUrl  = 'https://raw.github.com/TheUnknownOne/PO-Client-Tools/master/'
+confetti.pluginsUrl = 'https://raw.github.com/TheUnknownOne/PO-Client-Tools/master/plugins/'
+confetti.dataDir    = sys.scriptsFolder
+confetti.cacheFile  = 'confetti.json'

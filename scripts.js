@@ -12,25 +12,30 @@ if (typeof confetti !== 'object') {
   confetti = {
     initialized: false,
     silentReload: false,
-    version: {
-      release: 2,
-      major: 0,
-      minor: 1
-    },
     cache: {
       initialized: false
     },
     players: {},
-    scriptUrl: 'https://raw.github.com/TheUnknownOne/PO-Client-Tools/master/',
-    pluginsUrl: 'https://raw.github.com/TheUnknownOne/PO-Client-Tools/master/plugins/',
-    dataDir: sys.scriptsFolder,
-    cacheFile: 'confetti.json',
     loginTime: 0
   };
   Network.playerLogin.connect(function() {
     return confetti.loginTime = +sys.time();
   });
 }
+
+confetti.version = {
+  release: 2,
+  major: 0,
+  minor: 1
+};
+
+confetti.scriptUrl = 'https://raw.github.com/TheUnknownOne/PO-Client-Tools/master/';
+
+confetti.pluginsUrl = 'https://raw.github.com/TheUnknownOne/PO-Client-Tools/master/plugins/';
+
+confetti.dataDir = sys.scriptsFolder;
+
+confetti.cacheFile = 'confetti.json';
 
 (function() {
   var an, copyArray, escapeRegex, fancyJoin, isAlpha, isPlainObject, noop, random, removeDuplicates, shuffle, sortOnline, stripHtml, stripquotes, truncate;
@@ -1315,11 +1320,18 @@ if (typeof confetti !== 'object') {
 (function() {
   var differentVersion, updateScript;
   differentVersion = function(ov, nv) {
+    if (typeof ov !== 'object' || typeof nv !== 'object') {
+      return false;
+    }
     return ov.release !== nv.release || ov.major !== nv.major || ov.minor !== nv.minor;
   };
   updateScript = function() {
     var oldVersion;
-    oldVersion = confetti.version;
+    oldVersion = {
+      release: confetti.version.release,
+      major: confetti.version.major,
+      minor: confetti.version.minor
+    };
     return sys.webCall(confetti.scriptUrl + 'scripts.js', function(file) {
       var newVersion;
       if (!file) {
