@@ -21,7 +21,7 @@ do ->
 
             alts = alts.sort().sort(confetti.util.sortOnline)
             for alt in alts
-                html += "#{confetti.msg.indent} #{confetti.msg.bullet} #{confetti.player.fancyName(alt)} #{confetti.player.status(alt)}<br/>"
+                html += "&nbsp;&nbsp;&nbsp;&nbsp;#{confetti.msg.bullet} #{confetti.player.fancyName(alt)} #{confetti.player.status(alt)}<br/>"
 
             # There should already be a remaining new line from the above code.
             # html += "<br/>"

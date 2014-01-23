@@ -10,10 +10,9 @@ if typeof confetti isnt 'object'
         silentReload: off
 
         version:
-            major: 2
-            minor: 0
-            patch: 0
-            build: 0
+            release: 2
+            major: 0
+            minor: 1
         cache:
             initialized: no
         players: {}

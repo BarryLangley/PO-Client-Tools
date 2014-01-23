@@ -13,10 +13,9 @@ if (typeof confetti !== 'object') {
     initialized: false,
     silentReload: false,
     version: {
-      major: 2,
-      minor: 0,
-      patch: 0,
-      build: 0
+      release: 2,
+      major: 0,
+      minor: 1
     },
     cache: {
       initialized: false
@@ -1078,33 +1077,36 @@ if (typeof confetti !== 'object') {
 })();
 
 (function() {
-  return confetti.command('news', ['Fetches the latest news headlines from Google.', 'send@news'], function() {
+  return confetti.command('news', ['news [language code?]', "Fetches the latest news headlines from Google, in an optional <a href='<a href='http://en.wikipedia.org/wiki/List_of_ISO_639-1_codes#Partial_ISO_639_table'>[language]</a>.", 'send@news'], function(data, chan) {
+    data = data.toLowerCase();
+    if (data.length !== 2) {
+      data = 'en';
+    }
     confetti.msg.bot("Fetching latest headlines...");
-    return sys.webCall('https://ajax.googleapis.com/ajax/services/search/news?v=1.0&rsz=5&topic=h&hl=en', function(response) {
-      var data, ex, json, mess, res, story, _i, _j, _len, _len1;
+    return sys.webCall("https://ajax.googleapis.com/ajax/services/search/news?v=1.0&rsz=5&topic=h&hl=" + (encodeURIComponent(data)), function(response) {
+      var ex, json, mess, res, story, _i, _j, _len, _len1;
       if (!response) {
-        confetti.msg.bot("Couldn't load news - your internet might be down.");
+        confetti.msg.bot("Couldn't load news - your internet might be down.", chan);
         return;
       }
       try {
         json = JSON.parse(response);
       } catch (_error) {
         ex = _error;
-        confetti.msg.bot("Couldn't load news - your internet might be down.");
+        confetti.msg.bot("Couldn't load news - your internet might be down.", chan);
         return;
       }
       data = json.responseData.results;
       res = [];
       for (_i = 0, _len = data.length; _i < _len; _i++) {
         story = data[_i];
-        res.push(("" + confetti.msg.bullet + " <b>") + story.titleNoFormatting.replace(/&#39;/g, "'").replace(/`/g, "'").replace(/&quot;/g, "\"") + "</b>");
-        res.push("" + confetti.msg.indent + "&nbsp;&nbsp;&nbsp;&nbsp;→ Read more: " + (sys.htmlEscape(story.unescapedUrl)));
+        res.push(("" + confetti.msg.bullet + " <b>") + story.titleNoFormatting.replace(/&#39;/g, "'").replace(/`/g, "'").replace(/&quot;/g, "\"") + ("</b><br/>" + confetti.msg.indent + "&nbsp;&nbsp;&nbsp;&nbsp;→ Read more: " + (sys.htmlEscape(story.unescapedUrl))));
       }
       if (res.length) {
-        confetti.msg.bold('News Headlines');
+        confetti.msg.bold('News Headlines', '', chan);
         for (_j = 0, _len1 = res.length; _j < _len1; _j++) {
           mess = res[_j];
-          confetti.msg.html(mess);
+          confetti.msg.html(mess, chan);
         }
       }
       return null;
@@ -1311,16 +1313,27 @@ if (typeof confetti !== 'object') {
 })();
 
 (function() {
-  var updateScript;
-  updateScript = function(cb) {
+  var differentVersion, updateScript;
+  differentVersion = function(ov, nv) {
+    return ov.release !== nv.release || ov.major !== nv.major || ov.minor !== nv.minor;
+  };
+  updateScript = function() {
+    var oldVersion;
+    oldVersion = confetti.version;
     return sys.webCall(confetti.scriptUrl + 'scripts.js', function(file) {
+      var newVersion;
       if (!file) {
         confetti.msg.bot("Couldn't load script, check your internet connection.");
         return;
       }
       confetti.io.write(sys.scriptsFolder + 'scripts.js', file);
       confetti.io.reloadScript(true);
-      return confetti.msg.bot("Script updated!");
+      newVersion = confetti.version;
+      if (differentVersion(oldVersion, newVersion)) {
+        return confetti.msg.bot("Script updated to version " + newVersion.release + "." + newVersion.major + "." + newVersion.minor + "!");
+      } else {
+        return confetti.msg.bot("Script updated!");
+      }
     });
   };
   confetti.command('scriptcommands', ['Shows various commands related to the script.', 'send@scriptcommands'], function(_, chan) {
@@ -1428,7 +1441,7 @@ if (typeof confetti !== 'object') {
       alts = alts.sort().sort(confetti.util.sortOnline);
       for (_i = 0, _len = alts.length; _i < _len; _i++) {
         alt = alts[_i];
-        html += "" + confetti.msg.indent + " " + confetti.msg.bullet + " " + (confetti.player.fancyName(alt)) + " " + (confetti.player.status(alt)) + "<br/>";
+        html += "&nbsp;&nbsp;&nbsp;&nbsp;" + confetti.msg.bullet + " " + (confetti.player.fancyName(alt)) + " " + (confetti.player.status(alt)) + "<br/>";
       }
     }
     return confetti.msg.html(html, chan);

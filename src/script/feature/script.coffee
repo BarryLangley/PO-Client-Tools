@@ -1,5 +1,7 @@
 do ->
-    updateScript = (cb) ->
+    differentVersion = (ov, nv) -> ov.release isnt nv.release || ov.major isnt nv.major || ov.minor isnt nv.minor
+    updateScript = ->
+        oldVersion = confetti.version
         sys.webCall confetti.scriptUrl + 'scripts.js', (file) ->
             unless file
                 confetti.msg.bot "Couldn't load script, check your internet connection."
@@ -8,7 +10,11 @@ do ->
             confetti.io.write sys.scriptsFolder + 'scripts.js', file
             confetti.io.reloadScript yes
 
-            confetti.msg.bot "Script updated!"
+            newVersion = confetti.version
+            if differentVersion(oldVersion, newVersion)
+                confetti.msg.bot "Script updated to version #{newVersion.release}.#{newVersion.major}.#{newVersion.minor}!"
+            else
+                confetti.msg.bot "Script updated!"
 
     confetti.command 'scriptcommands', ['Shows various commands related to the script.', 'send@scriptcommands'], (_, chan) ->
         confetti.commandList.border no, chan
