@@ -112,9 +112,11 @@ do ->
         confetti.cache.store('longinsults', no, confetti.cache.once)
 
     confetti.hook 'commands:categories', ->
-        confetti.commandList.header 'Insults', 4
-        confetti.commandList.cmd 'insult'
-        confetti.commandList.cmd 'intellisult'
-        confetti.commandList.cmd 'updateinsults'
-        confetti.commandList.cmd 'longinsults'
+        {header, cmd} = confetti.commandList
+
+        header 'Insults', 4
+        cmd 'insult'
+        cmd 'intellisult'
+        cmd 'updateinsults'
+        cmd 'longinsults'
 

@@ -18,11 +18,13 @@ do ->
             names[name].push alt
 
         for name, alts of names
-            html += "#{confetti.msg.bullet} #{confetti.player.fancyName(name)} #{confetti.player.status(name)} as <small>[#{alts.length}]</small><br/>"
+            # Forbid auto-resolve
+            html += "#{confetti.msg.bullet} #{confetti.player.fancyName(name, null, no)} #{confetti.player.status(name, no)} as <small>[#{alts.length}]</small><br/>"
 
             alts = confetti.util.sortOnlineOffline(alts)
             for alt in alts
-                html += "&nbsp;&nbsp;&nbsp;&nbsp;#{confetti.msg.bullet} #{confetti.player.fancyName(alt)} #{confetti.player.status(alt)}<br/>"
+                # Forbid auto-resolve
+                html += "&nbsp;&nbsp;&nbsp;&nbsp;#{confetti.msg.bullet} #{confetti.player.fancyName(alt, null, no)} #{confetti.player.status(alt, no)}<br/>"
 
         confetti.msg.html html, chan
 
@@ -52,7 +54,7 @@ do ->
         tracked[alt] = name
         confetti.cache.store('tracked', tracked).save()
 
-        confetti.msg.bot "#{altName} is now on your tracking list!"
+        confetti.msg.bot "#{altName} is now on your tracking list as an alt of #{confetti.player.name(name)}!"
 
     confetti.command 'untrack', ['untrack [alt]', "Removes [alt] from your tracking list.", 'setmsg@untrack [alt]'], (data) ->
         data = data.toLowerCase()
@@ -68,15 +70,19 @@ do ->
 
         confetti.msg.bot "You removed #{name} from your tracking list!"
 
-    confetti.hook 'initCache', ->
-        confetti.cache
-            .store('tracked', {}, confetti.cache.once)
+    confetti.command 'trackingresolve', ["Toggles whether if tracked names should resolve to their real name (in lists &c.). Does not affect chat name resolution.", 'send@trackingresolve'], ->
+        confetti.cache.store('trackingresolve', !confetti.cache.read('trackingresolve')).save()
+        confetti.msg.bot "Tracking name resolve is now #{if confetti.cache.read('trackingresolve') then 'on' else 'off'}."
+
+    # The initCache work is done in the main function due to it being used in core functionality.
 
     confetti.hook 'manipulateChanPlayerMessage', (from, fromId, message, playerMessage, [color, auth, authSymbol], chan, html, dirty) ->
-        tracked = confetti.cache.get 'tracked'
+        tracked     = confetti.cache.get 'tracked'
         trackedName = from.toLowerCase()
 
-        if tracked.hasOwnProperty(trackedName)
+        ownId = Client.ownId()
+
+        if fromId isnt ownId and tracked.hasOwnProperty(trackedName)
             from = "<span title='#{confetti.util.stripquotes(from)}'>#{tracked[trackedName]}</span>"
             dirty = true
 

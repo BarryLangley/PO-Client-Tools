@@ -75,14 +75,28 @@ do ->
         if confetti.cache.get('friendnotifications') is no
             return
 
-        name = Client.name(id)
-        if name.toLowerCase() in confetti.cache.get('friends')
+        # Also see if their "real" name is in the friends list (via tracking).
+        name = Client.name(id).toLowerCase()
+        friends = confetti.cache.get('friends')
+        trackedName = ''
+        if confetti.cache.get('trackingresolve')
+            tracked = confetti.cache.get('tracked')
+            trackedName = (tracked[name] or '').toLowerCase()
+
+        if name in friends or (trackedName and trackedName in friends)
             confetti.msg.notification "#{confetti.player.fancyName(id)} logged in.", "Friend joined"
 
     confetti.hook 'onPlayerRemoved', (id) ->
         if confetti.cache.get('friendnotifications') is no
             return
 
-        name = Client.name(id)
-        if name.toLowerCase() in confetti.cache.get('friends')
+        # Also see if their "real" name is in the friends list (via tracking).
+        name = Client.name(id).toLowerCase()
+        friends = confetti.cache.get('friends')
+        trackedName = ''
+        if confetti.cache.get('trackingresolve')
+            tracked = confetti.cache.get('tracked')
+            trackedName = (tracked[name] or '').toLowerCase()
+
+        if name in friends or (trackedName and trackedName in friends)
             confetti.msg.notification "#{confetti.player.fancyName(id, no)} logged out.", "Friend left"

@@ -1,33 +1,35 @@
 # To indicate the script was successfully reloaded, print a simple message.
-# This is false when the script loads for the first time, so that's why you don't see this message if you just log in.
+# This is false when the script loads for the first time, which is why you don't see this message if you just log in.
 if confetti.initialized and not confetti.silentReload
     print "Script Check: OK"
     script.clientStartUp() if script?.clientStartUp?
 
 # Initializes the script by calling clientStartUp.
-# When the user changes the script, this condition will be true (script already exists, which means something was loaded previously,
-# but confetti was not, so we can initialize it here)
-
-# Script is undefined when the client starts up, so simply detecting that should do the trick.
-else if not confetti.initialized and script?
-    # Use a one ms timer to wait for the script to be defined
+# confettiScript is undefined when the client starts up, so simply detecting that should do the trick.
+unless confetti.initialized and confettiScript?
+    # Use a short timer to wait for the script to be defined
     sys.setTimer ->
+        # If this is in the client's startup cycle, this shouldn't be called.
+        # However if there wasn't a script previously this will run, which is what we want.
+        return if confetti.initialized
+
+        # Create player objects for any known players.
+        chans = confetti.channel.channelIds()
+        # Trick to get the full list of players
+        players = (confetti.channel.players(id).join ',' for id in chans).join(',').split(',')
+
+        for player of players
+            unless player and confetti.players.hasOwnProperty(player)
+                confetti.players[player] = confetti.player.create(player)
+
+        # Call clientStartUp where most of the magic happens.
         script.clientStartUp()
     , 1, no
 
 confetti.silentReload = off
-poScript =
+confettiScript =
     # Initialize variables
     clientStartUp: ->
-        unless confetti.initialized
-            chans = confetti.channel.channelIds()
-            # Trick to get the full list of players
-            players = (confetti.channel.players(id).join ',' for id in chans).join(',').split(',')
-
-            for player of players
-                unless confetti.players.hasOwnProperty(player) and player
-                    confetti.players[player] = confetti.player.create(player)
-
         if confetti.cache.initialized is no
             confetti.initCache()
 
@@ -48,8 +50,9 @@ poScript =
         if sys.isSafeScripts()
             confetti.msg.bot "<b style='color: red;'>Safe Scripts is enabled</b>. This will disable persistent data storage and limit other features.", -1
             confetti.msg.bot "Disable it by unticking the \"<b>Safe Scripts</b>\" box in the <i>Script Window</i> [<i>Plugins->Script Window</i>].", -1
+            confetti.msg.bot "Afterwards, re-login to see the effects.", -1
 
-        # Mark confetti as initialized, see the blocks above the 'poScript' definition.
+        # Mark confetti as initialized, see the blocks above the 'confettiScript' definition.
         confetti.initialized = yes
 
     # Called every second. Unused.

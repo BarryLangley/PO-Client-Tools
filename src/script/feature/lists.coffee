@@ -3,9 +3,8 @@ do ->
     channel = null
 
     cmd = (name, chan = channel) ->
-        if confetti.commands[name]
-            command = confetti.commands[name]
-
+        command = confetti.commands[name]
+        if command
             parts = command.info.complete.split '@'
             indicator = confetti.cache.get 'commandindicator'
             complete = "<a href='po:#{parts[0]}/#{indicator}#{parts[1]}' style='text-decoration: none; color: green;'>#{indicator}#{command.info.usage}</a>"

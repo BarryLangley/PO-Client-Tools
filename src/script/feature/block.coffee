@@ -68,5 +68,8 @@ do ->
         confetti.cache.store('blocked', [], confetti.cache.once)
 
     confetti.hook 'onPlayerReceived', (id) ->
-        if Client.name(id).toLowerCase() in confetti.cache.get('blocked')
+        name    = Client.name(id).toLowerCase()
+        blocked = confetti.cache.get('blocked')
+
+        if name in blocked
             Client.ignore(id, yes)

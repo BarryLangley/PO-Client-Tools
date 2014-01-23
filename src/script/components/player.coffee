@@ -11,7 +11,7 @@ do ->
     authToName = (auth) ->
         ['User', 'Moderator', 'Administrator', 'Owner'][auth] or 'Invisible'
 
-    status = (id) ->
+    status = (id, trackingResolve) ->
         id = Client.id(id) if typeof id is 'string'
 
         if id is -1
@@ -19,11 +19,11 @@ do ->
         else
             battlingPart = ""
             if battling(id)
-                battlingPart = " - <a href='po:watchplayer/#{id}' style='text-decoration: none; color: blue;' title='Watch #{confetti.util.stripquotes(Client.name(id))} battle'><b>Battling</b></a>"
+                battlingPart = " - <a href='po:watchplayer/#{id}' style='text-decoration: none; color: blue;' title='Watch #{confetti.util.stripquotes(name(id, trackingResolve))} battle'><b>Battling</b></a>"
 
             return "(<a href='po:pm/#{id}' style='text-decoration: none; color: green;'><b>Online</b></a>#{battlingPart})"
 
-    name = (id) ->
+    name = (id, trackingResolve = confetti.cache.get('trackingresolve')) ->
         if typeof id is 'string'
             pname = Client.name Client.id(id)
         else
@@ -31,13 +31,17 @@ do ->
 
         if pname is '~Unknown~'
             storedname = confetti.players[id]?.name
-            return storedname if storedname
-            return id # Original name passed
-        else
-            return pname
+            return storedname ? id
 
-    fancyName = (id, tooltip = yes) ->
-        pname = name(id)
+        if trackingResolve is no
+            return pname
+        else
+            tracked = confetti.cache.get 'tracked'
+            trackName = tracked[pname.toLowerCase()]
+            return trackName ? pname
+
+    fancyName = (id, tooltip = yes, trackingResolve) ->
+        pname = name(id, trackingResolve)
         pid = if typeof id is 'string' then Client.id(id) else id
 
         showInfo = pid isnt -1 and tooltip

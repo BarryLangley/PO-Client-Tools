@@ -127,10 +127,12 @@
     return confetti.cache.store('longinsults', false, confetti.cache.once);
   });
   return confetti.hook('commands:categories', function() {
-    confetti.commandList.header('Insults', 4);
-    confetti.commandList.cmd('insult');
-    confetti.commandList.cmd('intellisult');
-    confetti.commandList.cmd('updateinsults');
-    return confetti.commandList.cmd('longinsults');
+    var cmd, header, _ref;
+    _ref = confetti.commandList, header = _ref.header, cmd = _ref.cmd;
+    header('Insults', 4);
+    cmd('insult');
+    cmd('intellisult');
+    cmd('updateinsults');
+    return cmd('longinsults');
   });
 })();

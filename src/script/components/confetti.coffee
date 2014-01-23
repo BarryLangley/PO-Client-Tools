@@ -63,6 +63,8 @@ do ->
             .store('commandindicator', '-', once)
             .store('lastuse', 0, once)
             .store('plugins', [], once)
+            .store('tracking', {}, once)
+            .store('trackingresolve', yes, once)
 
         confetti.callHooks 'initCache'
         confetti.cache.save()
