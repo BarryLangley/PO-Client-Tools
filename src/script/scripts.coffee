@@ -41,7 +41,7 @@ confettiScript =
         # The reason why we don't do this only once is because people tend to forget. Yeah.
         # 432000 is 5 days in seconds.
         unless confetti.initialized
-            if (confetti.cache.get('lastuse') + 345600) < (+sys.time())
+            if (confetti.cache.get('lastuse') + 432000) < (+sys.time())
                 commandindicator = confetti.cache.get 'commandindicator'
                 confetti.msg.bot "Type <a href='po:send/#{commandindicator}commands' style='text-decoration: none; color: green;'><b>#{commandindicator}commands</b></a> for a list of client commands.", -1
 
