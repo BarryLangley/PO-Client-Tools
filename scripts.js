@@ -451,9 +451,8 @@ if (typeof confetti !== 'object') {
 })();
 
 (function() {
-  var aliases, commands, hooks, stophook;
+  var aliases, commands, hooks;
   hooks = {};
-  stophook = false;
   confetti.hook = function(name, func) {
     if (hooks[name] == null) {
       hooks[name] = [];
@@ -1491,7 +1490,7 @@ if (typeof confetti !== 'object') {
 (function() {
   var clearDuplicateCommas;
   clearDuplicateCommas = /,,/g;
-  confetti.command('translate', ['translate [message]:[to language code]-[from language code]', "Translates a message from a language to another one. [from language code] is optional and might even be ignored, it's purely a hint (note the dash). Language codes are two letters, for example <b>en</b> (English).", 'setmsg@translate [message]:[to]-[from]'], function(data, chan) {
+  confetti.command('translate', ['translate [message]:[to language code]-[from language code]', "Translates a message from a language to another one. [from language code] is optional and might even be ignored, it's purely a hint (note the dash). Language codes are two letters, for example <b>en</b> (English). A full list is available <a href='http://en.wikipedia.org/wiki/List_of_ISO_639-1_codes#Partial_ISO_639_table'>here</a>.", 'setmsg@translate [message]:[to]-[from]'], function(data, chan) {
     var from, languageParts, message, parts, to, url;
     parts = data.split(':');
     message = parts[0];

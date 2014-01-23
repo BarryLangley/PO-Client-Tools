@@ -1,7 +1,6 @@
 do ->
     # Hooks
     hooks = {}
-    stophook = no
 
     confetti.hook = (name, func) ->
         hooks[name] ?= []
