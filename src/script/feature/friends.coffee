@@ -1,13 +1,13 @@
 do ->
     bullet = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&bull;"
     confetti.command 'friends', ["Displays your friends list.", 'send@friends'], (_, chan) ->
-        friends = confetti.cache.get('friends').sort().sort(confetti.util.sortOnline)
+        friends = confetti.util.sortOnlineOffline(confetti.cache.get('friends'))
 
         if friends.length is 0
             confetti.msg.bot "<span title='You have 0 friends.'>There is no one on your friend list.</span>"
             return
 
-        confetti.msg.bold "Your friends", '', chan
+        confetti.msg.bold "Your friends <small>[#{friends.length}]</small>", '', chan
 
         html  = ""
         count = 0

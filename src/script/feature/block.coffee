@@ -1,12 +1,12 @@
 do ->
     confetti.command 'blocked', ["Displays a list of blocked players.", 'send@blocked'], (_, chan) ->
-        blocklist = confetti.cache.get('blocked').sort().sort(confetti.util.sortOnline)
+        blocklist = confetti.util.sortOnlineOffline(confetti.cache.get('blocked'))
 
         if blocklist.length is 0
             confetti.msg.bot "There is no one on your block list."
             return
 
-        confetti.msg.bold "Blocked Players", '', chan
+        confetti.msg.bold "Blocked players <small>[#{blocklist.length}]</small>", '', chan
 
         html  = ""
         count = 0

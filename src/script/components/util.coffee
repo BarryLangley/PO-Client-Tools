@@ -61,8 +61,19 @@ do ->
     escapeRegex = (str) ->
         str.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&')
 
-    # For use with Array::sort
-    sortOnline = (a, b) -> Client.id(b)
+    sortOnlineOffline = (arr) ->
+        online  = []
+        offline = []
+        for name in arr
+            if Client.id(name) isnt -1
+                online.push name
+            else
+                offline.push name
+
+        online.sort()
+        offline.sort()
+        return online.concat(offline)
+
     truncate = (str, len) ->
         strlen = str.length
         if strlen > len
@@ -87,7 +98,7 @@ do ->
         an
         fancyJoin
         stripHtml
-        sortOnline
+        sortOnlineOffline
         truncate
         escapeRegex
         stripquotes

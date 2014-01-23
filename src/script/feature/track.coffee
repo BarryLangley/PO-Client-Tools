@@ -2,12 +2,13 @@ do ->
     bullet = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&bull;"
     confetti.command 'tracked', ["Displays a list of tracked players.", 'send@tracked'], (_, chan) ->
         tracked = confetti.cache.get 'tracked'
+        numTracked = Object.keys(tracked).length
 
-        if Object.keys(tracked).length is 0
+        if numTracked is 0
             confetti.msg.bot "There is no one on your tracking list."
             return
 
-        confetti.msg.bold "Tracked players", '', chan
+        confetti.msg.bold "Tracked players <small>[#{numTracked}]</small>", '', chan
 
         html  = ""
         names = {}
@@ -17,14 +18,11 @@ do ->
             names[name].push alt
 
         for name, alts of names
-            html += "#{confetti.msg.bullet} #{confetti.player.fancyName(name)} #{confetti.player.status(name)} as:<br/>"
+            html += "#{confetti.msg.bullet} #{confetti.player.fancyName(name)} #{confetti.player.status(name)} as <small>[#{alts.length}]</small><br/>"
 
-            alts = alts.sort().sort(confetti.util.sortOnline)
+            alts = confetti.util.sortOnlineOffline(alts)
             for alt in alts
                 html += "&nbsp;&nbsp;&nbsp;&nbsp;#{confetti.msg.bullet} #{confetti.player.fancyName(alt)} #{confetti.player.status(alt)}<br/>"
-
-            # There should already be a remaining new line from the above code.
-            # html += "<br/>"
 
         confetti.msg.html html, chan
 

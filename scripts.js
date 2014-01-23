@@ -38,7 +38,7 @@ confetti.dataDir = sys.scriptsFolder;
 confetti.cacheFile = 'confetti.json';
 
 (function() {
-  var an, copyArray, escapeRegex, fancyJoin, isAlpha, isPlainObject, noop, random, removeDuplicates, shuffle, sortOnline, stripHtml, stripquotes, truncate;
+  var an, copyArray, escapeRegex, fancyJoin, isAlpha, isPlainObject, noop, random, removeDuplicates, shuffle, sortOnlineOffline, stripHtml, stripquotes, truncate;
   random = function(array) {
     if (Array.isArray(array)) {
       return array[sys.rand(0, array.length)];
@@ -116,8 +116,21 @@ confetti.cacheFile = 'confetti.json';
   escapeRegex = function(str) {
     return str.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
   };
-  sortOnline = function(a, b) {
-    return Client.id(b);
+  sortOnlineOffline = function(arr) {
+    var name, offline, online, _i, _len;
+    online = [];
+    offline = [];
+    for (_i = 0, _len = arr.length; _i < _len; _i++) {
+      name = arr[_i];
+      if (Client.id(name) !== -1) {
+        online.push(name);
+      } else {
+        offline.push(name);
+      }
+    }
+    online.sort();
+    offline.sort();
+    return online.concat(offline);
   };
   truncate = function(str, len) {
     var strlen;
@@ -145,7 +158,7 @@ confetti.cacheFile = 'confetti.json';
     an: an,
     fancyJoin: fancyJoin,
     stripHtml: stripHtml,
-    sortOnline: sortOnline,
+    sortOnlineOffline: sortOnlineOffline,
     truncate: truncate,
     escapeRegex: escapeRegex,
     stripquotes: stripquotes,
@@ -566,12 +579,12 @@ confetti.cacheFile = 'confetti.json';
 (function() {
   confetti.command('blocked', ["Displays a list of blocked players.", 'send@blocked'], function(_, chan) {
     var blocked, blocklist, count, html, _i, _len;
-    blocklist = confetti.cache.get('blocked').sort().sort(confetti.util.sortOnline);
+    blocklist = confetti.util.sortOnlineOffline(confetti.cache.get('blocked'));
     if (blocklist.length === 0) {
       confetti.msg.bot("There is no one on your block list.");
       return;
     }
-    confetti.msg.bold("Blocked Players", '', chan);
+    confetti.msg.bold("Blocked players <small>[" + blocklist.length + "]</small>", '', chan);
     html = "";
     count = 0;
     for (_i = 0, _len = blocklist.length; _i < _len; _i++) {
@@ -799,12 +812,12 @@ confetti.cacheFile = 'confetti.json';
   bullet = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&bull;";
   confetti.command('friends', ["Displays your friends list.", 'send@friends'], function(_, chan) {
     var count, friend, friends, html, _i, _len;
-    friends = confetti.cache.get('friends').sort().sort(confetti.util.sortOnline);
+    friends = confetti.util.sortOnlineOffline(confetti.cache.get('friends'));
     if (friends.length === 0) {
       confetti.msg.bot("<span title='You have 0 friends.'>There is no one on your friend list.</span>");
       return;
     }
-    confetti.msg.bold("Your friends", '', chan);
+    confetti.msg.bold("Your friends <small>[" + friends.length + "]</small>", '', chan);
     html = "";
     count = 0;
     for (_i = 0, _len = friends.length; _i < _len; _i++) {
@@ -1431,13 +1444,14 @@ confetti.cacheFile = 'confetti.json';
   var bullet;
   bullet = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&bull;";
   confetti.command('tracked', ["Displays a list of tracked players.", 'send@tracked'], function(_, chan) {
-    var alt, alts, html, name, names, tracked, _i, _len;
+    var alt, alts, html, name, names, numTracked, tracked, _i, _len;
     tracked = confetti.cache.get('tracked');
-    if (Object.keys(tracked).length === 0) {
+    numTracked = Object.keys(tracked).length;
+    if (numTracked === 0) {
       confetti.msg.bot("There is no one on your tracking list.");
       return;
     }
-    confetti.msg.bold("Tracked players", '', chan);
+    confetti.msg.bold("Tracked players <small>[" + numTracked + "]</small>", '', chan);
     html = "";
     names = {};
     for (alt in tracked) {
@@ -1449,8 +1463,8 @@ confetti.cacheFile = 'confetti.json';
     }
     for (name in names) {
       alts = names[name];
-      html += "" + confetti.msg.bullet + " " + (confetti.player.fancyName(name)) + " " + (confetti.player.status(name)) + " as:<br/>";
-      alts = alts.sort().sort(confetti.util.sortOnline);
+      html += "" + confetti.msg.bullet + " " + (confetti.player.fancyName(name)) + " " + (confetti.player.status(name)) + " as <small>[" + alts.length + "]</small><br/>";
+      alts = confetti.util.sortOnlineOffline(alts);
       for (_i = 0, _len = alts.length; _i < _len; _i++) {
         alt = alts[_i];
         html += "&nbsp;&nbsp;&nbsp;&nbsp;" + confetti.msg.bullet + " " + (confetti.player.fancyName(alt)) + " " + (confetti.player.status(alt)) + "<br/>";
