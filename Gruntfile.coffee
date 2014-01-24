@@ -7,10 +7,11 @@ module.exports = (grunt) ->
         grunt.task.run 'coffee:client'
 
     grunt.registerTask 'build-plugins', 'Builds the client script plugins.', (data) ->
-        grunt.log.ok 'Building plugins...'
-
         grunt.log.ok 'Building plugin: Insults'
         grunt.task.run 'coffee:insult-plugin'
+
+        grunt.log.ok 'Building plugin: Pokédex'
+        grunt.task.run 'coffee:pokedex-plugin'
 
     grunt.registerTask 'build-battle', 'Builds the battle script source.', (data) ->
         grunt.log.ok 'The following modules will be built:', battleFiles.join(', ').replace(/.js/gi, '')
@@ -65,5 +66,11 @@ module.exports = (grunt) ->
                     join: yes
                 files:
                     'plugins/insults/insults.js': 'plugins/insults/insults.coffee'
+            'pokedex-plugin':
+                options:
+                    bare: yes
+                    join: yes
+                files:
+                    'plugins/pokedex/pokedex.js': ['plugins/pokedex/pokedex.coffee', 'plugins/pokedex/interface.coffee', 'plugins/pokedex/commands.coffee']
 
     grunt.initConfig gruntConfig

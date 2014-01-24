@@ -57,7 +57,7 @@ do ->
                 else
                     addremove = "<small>[<a href='po:send/#{confetti.cache.get('commandindicator')}removeplugin #{plugin.name}' style='text-decoration: none; color: black;'>remove</a>]</small>"
 
-                html += "#{confetti.msg.bullet} <b>#{plugin.name}</b> (#{plugin.id}) #{addremove}"
+                html += "#{confetti.msg.bullet} <b>#{plugin.name}</b> (#{plugin.id}) #{addremove}<br/>"
 
             confetti.msg.html html, chan
 
@@ -121,4 +121,4 @@ do ->
         confetti.io.deleteLocal "plugin-#{plugin.id}.js"
         confetti.io.reloadScript()
 
-        confetti.msg.bot "Plugin #{name} removed."
+        confetti.msg.bot "Plugin #{plugin.name} removed."

@@ -12,8 +12,7 @@ do ->
             confetti.io.write sys.scriptsFolder + 'scripts.js', file
             confetti.io.reloadScript yes
 
-            newVersion = confetti.version
-            if differentVersion(oldVersion, newVersion)
+            if differentVersion(oldVersion)
                 confetti.msg.bot "Script updated to version #{newVersion.release}.#{newVersion.major}.#{newVersion.minor}!"
             else
                 confetti.msg.bot "Script updated!"
