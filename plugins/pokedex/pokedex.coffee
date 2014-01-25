@@ -31,7 +31,7 @@ confetti.pokedex = ->
 
         return obj
 
-    dumpInfo = (infoArray) ->
+    dumpInfo = (infoArray, slashes = no) ->
         obj = {}
 
         for info in infoArray
@@ -45,7 +45,12 @@ confetti.pokedex = ->
             if pokemon[0][0] is '0' or pokemon[1][0] isnt '0'
                 continue
 
-            obj[+pokemon[0]] = +parts[1]
+            num = parts[1]
+            if slashes
+                if num.indexOf('/') isnt -1
+                    num = num.split('/')[0]
+
+            obj[+pokemon[0]] = +num
 
         return obj
 
@@ -53,7 +58,7 @@ confetti.pokedex = ->
         # Object[String pokeName->Object pokeInfo]
         data: {}
         files:
-            stats: parseDbFile("stats")
+            stats: parseDbFile("6G/stats")
             weight: parseDbFile("weight")
             height: parseDbFile("height")
             evos: parseDbFile("evos")
@@ -81,7 +86,7 @@ confetti.pokedex = ->
     pokeHeight = dumpInfo(dexFiles.height)
     pokeGender = dumpInfo(dexFiles.genders)
     # Minimum level
-    pokeEvoLevel = dumpInfo(dexFiles.evolevels)
+    pokeEvoLevel = dumpInfo(dexFiles.evolevels, yes)
 
     # Moves
     # Object[String pokeId->Array[String] moveNums]
@@ -222,40 +227,34 @@ confetti.pokedex = ->
         stats = (+pokestat for pokestat in stat.split ' ')
         stats.splice(0, 1)
 
-        pokeStats =
-            stats: stats
-            weight: pokeWeight[pokeId]
-            height: pokeHeight[pokeId]
-            gender: pokeGender[pokeId]
-            minlevel: pokeEvoLevel[pokeId]
-            eggGroup1: ''
-            eggGroup2: ''
+        eggGroup1 = ''
+        eggGroup2 = ''
 
         # Egg Group stuff
         if dexFiles.egggroup1.hasOwnProperty(pokeId)
-            pokeStats.eggGroup1 = dexFiles.egggroup1[pokeId].split(' ').splice(1).join(' ')
+            eggGroup1 = dexFiles.egggroup1[pokeId].split(' ').splice(1).join(' ')
 
         if eggGroup2Pokes.hasOwnProperty(pokeId)
-            pokeStats.eggGroup2 = eggGroup2Pokes[pokeId]
+            eggGroup2 = eggGroup2Pokes[pokeId]
 
         # Generate the data.
         Pokedex.data[pokeName] =
-            weight: pokeStats.weight
-            height: pokeStats.height
-            minlvl: pokeStats.minlevel
-            genders: pokeStats.gender
-            egg: [pokeStats.eggGroup1, pokeStats.eggGroup2]
+            weight: pokeWeight[pokeId]
+            height: pokeHeight[pokeId]
+            minlvl: pokeEvoLevel[pokeId]
+            genders: pokeGender[pokeId]
+            egg: [eggGroup1, eggGroup2]
             moves: pokeMoves[pokeId]
             cc: ccLevels[pokeId]
             evos: pokeEvolutions[pokeId]
 
             stats:
-                HP: pokeStats.stats[0]
-                ATK: pokeStats.stats[1]
-                DEF: pokeStats.stats[2]
-                SPATK: pokeStats.stats[3]
-                SPDEF: pokeStats.stats[4]
-                SPD: pokeStats.stats[5]
+                HP: stats[0]
+                ATK: stats[1]
+                DEF: stats[2]
+                SPATK: stats[3]
+                SPDEF: stats[4]
+                SPD: stats[5]
 
     confetti.pokedex.data = Pokedex
     return Pokedex

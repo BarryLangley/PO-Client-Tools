@@ -1,5 +1,5 @@
 confetti.pokedex = function() {
-  var Pokedex, categoryMoves, ccLevels, dexFiles, dumpInfo, dumpMoves, eggGroup2Pokes, eggMoves, eventMoves, evoMoves, i, levelMoves, move, moveFiles, moveNum, movelist, moves, nextPoke, parseDbFile, parseMoveFile, poke, pokeEvoLevel, pokeEvolutions, pokeGender, pokeHeight, pokeId, pokeMoves, pokeName, pokeNum, pokeStats, pokeWeight, pokenum, pokestat, space, split, stat, stats, tmMoves, tutorMoves, uniqueMoves, _i, _j, _k, _l, _len, _len1, _len2, _len3, _len4, _len5, _m, _n, _ref, _ref1, _ref2, _ref3;
+  var Pokedex, categoryMoves, ccLevels, dexFiles, dumpInfo, dumpMoves, eggGroup1, eggGroup2, eggGroup2Pokes, eggMoves, eventMoves, evoMoves, i, levelMoves, move, moveFiles, moveNum, movelist, moves, nextPoke, parseDbFile, parseMoveFile, poke, pokeEvoLevel, pokeEvolutions, pokeGender, pokeHeight, pokeId, pokeMoves, pokeName, pokeNum, pokeWeight, pokenum, pokestat, space, split, stat, stats, tmMoves, tutorMoves, uniqueMoves, _i, _j, _k, _l, _len, _len1, _len2, _len3, _len4, _len5, _m, _n, _ref, _ref1, _ref2, _ref3;
   if (confetti.pokedex.data) {
     return confetti.pokedex.data;
   }
@@ -33,8 +33,11 @@ confetti.pokedex = function() {
     }
     return obj;
   };
-  dumpInfo = function(infoArray) {
-    var info, obj, parts, pokemon, _i, _len;
+  dumpInfo = function(infoArray, slashes) {
+    var info, num, obj, parts, pokemon, _i, _len;
+    if (slashes == null) {
+      slashes = false;
+    }
     obj = {};
     for (_i = 0, _len = infoArray.length; _i < _len; _i++) {
       info = infoArray[_i];
@@ -46,14 +49,20 @@ confetti.pokedex = function() {
       if (pokemon[0][0] === '0' || pokemon[1][0] !== '0') {
         continue;
       }
-      obj[+pokemon[0]] = +parts[1];
+      num = parts[1];
+      if (slashes) {
+        if (num.indexOf('/') !== -1) {
+          num = num.split('/')[0];
+        }
+      }
+      obj[+pokemon[0]] = +num;
     }
     return obj;
   };
   Pokedex = {
     data: {},
     files: {
-      stats: parseDbFile("stats"),
+      stats: parseDbFile("6G/stats"),
       weight: parseDbFile("weight"),
       height: parseDbFile("height"),
       evos: parseDbFile("evos"),
@@ -77,7 +86,7 @@ confetti.pokedex = function() {
   pokeWeight = dumpInfo(dexFiles.weight);
   pokeHeight = dumpInfo(dexFiles.height);
   pokeGender = dumpInfo(dexFiles.genders);
-  pokeEvoLevel = dumpInfo(dexFiles.evolevels);
+  pokeEvoLevel = dumpInfo(dexFiles.evolevels, true);
   eggMoves = dumpMoves(moveFiles.egg);
   levelMoves = dumpMoves(moveFiles.level);
   evoMoves = dumpMoves(moveFiles.evo);
@@ -190,37 +199,30 @@ confetti.pokedex = function() {
       return _results;
     })();
     stats.splice(0, 1);
-    pokeStats = {
-      stats: stats,
-      weight: pokeWeight[pokeId],
-      height: pokeHeight[pokeId],
-      gender: pokeGender[pokeId],
-      minlevel: pokeEvoLevel[pokeId],
-      eggGroup1: '',
-      eggGroup2: ''
-    };
+    eggGroup1 = '';
+    eggGroup2 = '';
     if (dexFiles.egggroup1.hasOwnProperty(pokeId)) {
-      pokeStats.eggGroup1 = dexFiles.egggroup1[pokeId].split(' ').splice(1).join(' ');
+      eggGroup1 = dexFiles.egggroup1[pokeId].split(' ').splice(1).join(' ');
     }
     if (eggGroup2Pokes.hasOwnProperty(pokeId)) {
-      pokeStats.eggGroup2 = eggGroup2Pokes[pokeId];
+      eggGroup2 = eggGroup2Pokes[pokeId];
     }
     Pokedex.data[pokeName] = {
-      weight: pokeStats.weight,
-      height: pokeStats.height,
-      minlvl: pokeStats.minlevel,
-      genders: pokeStats.gender,
-      egg: [pokeStats.eggGroup1, pokeStats.eggGroup2],
+      weight: pokeWeight[pokeId],
+      height: pokeHeight[pokeId],
+      minlvl: pokeEvoLevel[pokeId],
+      genders: pokeGender[pokeId],
+      egg: [eggGroup1, eggGroup2],
       moves: pokeMoves[pokeId],
       cc: ccLevels[pokeId],
       evos: pokeEvolutions[pokeId],
       stats: {
-        HP: pokeStats.stats[0],
-        ATK: pokeStats.stats[1],
-        DEF: pokeStats.stats[2],
-        SPATK: pokeStats.stats[3],
-        SPDEF: pokeStats.stats[4],
-        SPD: pokeStats.stats[5]
+        HP: stats[0],
+        ATK: stats[1],
+        DEF: stats[2],
+        SPATK: stats[3],
+        SPDEF: stats[4],
+        SPD: stats[5]
       }
     };
   }
