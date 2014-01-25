@@ -12,9 +12,6 @@ do ->
             data = pokeName if pokeName
         else
             data = sys.pokemon(num) # Corrects case, necessary for the dex to work.
-        unless data
-            confetti.msg.bot "You have to give me a word to define!"
-            return
 
         try
             confetti.pokedex.render(data, chan)

@@ -460,10 +460,6 @@ confetti.pokedex = function() {
     } else {
       data = sys.pokemon(num);
     }
-    if (!data) {
-      confetti.msg.bot("You have to give me a word to define!");
-      return;
-    }
     try {
       return confetti.pokedex.render(data, chan);
     } catch (_error) {

@@ -540,7 +540,7 @@ confetti.cacheFile = 'confetti.json';
     var once;
     confetti.cache = new confetti.Cache;
     once = confetti.cache.once;
-    confetti.cache.store('botname', '±Confetti', once).store('botcolor', '#07b581', once).store('notifications', true, once).store('commandindicator', '-', once).store('lastuse', 0, once).store('plugins', [], once).store('tracking', {}, once).store('trackingresolve', true, once);
+    confetti.cache.store('botname', '±Confetti', once).store('botcolor', '#07b581', once).store('notifications', true, once).store('commandindicator', '-', once).store('lastuse', 0, once).store('plugins', [], once).store('tracked', {}, once).store('trackingresolve', true, once);
     confetti.callHooks('initCache');
     return confetti.cache.save();
   };
