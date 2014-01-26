@@ -89,8 +89,10 @@ do ->
         confetti.cache.store('encool', 'none', confetti.cache.once)
 
     confetti.hook 'manipulateOwnMessage', (message, chan, dirty) ->
-        mess = encool(message)
-        dirty = dirty or (mess isnt message)
+        mess = message
+        if mess[0] isnt '/'
+            mess = encool(message)
+            dirty = yes
 
         [mess, chan, dirty]
 

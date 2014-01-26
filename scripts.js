@@ -794,8 +794,11 @@ confetti.cacheFile = 'confetti.json';
   });
   confetti.hook('manipulateOwnMessage', function(message, chan, dirty) {
     var mess;
-    mess = encool(message);
-    dirty = dirty || (mess !== message);
+    mess = message;
+    if (mess[0] !== '/') {
+      mess = encool(message);
+      dirty = true;
+    }
     return [mess, chan, dirty];
   });
   return confetti.command('encool', ['encool [type]', 'Changes your encool type to (none, spaces, smallcaps, leet, reverse).', 'setmsg@encool [type]'], function(data) {
