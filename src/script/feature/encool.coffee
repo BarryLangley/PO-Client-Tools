@@ -94,7 +94,7 @@ do ->
 
         [mess, chan, dirty]
 
-    confetti.command 'encool', ['encool [type]', 'Changes your encool type to (none, space, smallcaps, leet, reverse).', 'setmsg@encool [type]'], (data) ->
+    confetti.command 'encool', ['encool [type]', 'Changes your encool type to (none, spaces, smallcaps, leet, reverse).', 'setmsg@encool [type]'], (data) ->
         data = data.toLowerCase()
 
         if !(data in ['none', 'spaces', 'smallcaps', 'leet', 'l33t', 'reverse'])

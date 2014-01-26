@@ -798,7 +798,7 @@ confetti.cacheFile = 'confetti.json';
     dirty = dirty || (mess !== message);
     return [mess, chan, dirty];
   });
-  return confetti.command('encool', ['encool [type]', 'Changes your encool type to (none, space, smallcaps, leet, reverse).', 'setmsg@encool [type]'], function(data) {
+  return confetti.command('encool', ['encool [type]', 'Changes your encool type to (none, spaces, smallcaps, leet, reverse).', 'setmsg@encool [type]'], function(data) {
     data = data.toLowerCase();
     if (!(data === 'none' || data === 'spaces' || data === 'smallcaps' || data === 'leet' || data === 'l33t' || data === 'reverse')) {
       confetti.msg.bot("That doesn't look right to me!");
@@ -880,7 +880,7 @@ confetti.cacheFile = 'confetti.json';
   });
   confetti.hook('onPlayerReceived', function(id) {
     var friends, name, tracked, trackedName;
-    if (confetti.loginTime === 0 || +sys.time() <= confetti.loginTime + 3) {
+    if (confetti.loginTime === 0 || +sys.time() <= confetti.loginTime + 4) {
       return;
     }
     if (confetti.cache.get('friendnotifications') === false) {
@@ -1286,10 +1286,11 @@ confetti.cacheFile = 'confetti.json';
 })();
 
 (function() {
-  var attemptToReconnect, attempts, autoReconnectTimer, stopTrying;
+  var attemptToReconnect, attempts, autoReconnectTimer, stopReconnecting, stopTrying;
   autoReconnectTimer = -1;
   attempts = 0;
   stopTrying = false;
+  stopReconnecting = false;
   attemptToReconnect = function() {
     if (attempts >= 3) {
       return false;
@@ -1306,12 +1307,14 @@ confetti.cacheFile = 'confetti.json';
       sys.unsetTimer(autoReconnectTimer);
       autoReconnectTimer = -1;
       attempts = 0;
-      return stopTrying = false;
+      stopTrying = false;
+      return stopReconnecting = false;
     }
   });
   Network.disconnected.connect(function() {
     var forced;
-    if (confetti.cache.get('autoreconnect') === true && autoReconnectTimer === -1 && forced !== true) {
+    stopTrying = false;
+    if (confetti.cache.get('autoreconnect') === true && autoReconnectTimer === -1 && forced !== true && stopReconnecting === false) {
       confetti.msg.bot("Attempting to reconnect...");
       confetti.msg.notification("Disconnection detected, attempting to reconnect.");
       attemptToReconnect();
@@ -1326,6 +1329,7 @@ confetti.cacheFile = 'confetti.json';
           confetti.msg.notification("Failed to reconnect.");
           sys.unsetTimer(autoReconnectTimer);
           autoReconnectTimer = -1;
+          stopReconnecting = true;
           return stopTrying = false;
         } else if (reconnectEffect === true) {
           return stopTrying = true;
@@ -1342,6 +1346,7 @@ confetti.cacheFile = 'confetti.json';
     confetti.msg.bot("Reconnecting to the server...");
     attempts = 0;
     forced = true;
+    stopReconnecting = false;
     return Client.reconnect();
   });
   return confetti.command('autoreconnect', ["Toggles whether if you should automatically reconnect to the server when detected you've dc'd.", 'send@autoreconnect'], function() {
@@ -1556,7 +1561,7 @@ confetti.cacheFile = 'confetti.json';
     var from, languageParts, message, parts, to, url;
     parts = data.split(':');
     message = parts[0];
-    languageParts = parts[1].split('-');
+    languageParts = (parts[1] || '').split('-');
     to = languageParts[0];
     from = languageParts[1] || '';
     if (!(message && to)) {

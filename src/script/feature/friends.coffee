@@ -69,7 +69,7 @@ do ->
         # In the first few seconds of connection, often a long list of players is sent.
         # If one friend is in this list, their "arrival" is notified.
         # In reality, they were already there. So don't tell about them.
-        if confetti.loginTime is 0 or +sys.time() <= confetti.loginTime + 3
+        if confetti.loginTime is 0 or +sys.time() <= confetti.loginTime + 4
             return
 
         if confetti.cache.get('friendnotifications') is no

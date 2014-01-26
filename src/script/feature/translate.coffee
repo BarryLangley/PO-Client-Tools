@@ -5,7 +5,7 @@ do ->
         parts = data.split ':'
         message = parts[0]
 
-        languageParts = parts[1].split '-'
+        languageParts = (parts[1] or '').split '-'
         to = languageParts[0]
         from = languageParts[1] or ''
 
