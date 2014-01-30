@@ -14,7 +14,10 @@ do ->
 
         confetti.msg.bot "Loading definition..."
         sys.webCall "http://www.google.com/dictionary/json?callback=getResults&sl=en&tl=en&q=#{encodeURIComponent(data)}", (response) ->
-            response = ")" unless response # Lazy failure
+            unless response
+                confetti.msg.bot "Couldn't load a definition, check your internet connection.", chan
+                return
+
             try
                 # The response is JSONP, so we eval it.
                 eval response

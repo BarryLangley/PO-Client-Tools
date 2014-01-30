@@ -25,6 +25,7 @@ do ->
         file = read(sys.scriptsFolder + "scripts.js")
         if file
             confetti.silentReload = !verbose
+            sys.unsetAllTimers()
             sys.changeScript file
 
     confetti.io = {

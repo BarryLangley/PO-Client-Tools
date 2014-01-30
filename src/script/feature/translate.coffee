@@ -19,8 +19,6 @@ do ->
         confetti.msg.bot "Translating '#{message}' to #{to}!"
 
         sys.webCall url, (response) ->
-            # Make it fail to parse if the resp is empty, really lazy here.
-            response = ")" unless response
             # This has to be done twice for it to work
             response = response.replace(clearDuplicateCommas, ',').replace(clearDuplicateCommas, ',')
             try

@@ -26,7 +26,7 @@ if (typeof confetti !== 'object') {
 confetti.version = {
   release: 2,
   major: 0,
-  minor: 2
+  minor: 3
 };
 
 confetti.scriptUrl = 'https://raw.github.com/TheUnknownOne/PO-Client-Tools/master/';
@@ -207,6 +207,7 @@ confetti.cacheFile = 'confetti.json';
     file = read(sys.scriptsFolder + "scripts.js");
     if (file) {
       confetti.silentReload = !verbose;
+      sys.unsetAllTimers();
       return sys.changeScript(file);
     }
   };
@@ -718,7 +719,8 @@ confetti.cacheFile = 'confetti.json';
     return sys.webCall("http://www.google.com/dictionary/json?callback=getResults&sl=en&tl=en&q=" + (encodeURIComponent(data)), function(response) {
       var ex;
       if (!response) {
-        response = ")";
+        confetti.msg.bot("Couldn't load a definition, check your internet connection.", chan);
+        return;
       }
       try {
         return eval(response);
@@ -1359,7 +1361,36 @@ confetti.cacheFile = 'confetti.json';
 })();
 
 (function() {
-  var differentVersion, updateScript;
+  var autoUpdate, differentVersion, updateScript, versionFormat;
+  autoUpdate = function() {
+    var now;
+    if (confetti.cache.get('autoupdate') === false) {
+      return;
+    }
+    if (sys.isSafeScripts()) {
+      return;
+    }
+    now = +sys.time();
+    if ((confetti.cache.get('lastupdatetime') + (6 * 60 * 60)) > now) {
+      return;
+    }
+    return sys.webCall("" + confetti.scriptUrl + "script/version.json", function(resp) {
+      var ex, json;
+      confetti.cache.store('lastupdatetime', now).save();
+      try {
+        json = JSON.parse(resp);
+      } catch (_error) {
+        ex = _error;
+        return;
+      }
+      if (differentVersion(confetti.version, json)) {
+        return updateScript();
+      }
+    });
+  };
+  versionFormat = function(version) {
+    return version.release + '.' + version.major + '.' + version.minor;
+  };
   differentVersion = function(ov, nv) {
     if (nv == null) {
       nv = confetti.version;
@@ -1367,7 +1398,7 @@ confetti.cacheFile = 'confetti.json';
     if (typeof ov !== 'object' || typeof nv !== 'object') {
       return false;
     }
-    return ov.release !== nv.release || ov.major !== nv.major || ov.minor !== nv.minor;
+    return versionFormat(ov) !== versionFormat(nv);
   };
   updateScript = function() {
     var oldVersion;
@@ -1384,18 +1415,27 @@ confetti.cacheFile = 'confetti.json';
       confetti.io.write(sys.scriptsFolder + 'scripts.js', file);
       confetti.io.reloadScript(true);
       if (differentVersion(oldVersion)) {
-        return confetti.msg.bot("Script updated to version " + newVersion.release + "." + newVersion.major + "." + newVersion.minor + "!");
+        return confetti.msg.bot("Script updated to version " + (versionFormat(confetti.version)) + "!");
       } else {
         return confetti.msg.bot("Script updated!");
       }
     });
   };
+  sys.setTimer(autoUpdate, 15 * 1000, false);
+  sys.setTimer(autoUpdate, 15 * 60 * 1000, true);
+  confetti.hook('initCache', function() {
+    return confetti.cache.store('autoupdate', true, confetti.cache.once).store('lastupdatetime', +sys.time(), confetti.cache.once);
+  });
   confetti.command('scriptcommands', ['Shows various commands related to the script.', 'send@scriptcommands'], function(_, chan) {
-    confetti.commandList.border(false, chan);
-    confetti.commandList.header('Script Commands', 5, chan);
-    confetti.commandList.cmd('updatescript', chan);
+    var border, cmd, header, _ref;
+    _ref = confetti.commandList, header = _ref.header, border = _ref.border, cmd = _ref.cmd;
+    border(false, chan);
+    header('Script Commands', 5, chan);
+    cmd('updatescript', chan);
+    cmd('autoupdate', chan);
+    cmd('version', chan);
     confetti.callHooks('commands:script');
-    return confetti.commandList.border(true, chan);
+    return border(true, chan);
   });
   confetti.command('updatescript', ['Updates the script to the latest available version.', 'send@updatescript'], function() {
     if (sys.isSafeScripts()) {
@@ -1405,7 +1445,14 @@ confetti.cacheFile = 'confetti.json';
     confetti.msg.bot("Updating script...");
     return updateScript();
   });
-  return confetti.alias('updatescripts', 'updatescript');
+  confetti.alias('updatescripts', 'updatescript');
+  confetti.command('autoupdate', ["Toggles whether if the script should automatically look for updates (every 6 hours).", 'send@autoupdate'], function() {
+    confetti.cache.store('autoupdate', !confetti.cache.read('autoupdate')).save();
+    return confetti.msg.bot("Automatic updates are now " + (confetti.cache.read('autoupdate') ? 'enabled' : 'disabled') + ".");
+  });
+  return confetti.command('version', ["Shows the script's version.", 'send@version'], function() {
+    return confetti.msg.bot("Your copy of Confetti is currently on version " + (versionFormat(confetti.version)) + ".");
+  });
 })();
 
 (function() {
@@ -1578,9 +1625,6 @@ confetti.cacheFile = 'confetti.json';
     confetti.msg.bot("Translating '" + message + "' to " + to + "!");
     return sys.webCall(url, function(response) {
       var ex, json;
-      if (!response) {
-        response = ")";
-      }
       response = response.replace(clearDuplicateCommas, ',').replace(clearDuplicateCommas, ',');
       try {
         json = JSON.parse(response);
@@ -1638,7 +1682,7 @@ confettiScript = {
     }
     confetti.initPlugins();
     if (!confetti.initialized) {
-      if ((confetti.cache.get('lastuse') + 432000) < (+sys.time())) {
+      if ((confetti.cache.get('lastuse') + (5 * 24 * 60 * 60)) < (+sys.time())) {
         commandindicator = confetti.cache.get('commandindicator');
         confetti.msg.bot("Type <a href='po:send/" + commandindicator + "commands' style='text-decoration: none; color: green;'><b>" + commandindicator + "commands</b></a> for a list of client commands.", -1);
       }
