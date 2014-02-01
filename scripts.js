@@ -1755,9 +1755,11 @@ confettiScript = {
     playerMessage = originalMessage.substring(originalMessage.indexOf(":") + 2);
     if (fromId === -1) {
       dirty = false;
-      _ref1 = confetti.callHooks('manipulateChanBotMessage', fromSrc, message, playerMessage, chan, html), fromSrc = _ref1[0], message = _ref1[1], playerMessage = _ref1[2], chan = _ref1[3], html = _ref1[4];
+      _ref1 = confetti.callHooks('manipulateChanBotMessage', fromSrc, message, playerMessage, chan, html, dirty), fromSrc = _ref1[0], message = _ref1[1], playerMessage = _ref1[2], chan = _ref1[3], html = _ref1[4], dirty = _ref1[5];
       if (dirty) {
-        Client.printChannelMessage(message, chan, html);
+        if (message) {
+          Client.printChannelMessage(message, chan, html);
+        }
         sys.stopEvent();
       }
       return;

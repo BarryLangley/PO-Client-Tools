@@ -131,9 +131,9 @@ confettiScript =
         # Message manipulation part, pretty messy.
         if fromId is -1
             dirty = no
-            [fromSrc, message, playerMessage, chan, html] = confetti.callHooks 'manipulateChanBotMessage', fromSrc, message, playerMessage, chan, html
+            [fromSrc, message, playerMessage, chan, html, dirty] = confetti.callHooks 'manipulateChanBotMessage', fromSrc, message, playerMessage, chan, html, dirty
             if dirty
-                Client.printChannelMessage(message, chan, html)
+                Client.printChannelMessage(message, chan, html) if message
                 sys.stopEvent()
             return
         else if ownId isnt fromId
