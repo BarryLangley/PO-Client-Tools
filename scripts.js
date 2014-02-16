@@ -1291,11 +1291,12 @@ confetti.cacheFile = 'confetti.json';
 })();
 
 (function() {
-  var attemptToReconnect, attempts, autoReconnectTimer, stopReconnecting, stopTrying;
+  var attemptToReconnect, attempts, autoReconnectTimer, forced, stopReconnecting, stopTrying;
   autoReconnectTimer = -1;
   attempts = 0;
   stopTrying = false;
   stopReconnecting = false;
+  forced = false;
   attemptToReconnect = function() {
     if (attempts >= 3) {
       return false;
@@ -1317,12 +1318,10 @@ confetti.cacheFile = 'confetti.json';
     }
   });
   Network.disconnected.connect(function() {
-    var forced;
     stopTrying = false;
     if (confetti.cache.get('autoreconnect') === true && autoReconnectTimer === -1 && forced !== true && stopReconnecting === false) {
       confetti.msg.bot("Attempting to reconnect...");
       confetti.msg.notification("Disconnection detected, attempting to reconnect.");
-      attemptToReconnect();
       autoReconnectTimer = sys.setTimer(function() {
         var reconnectEffect;
         if (autoReconnectTimer === -1 || stopTrying === true) {
@@ -1340,6 +1339,7 @@ confetti.cacheFile = 'confetti.json';
           return stopTrying = true;
         }
       }, 5000, true);
+      attemptToReconnect();
     }
     return forced = false;
   });
@@ -1347,7 +1347,6 @@ confetti.cacheFile = 'confetti.json';
     return confetti.cache.store('autoreconnect', true, confetti.cache.once);
   });
   confetti.command('reconnect', ['Forces a reconnect to the server.', 'send@reconnect'], function() {
-    var forced;
     confetti.msg.bot("Reconnecting to the server...");
     attempts = 0;
     forced = true;

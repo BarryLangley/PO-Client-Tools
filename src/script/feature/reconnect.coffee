@@ -4,6 +4,7 @@ do ->
     attempts = 0
     stopTrying = no
     stopReconnecting = no
+    forced = no
 
     attemptToReconnect = ->
         if attempts >= 3
@@ -31,7 +32,6 @@ do ->
             confetti.msg.bot "Attempting to reconnect..."
             confetti.msg.notification "Disconnection detected, attempting to reconnect."
 
-            attemptToReconnect()
             autoReconnectTimer = sys.setTimer ->
                 return if autoReconnectTimer is -1 or stopTrying is yes
 
@@ -47,6 +47,8 @@ do ->
                 else if reconnectEffect is yes
                     stopTrying = yes
             , 5000, yes
+
+            attemptToReconnect()
 
         forced = no
 
