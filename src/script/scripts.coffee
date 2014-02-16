@@ -67,8 +67,8 @@ confettiScript =
         confetti.callHooks 'onPlayerRemoved', id
         delete confetti.players[id]
 
-    # PMs. Unused.
-    # beforePMReceived: (src, message) ->
+    afterPMReceived: (src, message) ->
+        confetti.callHooks 'pmReceived', src, message
 
     # Messages sent by the player
     beforeSendMessage: (message, chan) ->
@@ -127,6 +127,13 @@ confettiScript =
                     break
 
         playerMessage = originalMessage.substring(originalMessage.indexOf(":") + 2)
+
+        # If it's HTML, remove the first </b>, </i>, and </font>
+        if html
+            playerMessage = playerMessage
+                                .replace '</b>', ''
+                                .replace '</i>', ''
+                                .replace '</font>', ''
 
         # Message manipulation part, pretty messy.
         if fromId is -1

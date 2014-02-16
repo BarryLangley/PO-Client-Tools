@@ -9,7 +9,7 @@ do ->
 
         Network.sendChanMessage chan, msg
 
-    pm = (id, msg, encoolType) ->
+    pm = (id, msg) ->
         unless confetti.players.hasOwnProperty id
             return
 

@@ -252,7 +252,7 @@ confetti.cacheFile = 'confetti.json';
       return this;
     };
 
-    Cache.prototype.remove = function(key, value) {
+    Cache.prototype.remove = function(key) {
       if (typeof this.hash[key] !== 'undefined') {
         delete this.hash[key];
         this.saved += 1;
@@ -408,7 +408,7 @@ confetti.cacheFile = 'confetti.json';
     }
     return Network.sendChanMessage(chan, msg);
   };
-  pm = function(id, msg, encoolType) {
+  pm = function(id, msg) {
     if (!confetti.players.hasOwnProperty(id)) {
       return;
     }
@@ -1703,6 +1703,9 @@ confettiScript = {
     confetti.callHooks('onPlayerRemoved', id);
     return delete confetti.players[id];
   },
+  afterPMReceived: function(src, message) {
+    return confetti.callHooks('pmReceived', src, message);
+  },
   beforeSendMessage: function(message, chan) {
     var command, data, dirty, space, _ref, _ref1;
     if (((_ref = message[0]) === confetti.cache.get('commandindicator') || _ref === '-') && message.length > 1 && confetti.util.isAlpha(message[1])) {
@@ -1753,6 +1756,9 @@ confettiScript = {
       }
     }
     playerMessage = originalMessage.substring(originalMessage.indexOf(":") + 2);
+    if (html) {
+      playerMessage = playerMessage.replace('</b>', '').replace('</i>', '').replace('</font>', '');
+    }
     if (fromId === -1) {
       dirty = false;
       _ref1 = confetti.callHooks('manipulateChanBotMessage', fromSrc, message, playerMessage, chan, html, dirty), fromSrc = _ref1[0], message = _ref1[1], playerMessage = _ref1[2], chan = _ref1[3], html = _ref1[4], dirty = _ref1[5];

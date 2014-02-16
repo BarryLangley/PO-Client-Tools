@@ -13,7 +13,7 @@ do ->
             @hash[key] = value
             @saved += 1
             return this
-        remove: (key, value) ->
+        remove: (key) ->
             if typeof @hash[key] isnt 'undefined'
                 delete @hash[key]
                 @saved += 1
