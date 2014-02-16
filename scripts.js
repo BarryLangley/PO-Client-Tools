@@ -26,7 +26,7 @@ if (typeof confetti !== 'object') {
 confetti.version = {
   release: 2,
   major: 0,
-  minor: 3
+  minor: 4
 };
 
 confetti.scriptUrl = 'https://raw.github.com/TheUnknownOne/PO-Client-Tools/master/';
@@ -412,7 +412,7 @@ confetti.cacheFile = 'confetti.json';
     if (!confetti.players.hasOwnProperty(id)) {
       return;
     }
-    return Client.sendPM(id, msg);
+    return Network.sendPM(id, msg);
   };
   printm = function(msg) {
     return print(msg);
@@ -1702,6 +1702,15 @@ confettiScript = {
   onPlayerRemoved: function(id) {
     confetti.callHooks('onPlayerRemoved', id);
     return delete confetti.players[id];
+  },
+  beforePMSent: function(tar, message) {
+    var dirty, _ref;
+    dirty = false;
+    _ref = confetti.callHooks('manipulateOwnPM', tar, message, dirty), tar = _ref[0], message = _ref[1], dirty = _ref[2];
+    if (dirty) {
+      sys.stopEvent();
+      return Network.sendPM(tar, message);
+    }
   },
   afterPMReceived: function(src, message) {
     return confetti.callHooks('pmReceived', src, message);

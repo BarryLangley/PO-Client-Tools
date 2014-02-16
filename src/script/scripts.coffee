@@ -67,6 +67,16 @@ confettiScript =
         confetti.callHooks 'onPlayerRemoved', id
         delete confetti.players[id]
 
+    beforePMSent: (tar, message) ->
+        # Message manipulation
+        dirty = no
+        [tar, message, dirty] = confetti.callHooks 'manipulateOwnPM', tar, message, dirty
+
+        # If the message has changed
+        if dirty
+            sys.stopEvent()
+            Network.sendPM tar, message
+
     afterPMReceived: (src, message) ->
         confetti.callHooks 'pmReceived', src, message
 

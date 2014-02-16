@@ -13,7 +13,7 @@ do ->
         unless confetti.players.hasOwnProperty id
             return
 
-        Client.sendPM id, msg
+        Network.sendPM id, msg
 
     printm = (msg) ->
         print msg

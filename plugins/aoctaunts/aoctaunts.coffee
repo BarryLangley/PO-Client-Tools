@@ -53,7 +53,7 @@ do ->
             return yes
 
         if verbose
-            confetti.msg.bot "<a href='https://github.com/TheUnknownOne/PO-Client-Tools/releases/download/2.0.4/aoctaunts.zip'>AoC Taunts need to be downloaded</a> and placed in your PO directory (typically <i>C:\\Program Files (x86)\\Pokemon Online\\</i> on Windows). Copy the <i>aoctaunts</i> directory into your PO directory instead of simply extracting."
+            confetti.msg.bot "<a href='https://github.com/TheUnknownOne/PO-Client-Tools/releases/download/2.0.4/aoctaunts.zip'>AoC Taunts need to be downloaded</a> <small>(2.8 MB)</small> and placed in your PO directory (typically <i>C:\\Program Files (x86)\\Pokemon Online\\</i> on Windows). Copy the <i>aoctaunts</i> directory into your PO directory instead of simply extracting."
             confetti.msg.bot "Once that's done, a message starting with the numbers 1-42 in chat and PM will play the taunt."
         return no
 
@@ -92,5 +92,9 @@ do ->
 
     confetti.hook 'pmReceived', (src, message) ->
         playTaunt(message)
+
+    confetti.hook 'manipulateOwnPM', (tar, message, dirty) ->
+        playTaunt(message)
+        [tar, message, dirty]
 
     checkTaunts()
