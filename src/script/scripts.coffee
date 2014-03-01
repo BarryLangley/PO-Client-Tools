@@ -190,5 +190,5 @@ confettiScript =
 
             finishedMessage = "<font color='#{color}'><timestamp/>#{authSymbol[0]}<b>#{from}:#{authSymbol[1]}</b></font> #{playerMessage}"
 
-            Client.printChannelMessage finishedMessage, chan, html
+            Client.printChannelMessage finishedMessage, chan, yes
             sys.stopEvent()
