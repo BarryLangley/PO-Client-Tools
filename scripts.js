@@ -1120,14 +1120,21 @@ confetti.cacheFile = 'confetti.json';
 })();
 
 (function() {
-  return confetti.command('news', ['news [language code?]', "Fetches the latest news headlines from Google, in an optional <a href='<a href='http://en.wikipedia.org/wiki/List_of_ISO_639-1_codes#Partial_ISO_639_table'>[language]</a>.", 'send@news'], function(data, chan) {
-    data = data.toLowerCase();
-    if (data.length !== 2) {
-      data = 'en';
+  return confetti.command('news', ['news [language code?]:[topic?]', "Fetches the latest news, either the headlines or on a specific topic, from Google News, in an optional <a href='<a href='http://en.wikipedia.org/wiki/List_of_ISO_639-1_codes#Partial_ISO_639_table'>[language]</a>.", 'send@news'], function(data, chan) {
+    var lang, query, topic;
+    data = data.split(':');
+    lang = data[0].toLowerCase().trim();
+    query = data.slice(1).join(':').trim();
+    topic = '&topic=h';
+    if (lang.length !== 2) {
+      lang = 'en';
+    }
+    if (query) {
+      topic = "&q=" + (encodeURIComponent(query.toLowerCase()));
     }
     confetti.msg.bot("Fetching latest headlines...");
-    return sys.webCall("https://ajax.googleapis.com/ajax/services/search/news?v=1.0&rsz=5&topic=h&hl=" + (encodeURIComponent(data)), function(response) {
-      var ex, json, mess, res, story, _i, _j, _len, _len1;
+    return sys.webCall("https://ajax.googleapis.com/ajax/services/search/news?v=1.0&rsz=6&hl=" + (encodeURIComponent(lang)) + topic, function(response) {
+      var ex, json, mess, res, stories, story, _i, _j, _len, _len1;
       if (!response) {
         confetti.msg.bot("Couldn't load news - your internet might be down.", chan);
         return;
@@ -1139,14 +1146,14 @@ confetti.cacheFile = 'confetti.json';
         confetti.msg.bot("Couldn't load news - your internet might be down.", chan);
         return;
       }
-      data = json.responseData.results;
+      stories = json.responseData.results;
       res = [];
-      for (_i = 0, _len = data.length; _i < _len; _i++) {
-        story = data[_i];
+      for (_i = 0, _len = stories.length; _i < _len; _i++) {
+        story = stories[_i];
         res.push(("" + confetti.msg.bullet + " <b>") + story.titleNoFormatting.replace(/&#39;/g, "'").replace(/`/g, "'").replace(/&quot;/g, "\"") + ("</b><br/>" + confetti.msg.indent + "&nbsp;&nbsp;&nbsp;&nbsp;→ Read more: " + (sys.htmlEscape(story.unescapedUrl))));
       }
       if (res.length) {
-        confetti.msg.bold('News Headlines', '', chan);
+        confetti.msg.bold("News " + (query ? 'on ' + query : 'Headlines'), '', chan);
         for (_j = 0, _len1 = res.length; _j < _len1; _j++) {
           mess = res[_j];
           confetti.msg.html(mess, chan);
