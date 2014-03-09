@@ -85,7 +85,6 @@ do ->
         cmd 'reconnect'
         cmd 'define'
         cmd 'translate'
-        cmd 'dictionary'
         cmd 'news'
         cmd 'imp'
         cmd 'flip'

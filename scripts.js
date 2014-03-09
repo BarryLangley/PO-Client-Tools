@@ -702,38 +702,6 @@ confetti.cacheFile = 'confetti.json';
 })();
 
 (function() {
-  confetti.command('dictionary', ['dictionary [word]', 'Searches for the given word in an online dictionary.', 'setmsg@dictionary [word]'], function(data, chan) {
-    var getResults;
-    if (!data) {
-      confetti.msg.bot("You have to give me a word to define!");
-      return;
-    }
-    getResults = function(code, resultCode) {
-      if (!code.primaries) {
-        confetti.msg.bot("Couldn't find any definitions for " + code.query + ".", chan);
-        return;
-      }
-      return confetti.msg.bold(code.query, (code.primaries[0].entries[1] || code.primaries[0].entries[0]).terms[0].text, chan);
-    };
-    confetti.msg.bot("Loading definition...");
-    return sys.webCall("http://www.google.com/dictionary/json?callback=getResults&sl=en&tl=en&q=" + (encodeURIComponent(data)), function(response) {
-      var ex;
-      if (!response) {
-        confetti.msg.bot("Couldn't load a definition, check your internet connection.", chan);
-        return;
-      }
-      try {
-        return eval(response);
-      } catch (_error) {
-        ex = _error;
-        return confetti.msg.bot("Couldn't load a definition, check your internet connection.", chan);
-      }
-    });
-  });
-  return confetti.alias('dict', 'dictionary');
-})();
-
-(function() {
   var chr, encool, encoolHandlers, index, l33tify, normalLetters, smallcap, smallcapsConvert, smallcapsLetters, smallcapsify, _i, _len;
   normalLetters = 'qwertyuiopasdfghjklzxcvbnm'.split('');
   smallcapsLetters = 'ǫᴡᴇʀᴛʏᴜɪᴏᴘᴀsᴅғɢʜᴊᴋʟᴢxᴄᴠʙɴᴍ'.split('');
@@ -1009,7 +977,6 @@ confetti.cacheFile = 'confetti.json';
     cmd('reconnect');
     cmd('define');
     cmd('translate');
-    cmd('dictionary');
     cmd('news');
     cmd('imp');
     cmd('flip');
@@ -1298,23 +1265,20 @@ confetti.cacheFile = 'confetti.json';
 })();
 
 (function() {
-  var attemptToReconnect, attempts, autoReconnectTimer, forced, stopReconnecting, stopTrying;
+  var attemptToReconnect, attempts, autoReconnectTimer, forced, stopReconnecting;
   autoReconnectTimer = -1;
   attempts = 0;
-  stopTrying = false;
   stopReconnecting = false;
   forced = false;
   attemptToReconnect = function() {
     if (attempts >= 3) {
       return false;
     }
-    if (Client.findChildren('passwordDialog').length > 0) {
-      return true;
-    }
     attempts += 1;
     return Client.reconnect();
   };
   Network.playerLogin.connect(function() {
+    var stopTrying;
     if (autoReconnectTimer !== -1) {
       confetti.msg.notification("Reconnected to server!");
       sys.unsetTimer(autoReconnectTimer);
@@ -1325,28 +1289,21 @@ confetti.cacheFile = 'confetti.json';
     }
   });
   Network.disconnected.connect(function() {
-    stopTrying = false;
-    if (confetti.cache.get('autoreconnect') === true && autoReconnectTimer === -1 && forced !== true && stopReconnecting === false) {
+    if (confetti.cache.get('autoreconnect') === true && autoReconnectTimer === -1 && forced !== true) {
       confetti.msg.bot("Attempting to reconnect...");
       confetti.msg.notification("Disconnection detected, attempting to reconnect.");
       autoReconnectTimer = sys.setTimer(function() {
-        var reconnectEffect;
-        if (autoReconnectTimer === -1 || stopTrying === true) {
+        if (autoReconnectTimer === -1) {
           return;
         }
-        reconnectEffect = attemptToReconnect();
-        if (reconnectEffect === false) {
+        if (attemptToReconnect() === false) {
           confetti.msg.bot("Three attempts at reconnecting have failed, stopping.");
           confetti.msg.notification("Failed to reconnect.");
           sys.unsetTimer(autoReconnectTimer);
           autoReconnectTimer = -1;
-          stopReconnecting = true;
-          return stopTrying = false;
-        } else if (reconnectEffect === true) {
-          return stopTrying = true;
+          return stopReconnecting = true;
         }
       }, 5000, true);
-      attemptToReconnect();
     }
     return forced = false;
   });
