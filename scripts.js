@@ -979,9 +979,10 @@ confetti.cacheFile = 'confetti.json';
     cmd('translate');
     cmd('news');
     cmd('imp');
-    cmd('flip');
     cmd('info');
+    cmd('myip');
     cmd('chan');
+    cmd('flip');
     confetti.callHooks('commands:misc');
     cmd('html');
     cmd('eval');
@@ -1083,7 +1084,17 @@ confetti.cacheFile = 'confetti.json';
       return confetti.msg.html("" + confetti.msg.bullet + " <b>Avatar</b>: " + avatar + "<br/>" + confetti.msg.indent + "<img src='trainer:" + avatar + "'>");
     }
   });
-  return confetti.alias('userinfo', 'info');
+  confetti.alias('userinfo', 'info');
+  return confetti.command('myip', ['Shows your IP address.', 'send@myip'], function() {
+    confetti.msg.bot("Obtaining your IP address...");
+    return sys.webCall('http://bot.whatismyipaddress.com/', function(resp) {
+      if (!resp) {
+        confetti.msg.bot("Couldn't obtain your IP address - check your internet connection.");
+        return;
+      }
+      return confetti.msg.bot("Your IP address is <b>" + resp + "</b>.");
+    });
+  });
 })();
 
 (function() {

@@ -100,3 +100,12 @@ do ->
             confetti.msg.html "#{confetti.msg.bullet} <b>Avatar</b>: #{avatar}<br/>#{confetti.msg.indent}<img src='trainer:#{avatar}'>"
 
     confetti.alias 'userinfo', 'info'
+
+    confetti.command 'myip', ['Shows your IP address.', 'send@myip'], ->
+        confetti.msg.bot "Obtaining your IP address..."
+        sys.webCall 'http://bot.whatismyipaddress.com/', (resp) ->
+            unless resp
+                confetti.msg.bot "Couldn't obtain your IP address - check your internet connection."
+                return
+
+            confetti.msg.bot "Your IP address is <b>#{resp}</b>."

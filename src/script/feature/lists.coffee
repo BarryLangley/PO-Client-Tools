@@ -87,9 +87,10 @@ do ->
         cmd 'translate'
         cmd 'news'
         cmd 'imp'
-        cmd 'flip'
         cmd 'info'
+        cmd 'myip'
         cmd 'chan'
+        cmd 'flip'
 
         confetti.callHooks 'commands:misc'
 
