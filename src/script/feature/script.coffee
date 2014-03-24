@@ -21,7 +21,7 @@ do ->
     versionFormat = (version) ->
         version.release + '.' + version.major + '.' + version.minor
 
-    differentVersion = (ov, nv = confetti.version) ->
+    differentVersion = (ov, nv) ->
         return no if typeof ov isnt 'object' or typeof nv isnt 'object'
 
         versionFormat(ov) isnt versionFormat(nv)
@@ -36,15 +36,17 @@ do ->
             confetti.io.write sys.scriptsFolder + 'scripts.js', file
             confetti.io.reloadScript yes
 
-            if differentVersion(oldVersion)
-                confetti.msg.bot "Script updated to version #{versionFormat(confetti.version)}!"
-            else
-                confetti.msg.bot "Script updated!"
+            sys.setTimer ->
+                if differentVersion(oldVersion, confetti.version)
+                    confetti.msg.bot "Script updated to version #{versionFormat(confetti.version)}!"
+                else
+                    confetti.msg.bot "Script updated!"
+            , 100, no
 
-    # Check in 15 seconds (in case the player often relogs, it will never have a chance to update), and every 15m afterwards.
+    # Check in 15 seconds (in case the player often relogs, it will never have a chance to update), and every 10m afterwards.
     # This timer is pretty painless, so it could be less.
     sys.setTimer autoUpdate, 15 * 1000, no
-    sys.setTimer autoUpdate, 15 * 60 * 1000, yes
+    sys.setTimer autoUpdate, 10 * 60 * 1000, yes
 
     confetti.hook 'initCache', ->
         confetti.cache

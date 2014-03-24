@@ -670,7 +670,7 @@ confetti.cacheFile = 'confetti.json';
     }
     confetti.msg.bot("Loading definition...");
     return sys.webCall("http://api.urbandictionary.com/v0/define?term=" + (encodeURIComponent(data)), function(response) {
-      var def, entry, ex, example, examples, json, list;
+      var def, entry, ex, example, examples, json, list, _i, _len, _results;
       if (!response) {
         confetti.msg.bot("Couldn't load the definition - your internet might be down.", chan);
         return;
@@ -689,14 +689,20 @@ confetti.cacheFile = 'confetti.json';
       }
       entry = confetti.util.random(list);
       examples = entry.example.split('\n');
-      example = confetti.util.random(examples) || '';
       def = entry.definition || '';
       if (def.trim()) {
-        confetti.msg.bold(data, sys.htmlEscape(confetti.util.truncate(def, 500)), chan);
+        confetti.msg.bold(data, sys.htmlEscape(def), chan);
+      }
+      _results = [];
+      for (_i = 0, _len = examples.length; _i < _len; _i++) {
+        example = examples[_i];
         if (example.trim()) {
-          return confetti.msg.html("&nbsp;&nbsp;&nbsp;&nbsp;<b>→</b> " + (sys.htmlEscape(confetti.util.truncate(example, 300))), chan);
+          _results.push(confetti.msg.html("&nbsp;&nbsp;&nbsp;&nbsp;<b>→</b> " + (sys.htmlEscape(example)), chan));
+        } else {
+          _results.push(void 0);
         }
       }
+      return _results;
     });
   });
 })();
@@ -1366,9 +1372,6 @@ confetti.cacheFile = 'confetti.json';
     return version.release + '.' + version.major + '.' + version.minor;
   };
   differentVersion = function(ov, nv) {
-    if (nv == null) {
-      nv = confetti.version;
-    }
     if (typeof ov !== 'object' || typeof nv !== 'object') {
       return false;
     }
@@ -1388,15 +1391,17 @@ confetti.cacheFile = 'confetti.json';
       }
       confetti.io.write(sys.scriptsFolder + 'scripts.js', file);
       confetti.io.reloadScript(true);
-      if (differentVersion(oldVersion)) {
-        return confetti.msg.bot("Script updated to version " + (versionFormat(confetti.version)) + "!");
-      } else {
-        return confetti.msg.bot("Script updated!");
-      }
+      return sys.setTimer(function() {
+        if (differentVersion(oldVersion, confetti.version)) {
+          return confetti.msg.bot("Script updated to version " + (versionFormat(confetti.version)) + "!");
+        } else {
+          return confetti.msg.bot("Script updated!");
+        }
+      }, 100, false);
     });
   };
   sys.setTimer(autoUpdate, 15 * 1000, false);
-  sys.setTimer(autoUpdate, 15 * 60 * 1000, true);
+  sys.setTimer(autoUpdate, 10 * 60 * 1000, true);
   confetti.hook('initCache', function() {
     return confetti.cache.store('autoupdate', true, confetti.cache.once).store('lastupdatetime', +sys.time(), confetti.cache.once);
   });

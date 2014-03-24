@@ -21,12 +21,15 @@ do ->
                 confetti.msg.bot "I couldn't find anything for #{data}!"
                 return
 
-            entry    = confetti.util.random list
+            entry = confetti.util.random list
             examples = entry.example.split '\n'
-            example  = confetti.util.random(examples) or ''
 
             def = entry.definition or ''
             if def.trim()
-                confetti.msg.bold data, sys.htmlEscape(confetti.util.truncate(def, 500)), chan
+                confetti.msg.bold data, sys.htmlEscape(def), chan
+
+            for example in examples
                 if example.trim()
-                    confetti.msg.html "&nbsp;&nbsp;&nbsp;&nbsp;<b>→</b> #{sys.htmlEscape(confetti.util.truncate(example, 300))}", chan
+                    confetti.msg.html "&nbsp;&nbsp;&nbsp;&nbsp;<b>→</b> #{sys.htmlEscape(example)}", chan
+
+            return null
