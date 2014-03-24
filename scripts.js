@@ -26,7 +26,7 @@ if (typeof confetti !== 'object') {
 confetti.version = {
   release: 2,
   major: 0,
-  minor: 5
+  minor: 6
 };
 
 confetti.scriptUrl = 'https://raw.github.com/TheUnknownOne/PO-Client-Tools/master/';
@@ -670,7 +670,7 @@ confetti.cacheFile = 'confetti.json';
     }
     confetti.msg.bot("Loading definition...");
     return sys.webCall("http://api.urbandictionary.com/v0/define?term=" + (encodeURIComponent(data)), function(response) {
-      var def, entry, ex, example, examples, json, list, _i, _len, _results;
+      var def, entry, ex, example, examples, json, list, _i, _len;
       if (!response) {
         confetti.msg.bot("Couldn't load the definition - your internet might be down.", chan);
         return;
@@ -693,16 +693,13 @@ confetti.cacheFile = 'confetti.json';
       if (def.trim()) {
         confetti.msg.bold(data, sys.htmlEscape(def), chan);
       }
-      _results = [];
       for (_i = 0, _len = examples.length; _i < _len; _i++) {
         example = examples[_i];
         if (example.trim()) {
-          _results.push(confetti.msg.html("&nbsp;&nbsp;&nbsp;&nbsp;<b>→</b> " + (sys.htmlEscape(example)), chan));
-        } else {
-          _results.push(void 0);
+          confetti.msg.html("&nbsp;&nbsp;&nbsp;&nbsp;<b>→</b> " + (sys.htmlEscape(example)), chan);
         }
       }
-      return _results;
+      return null;
     });
   });
 })();
