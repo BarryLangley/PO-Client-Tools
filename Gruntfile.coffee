@@ -16,9 +16,8 @@ module.exports = (grunt) ->
         grunt.log.ok 'Building plugin: AoC Taunts'
         grunt.task.run 'coffee:aoctaunts-plugin'
 
-    grunt.registerTask 'build-battle', 'Builds the battle script source.', (data) ->
-        grunt.log.ok 'The following modules will be built:', battleFiles.join(', ').replace(/.js/gi, '')
-        grunt.task.run 'concat:battle'
+        grunt.log.ok 'Building plugin: Emoji'
+        grunt.task.run 'coffee:emoji-plugin'
 
     grunt.registerTask 'default', ['build-client']
 
@@ -44,7 +43,6 @@ module.exports = (grunt) ->
     ]
 
     clientFiles = ("src/script/#{file}.coffee" for file in clientFiles)
-    battleFiles = ("battle/#{file}.js" for file in battleFiles)
 
     gruntConfig =
         pkg: grunt.file.readJSON 'package.json'
@@ -52,9 +50,6 @@ module.exports = (grunt) ->
         concat:
             options:
                 separator: ''
-            battle:
-                files:
-                    'battlescripts.js': battleFiles
         # grunt-contrib-coffee
         coffee:
             client:
@@ -81,5 +76,11 @@ module.exports = (grunt) ->
                     join: yes
                 files:
                     'plugins/aoctaunts/aoctaunts.js': 'plugins/aoctaunts/aoctaunts.coffee'
+            'emoji-plugin':
+                options:
+                    bare: yes
+                    join: yes
+                files:
+                    'plugins/emoji/emoji.js': 'plugins/emoji/emoji.coffee'
 
     grunt.initConfig gruntConfig

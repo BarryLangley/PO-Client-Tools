@@ -27,9 +27,6 @@
         "global": true,
         "client": true,
 
-
-
-        "battle": true,
-        "Calc": true
+        "confetti": true
     }
 }
