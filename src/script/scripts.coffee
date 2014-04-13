@@ -110,6 +110,10 @@ confettiScript =
 
     # Messages from others.
     beforeChannelMessage: (message, chan, html) ->
+        if confetti.ignoreNextChanMessage
+            confetti.ignoreNextChanMessage = no
+            return
+
         ownId = Client.ownId()
         if ownId is -1
             return
@@ -190,5 +194,6 @@ confettiScript =
 
             finishedMessage = "<font color='#{color}'><timestamp/>#{authSymbol[0]}<b>#{from}:#{authSymbol[1]}</b></font> #{playerMessage}"
 
-            Client.printChannelMessage finishedMessage, chan, yes
             sys.stopEvent()
+            confetti.ignoreNextChanMessage = yes
+            Client.printChannelMessage finishedMessage, chan, yes

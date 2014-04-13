@@ -16,6 +16,7 @@ if (typeof confetti !== 'object') {
       initialized: false
     },
     players: {},
+    ignoreNextChanMessage: false,
     loginTime: 0
   };
   Network.playerLogin.connect(function() {
@@ -476,6 +477,7 @@ confetti.cacheFile = 'confetti.json';
 (function() {
   var aliases, commands, hooks;
   hooks = {};
+  confetti._hooks = hooks;
   confetti.hook = function(name, func) {
     if (hooks[name] == null) {
       hooks[name] = [];
@@ -1716,6 +1718,10 @@ confettiScript = {
   },
   beforeChannelMessage: function(message, chan, html) {
     var auth, authSymbol, color, dirty, finishedMessage, from, fromId, fromSrc, id, line, name, originalMessage, ownId, playerMessage, _ref, _ref1, _ref2, _ref3;
+    if (confetti.ignoreNextChanMessage) {
+      confetti.ignoreNextChanMessage = false;
+      return;
+    }
     ownId = Client.ownId();
     if (ownId === -1) {
       return;
@@ -1789,8 +1795,9 @@ confettiScript = {
         playerMessage = Client.channel(chan).addChannelLinks(playerMessage);
       }
       finishedMessage = "<font color='" + color + "'><timestamp/>" + authSymbol[0] + "<b>" + from + ":" + authSymbol[1] + "</b></font> " + playerMessage;
-      Client.printChannelMessage(finishedMessage, chan, true);
-      return sys.stopEvent();
+      sys.stopEvent();
+      confetti.ignoreNextChanMessage = true;
+      return Client.printChannelMessage(finishedMessage, chan, true);
     }
   }
 };

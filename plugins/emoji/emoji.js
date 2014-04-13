@@ -95,8 +95,6 @@
     escapedMessage = sys.htmlEscape(playerMessage);
     escapedMessage = Client.channel(chan).addChannelLinks(escapedMessage);
     newMessage = parseEmoji(escapedMessage);
-    print(escapedMessage);
-    print(newMessage);
     if (newMessage !== escapedMessage) {
       playerMessage = newMessage;
       html = true;

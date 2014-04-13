@@ -12,7 +12,7 @@ if typeof confetti isnt 'object'
         cache:
             initialized: no
         players: {}
-
+        ignoreNextChanMessage: no
         loginTime: 0
 
     Network.playerLogin.connect ->

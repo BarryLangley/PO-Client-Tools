@@ -92,9 +92,6 @@ do ->
         escapedMessage = Client.channel(chan).addChannelLinks(escapedMessage)
 
         newMessage = parseEmoji(escapedMessage)
-
-        print escapedMessage
-        print newMessage
         if newMessage isnt escapedMessage
             playerMessage = newMessage
             html = yes

@@ -2,6 +2,7 @@ do ->
     # Hooks
     hooks = {}
 
+    confetti._hooks = hooks
     confetti.hook = (name, func) ->
         hooks[name] ?= []
         hooks[name].push func
