@@ -27,18 +27,19 @@
     return false;
   };
   parseEmoji = function(message) {
-    var count;
+    var count, max;
     if (confetti.cache.get('emoji') !== true) {
       return message;
     }
     checkEmoji();
     count = 0;
+    max = confetti.cache.get('emojimax');
     return message.replace(emojiRegex, function(name) {
       var code, emojiname;
-      emojiname = name.substr(1, name.length - 2);
-      if (count > 5) {
+      if (count >= max) {
         return name;
       }
+      emojiname = name.substr(1, name.length - 2);
       if (emoji.hasOwnProperty(emojiname)) {
         code = emoji[emojiname];
         count += 1;
@@ -66,7 +67,7 @@
     num = parseInt(data, 10);
     if (isNaN(num)) {
       count = confetti.cache.get('emojimax');
-      confetti.msg.bot("{count} " + (count === 1 ? 'emoji is' : 'emojis are') + " currently allowed per message.", chan);
+      confetti.msg.bot("" + count + " " + (count === 1 ? 'emoji is' : 'emojis are') + " currently allowed per message.", chan);
       return;
     }
     if (num < 0) {
@@ -94,6 +95,8 @@
     escapedMessage = sys.htmlEscape(playerMessage);
     escapedMessage = Client.channel(chan).addChannelLinks(escapedMessage);
     newMessage = parseEmoji(escapedMessage);
+    print(escapedMessage);
+    print(newMessage);
     if (newMessage !== escapedMessage) {
       playerMessage = newMessage;
       html = true;

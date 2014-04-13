@@ -31,13 +31,14 @@ do ->
             return message
 
         checkEmoji()
-        count = 0
-        message.replace emojiRegex, (name) ->
-            emojiname = name.substr(1, name.length - 2)
 
-            if count > 5
+        count = 0
+        max = confetti.cache.get('emojimax')
+        message.replace emojiRegex, (name) ->
+            if count >= max
                 return name
 
+            emojiname = name.substr(1, name.length - 2)
             if emoji.hasOwnProperty(emojiname)
                 code = emoji[emojiname]
                 count += 1
@@ -63,7 +64,7 @@ do ->
         num = parseInt(data, 10)
         if isNaN(num)
             count = confetti.cache.get('emojimax')
-            confetti.msg.bot "{count} #{if count is 1 then 'emoji is' else 'emojis are'} currently allowed per message.", chan
+            confetti.msg.bot "#{count} #{if count is 1 then 'emoji is' else 'emojis are'} currently allowed per message.", chan
             return
 
         if num < 0
@@ -92,6 +93,8 @@ do ->
 
         newMessage = parseEmoji(escapedMessage)
 
+        print escapedMessage
+        print newMessage
         if newMessage isnt escapedMessage
             playerMessage = newMessage
             html = yes
