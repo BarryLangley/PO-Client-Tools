@@ -1,47 +1,29 @@
 (function() {
   var insult, insultList, insultsLoaded, intellisult, updateInsults;
   intellisult = function(name) {
-    var A, B, C, D, E, F, a, b, c, config, d, e, f, insult, random;
+    var a, b, c, d, e, f, insult, random;
+    if (name == null) {
+      name = '';
+    }
     random = function(container, check) {
       var len, str;
       len = container.length;
       str = container[Math.floor(Math.random() * len)];
-      while (str === check) {
+      while (str === intellisult[check]) {
         str = container[Math.floor(Math.random() * len)];
       }
+      intellisult[check] = str;
       return str;
     };
-    config = intellisult.config;
-    A = config.A;
-    B = config.B;
-    C = config.C;
-    D = config.D;
-    E = config.E;
-    F = config.F;
-    a = random(A, intellisult.a);
-    b = random(B, intellisult.b);
-    c = random(C, intellisult.c);
-    d = random(D, intellisult.d);
-    e = random(E, intellisult.e);
-    f = random(F, intellisult.f);
-    intellisult.a = a;
-    intellisult.b = b;
-    intellisult.c = c;
-    intellisult.d = d;
-    intellisult.e = e;
-    intellisult.f = f;
-    if (name == null) {
-      name = '';
-    }
+    a = random(intellisult.config.A, 'a');
+    b = random(intellisult.config.B, 'b');
+    c = random(intellisult.config.C, 'c');
+    d = random(intellisult.config.D, 'd');
+    e = random(intellisult.config.E, 'e');
+    f = random(intellisult.config.F, 'f');
+    insult = '';
     if (name.trim() !== '') {
       insult = "" + name + " is " + a + " " + b + " " + c + " and a " + d + " " + e + " " + f + ".";
-    } else {
-      if (config.names[0] != null) {
-        name = config.names[Math.floor(Math.random() * config.names.length)];
-        insult = "" + name + " is " + a + " " + b + " " + c + " and a " + d + " " + e + " " + f + ".";
-      } else {
-        insult = "You are " + a + " " + b + " " + c + " and a " + d + " " + e + " " + f + ".";
-      }
     }
     return insult;
   };
@@ -116,7 +98,7 @@
     confetti.msg.bot("Updating insults...");
     return updateInsults(function() {
       insultsLoaded = true;
-      return confetti.msg.bot("Insults have been loaded.");
+      return confetti.msg.bot("Insults have been updated.");
     });
   });
   confetti.command('longinsults', ["Toggles whether if long insults (those > 500 characters) should be loaded as well.", 'send@longinsults'], function() {

@@ -45,6 +45,8 @@ do ->
 
                             confetti.msg.bot "Plugin #{plugin[1].name} updated to version #{plugin[1].version}!"
                             confetti.initPlugins plugin[1].id
+            else
+                confetti.msg.bot "All plugins up to date."
 
     confetti.updatePlugins = updatePlugins
     confetti.command 'plugincommands', ['Shows various commands related to plugins.', 'send@plugincommands'], (_, chan) ->

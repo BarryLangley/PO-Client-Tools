@@ -1219,6 +1219,8 @@ confetti.cacheFile = 'confetti.json';
           })(plugin)));
         }
         return _results;
+      } else {
+        return confetti.msg.bot("All plugins up to date.");
       }
     });
   };

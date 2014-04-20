@@ -1,45 +1,24 @@
 # Insult plugin
 do ->
-    intellisult = (name) ->
+    intellisult = (name = '') ->
         random = (container, check) ->
             len = container.length
             str = container[Math.floor(Math.random() * len)]
-            while str is check
+            while str is intellisult[check]
                 str = container[Math.floor(Math.random() * len)]
+            intellisult[check] = str
             return str
 
-        config = intellisult.config
-        A = config.A
-        B = config.B
-        C = config.C
-        D = config.D
-        E = config.E
-        F = config.F
+        a = random(intellisult.config.A, 'a')
+        b = random(intellisult.config.B, 'b')
+        c = random(intellisult.config.C, 'c')
+        d = random(intellisult.config.D, 'd')
+        e = random(intellisult.config.E, 'e')
+        f = random(intellisult.config.F, 'f')
 
-        a = random(A, intellisult.a)
-        b = random(B, intellisult.b)
-        c = random(C, intellisult.c)
-        d = random(D, intellisult.d)
-        e = random(E, intellisult.e)
-        f = random(F, intellisult.f)
-
-        intellisult.a = a
-        intellisult.b = b
-        intellisult.c = c
-        intellisult.d = d
-        intellisult.e = e
-        intellisult.f = f
-
-        name ?= ''
+        insult = ''
         if name.trim() isnt ''
             insult = "#{name} is #{a} #{b} #{c} and a #{d} #{e} #{f}."
-        else
-            if config.names[0]?
-                name = config.names[Math.floor(Math.random() * config.names.length)];
-                insult = "#{name} is #{a} #{b} #{c} and a #{d} #{e} #{f}."
-            else
-                insult = "You are #{a} #{b} #{c} and a #{d} #{e} #{f}."
-
         return insult
 
     intellisult.a = intellisult.b = intellisult.c = intellisult.d = intellisult.e = intellisult.f = ''
@@ -102,7 +81,7 @@ do ->
         confetti.msg.bot "Updating insults..."
         updateInsults ->
             insultsLoaded = yes
-            confetti.msg.bot "Insults have been loaded."
+            confetti.msg.bot "Insults have been updated."
 
     confetti.command 'longinsults', ["Toggles whether if long insults (those > 500 characters) should be loaded as well.", 'send@longinsults'], ->
         confetti.cache.store('longinsults', !confetti.cache.read('longinsults')).save()
@@ -119,4 +98,3 @@ do ->
         cmd 'intellisult'
         cmd 'updateinsults'
         cmd 'longinsults'
-
