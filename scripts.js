@@ -1148,7 +1148,7 @@ confetti.cacheFile = 'confetti.json';
 })();
 
 (function() {
-  var findPlugin, hasPlugin;
+  var findPlugin, hasPlugin, updatePlugins;
   findPlugin = function(id, plugins) {
     var plugin, _i, _len;
     if (plugins == null) {
@@ -1166,12 +1166,70 @@ confetti.cacheFile = 'confetti.json';
   hasPlugin = function(id, plugins) {
     return findPlugin(id, plugins) !== null;
   };
+  updatePlugins = function() {
+    var plugins;
+    plugins = confetti.cache.get('plugins');
+    return sys.webCall(confetti.pluginsUrl + 'listing.json', function(resp) {
+      var ex, json, plug, plugin, readable, toUpdate, _i, _j, _len, _len1, _results;
+      try {
+        json = JSON.parse(resp);
+      } catch (_error) {
+        ex = _error;
+        confetti.msg.bot("Couldn't load plugin listing -- check your internet connection.");
+        return;
+      }
+      toUpdate = [];
+      for (_i = 0, _len = plugins.length; _i < _len; _i++) {
+        plugin = plugins[_i];
+        plug = findPlugin(plugin.id, json);
+        if (plug) {
+          if (plugin.version !== plug.version) {
+            toUpdate.push([plugin, plug]);
+          }
+        }
+      }
+      if (toUpdate.length) {
+        readable = (function() {
+          var _j, _len1, _results;
+          _results = [];
+          for (_j = 0, _len1 = toUpdate.length; _j < _len1; _j++) {
+            plugin = toUpdate[_j];
+            _results.push(plugin[1].name);
+          }
+          return _results;
+        })();
+        confetti.msg.bot("Updating plugins: " + (readable.join(', ')));
+        _results = [];
+        for (_j = 0, _len1 = toUpdate.length; _j < _len1; _j++) {
+          plugin = toUpdate[_j];
+          _results.push(sys.webCall("" + confetti.pluginsUrl + plugin[1].id + "/" + plugin[1].id + ".js", (function(plugin) {
+            return function(resp) {
+              var index;
+              if (!resp) {
+                confetti.msg.bot("Couldn't load plugin source -- check your internet connection.");
+                return;
+              }
+              sys.writeToFile("" + confetti.dataDir + "plugin-" + plugin[1].id + ".js", resp);
+              index = plugins.indexOf(plugin[0]);
+              plugins[index] = plugin[1];
+              confetti.cache.store('plugins', plugins).save();
+              confetti.msg.bot("Plugin " + plugin[1].name + " updated to version " + plugin[1].version + "!");
+              return confetti.initPlugins(plugin[1].id);
+            };
+          })(plugin)));
+        }
+        return _results;
+      }
+    });
+  };
+  confetti.updatePlugins = updatePlugins;
   confetti.command('plugincommands', ['Shows various commands related to plugins.', 'send@plugincommands'], function(_, chan) {
     confetti.commandList.border(false, chan);
     confetti.commandList.header('Plugin Commands', 5, chan);
     confetti.commandList.cmd('plugins', chan);
     confetti.commandList.cmd('addplugin', chan);
     confetti.commandList.cmd('removeplugin', chan);
+    confetti.commandList.cmd('updateplugins', chan);
     confetti.callHooks('commands:plugins');
     return confetti.commandList.border(true, chan);
   });
@@ -1262,7 +1320,7 @@ confetti.cacheFile = 'confetti.json';
       });
     });
   });
-  return confetti.command('removeplugin', ['removeplugin [plugin]', "Removes a plugin.", 'setmsg@removeplugin [plugin]'], function(data) {
+  confetti.command('removeplugin', ['removeplugin [plugin]', "Removes a plugin.", 'setmsg@removeplugin [plugin]'], function(data) {
     var name, plugin, plugins;
     name = data;
     data = data.toLowerCase();
@@ -1277,6 +1335,14 @@ confetti.cacheFile = 'confetti.json';
     confetti.io.deleteLocal("plugin-" + plugin.id + ".js");
     confetti.io.reloadScript();
     return confetti.msg.bot("Plugin " + plugin.name + " removed.");
+  });
+  return confetti.command('updateplugins', ['Updates your plugins to the latest version.', 'send@updateplugins'], function() {
+    if (sys.isSafeScripts()) {
+      confetti.msg.bot("Please disable Safe Scripts before using this command.");
+      return;
+    }
+    confetti.msg.bot("Updating plugins...");
+    return updatePlugins();
   });
 })();
 
@@ -1353,6 +1419,7 @@ confetti.cacheFile = 'confetti.json';
     if ((confetti.cache.get('lastupdatetime') + (6 * 60 * 60)) > now) {
       return;
     }
+    confetti.updatePlugins();
     return sys.webCall("" + confetti.scriptUrl + "script/version.json", function(resp) {
       var ex, json;
       confetti.cache.store('lastupdatetime', now).save();
@@ -1371,9 +1438,6 @@ confetti.cacheFile = 'confetti.json';
     return version.release + '.' + version.major + '.' + version.minor;
   };
   differentVersion = function(ov, nv) {
-    if (typeof ov !== 'object' || typeof nv !== 'object') {
-      return false;
-    }
     return versionFormat(ov) !== versionFormat(nv);
   };
   updateScript = function() {
@@ -1401,6 +1465,8 @@ confetti.cacheFile = 'confetti.json';
   };
   sys.setTimer(autoUpdate, 15 * 1000, false);
   sys.setTimer(autoUpdate, 10 * 60 * 1000, true);
+  confetti.autoUpdate = autoUpdate;
+  confetti.updateScript = updateScript;
   confetti.hook('initCache', function() {
     return confetti.cache.store('autoupdate', true, confetti.cache.once).store('lastupdatetime', +sys.time(), confetti.cache.once);
   });

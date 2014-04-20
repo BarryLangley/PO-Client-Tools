@@ -1,1 +1,17 @@
-[{"id": "insults","name":"Insults"},{"id": "pokedex","name":"Pokédex"},{"id": "aoctaunts","name":"AoC Taunts"},{"id":"emoji","name":"Emoji"}]
+[{
+    "id": "insults",
+    "name": "Insults",
+    "version": "1.0.0"
+}, {
+    "id": "pokedex",
+    "name": "Pokédex",
+    "version": "1.0.0"
+}, {
+    "id": "aoctaunts",
+    "name": "AoC Taunts",
+    "version": "1.0.0"
+}, {
+    "id": "emoji",
+    "name": "Emoji",
+    "version": "1.0.0"
+}]

@@ -8,6 +8,7 @@ do ->
         if (confetti.cache.get('lastupdatetime') + (6 * 60 * 60)) > now
             return
 
+        confetti.updatePlugins()
         sys.webCall "#{confetti.scriptUrl}script/version.json", (resp) ->
             confetti.cache.store('lastupdatetime', now).save()
             try
@@ -22,8 +23,6 @@ do ->
         version.release + '.' + version.major + '.' + version.minor
 
     differentVersion = (ov, nv) ->
-        return no if typeof ov isnt 'object' or typeof nv isnt 'object'
-
         versionFormat(ov) isnt versionFormat(nv)
 
     updateScript = ->
@@ -48,6 +47,8 @@ do ->
     sys.setTimer autoUpdate, 15 * 1000, no
     sys.setTimer autoUpdate, 10 * 60 * 1000, yes
 
+    confetti.autoUpdate = autoUpdate
+    confetti.updateScript = updateScript
     confetti.hook 'initCache', ->
         confetti.cache
             .store('autoupdate', yes, confetti.cache.once)

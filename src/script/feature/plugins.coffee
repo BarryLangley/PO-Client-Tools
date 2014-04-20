@@ -9,6 +9,44 @@ do ->
         return null
     hasPlugin = (id, plugins) -> findPlugin(id, plugins) isnt null
 
+    updatePlugins = ->
+        plugins = confetti.cache.get('plugins')
+        sys.webCall confetti.pluginsUrl + 'listing.json', (resp) ->
+            try
+                json = JSON.parse resp
+            catch ex
+                confetti.msg.bot "Couldn't load plugin listing -- check your internet connection."
+                return
+
+            toUpdate = []
+
+            for plugin in plugins
+                plug = findPlugin(plugin.id, json)
+                if plug
+                    if plugin.version isnt plug.version
+                        toUpdate.push [plugin, plug]
+
+            if toUpdate.length
+                readable = (plugin[1].name for plugin in toUpdate)
+                confetti.msg.bot "Updating plugins: #{readable.join(', ')}"
+
+                for plugin in toUpdate
+                    sys.webCall "#{confetti.pluginsUrl}#{plugin[1].id}/#{plugin[1].id}.js", do (plugin) ->
+                        return (resp) ->
+                            if not resp
+                                confetti.msg.bot "Couldn't load plugin source -- check your internet connection."
+                                return
+
+                            sys.writeToFile "#{confetti.dataDir}plugin-#{plugin[1].id}.js", resp
+
+                            index = plugins.indexOf(plugin[0])
+                            plugins[index] = plugin[1] # Replace plugin with the new one
+                            confetti.cache.store('plugins', plugins).save()
+
+                            confetti.msg.bot "Plugin #{plugin[1].name} updated to version #{plugin[1].version}!"
+                            confetti.initPlugins plugin[1].id
+
+    confetti.updatePlugins = updatePlugins
     confetti.command 'plugincommands', ['Shows various commands related to plugins.', 'send@plugincommands'], (_, chan) ->
         confetti.commandList.border no, chan
 
@@ -16,12 +54,12 @@ do ->
         confetti.commandList.cmd 'plugins', chan
         confetti.commandList.cmd 'addplugin', chan
         confetti.commandList.cmd 'removeplugin', chan
+        confetti.commandList.cmd 'updateplugins', chan
 
         confetti.callHooks 'commands:plugins'
 
         confetti.commandList.border yes, chan
 
-    # TODO: Updateplugins
     # TODO: Possibility for local plugins
     confetti.command 'plugins', ["Displays a list of enabled and available plugins.", 'send@plugins'], (_, chan) ->
         plugins = confetti.cache.get 'plugins'
@@ -122,3 +160,11 @@ do ->
         confetti.io.reloadScript()
 
         confetti.msg.bot "Plugin #{plugin.name} removed."
+
+    confetti.command 'updateplugins', ['Updates your plugins to the latest version.', 'send@updateplugins'], ->
+        if sys.isSafeScripts()
+            confetti.msg.bot "Please disable Safe Scripts before using this command."
+            return
+
+        confetti.msg.bot "Updating plugins..."
+        updatePlugins()
