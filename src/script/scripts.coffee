@@ -42,7 +42,7 @@ confettiScript =
         unless confetti.initialized
             if (confetti.cache.get('lastuse') + (5 * 24 * 60 * 60)) < (+sys.time())
                 commandindicator = confetti.cache.get 'commandindicator'
-                confetti.msg.bot "Type <a href='po:send/#{commandindicator}commands' style='text-decoration: none; color: green;'><b>#{commandindicator}commands</b></a> for a list of client commands.", -1
+                confetti.msg.bot "Type <a href='po:send/-commands' style='text-decoration: none; color: green;'><b>#{commandindicator}commands</b></a> for a list of client commands.", -1
 
             confetti.cache.store('lastuse', +sys.time()).save()
 

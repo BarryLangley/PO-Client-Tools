@@ -20,7 +20,7 @@ do ->
 
         confetti.msg.html html, chan
 
-    confetti.command 'friend', ['friend [name]', "Adds [name] to your friend list.", 'setmsg@friend [name]'], (data) ->
+    confetti.command 'friend', ['friend [name]', "Adds [name] to your friend list.", 'setmsg@friend name'], (data) ->
         name = confetti.player.name data
         data = data.toLowerCase()
         friends = confetti.cache.get 'friends'
@@ -42,7 +42,7 @@ do ->
 
         confetti.msg.bot "#{name} is now on your friends list!"
 
-    confetti.command 'unfriend', ['unfriend [name]', "Removes [name] from your friend list.", 'setmsg@unfriend [name]'], (data) ->
+    confetti.command 'unfriend', ['unfriend [name]', "Removes [name] from your friend list.", 'setmsg@unfriend name'], (data) ->
         data = data.toLowerCase()
         name = confetti.player.name data
         friends = confetti.cache.get 'friends'

@@ -38,10 +38,6 @@ module.exports = (grunt) ->
         'scripts' # Last
     ]
 
-    # Add files to build here. Keep them in order.
-    battleFiles = [
-    ]
-
     clientFiles = ("src/script/#{file}.coffee" for file in clientFiles)
 
     gruntConfig =

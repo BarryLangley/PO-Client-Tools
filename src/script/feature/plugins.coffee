@@ -70,7 +70,8 @@ do ->
 
             html = ""
             for plugin in plugins
-                html += "#{confetti.msg.bullet} <b>#{plugin.name}</b> (#{plugin.id}) <small>[<a href='po:send/#{confetti.cache.get('commandindicator')}removeplugin #{plugin.name}' style='text-decoration: none; color: black;'>remove</a>]</small>"
+                # Since '-' is always the command indicator, use it so the command remains clickable even if the user changes their command indicator (inside the send/setmsg protocol).
+                html += "#{confetti.msg.bullet} <b>#{plugin.name}</b> (#{plugin.id}) <small>[<a href='po:send/-removeplugin #{plugin.name}' style='text-decoration: none; color: black;'>remove</a>]</small>"
 
             confetti.msg.html html
 
@@ -92,16 +93,17 @@ do ->
             for plugin in json
                 addremove = ""
 
+                # Since '-' is always the command indicator, use it so the command remains clickable even if the user changes their command indicator (inside the send/setmsg protocol).
                 unless hasPlugin(plugin.id, plugins)
-                    addremove = "<small>[<a href='po:send/#{confetti.cache.get('commandindicator')}addplugin #{plugin.name}' style='text-decoration: none; color: black;'>add</a>]</small>"
+                    addremove = "<small>[<a href='po:send/-addplugin #{plugin.name}' style='text-decoration: none; color: black;'>add</a>]</small>"
                 else
-                    addremove = "<small>[<a href='po:send/#{confetti.cache.get('commandindicator')}removeplugin #{plugin.name}' style='text-decoration: none; color: black;'>remove</a>]</small>"
+                    addremove = "<small>[<a href='po:send/-removeplugin #{plugin.name}' style='text-decoration: none; color: black;'>remove</a>]</small>"
 
                 html += "#{confetti.msg.bullet} <b>#{plugin.name}</b> (#{plugin.id}) #{addremove}<br/>"
 
             confetti.msg.html html, chan
 
-    confetti.command 'addplugin', ['addplugin [plugin]', "Adds a plugin.", 'setmsg@addplugin [name]'], (data, chan) ->
+    confetti.command 'addplugin', ['addplugin [plugin]', "Adds a plugin.", 'setmsg@addplugin name'], (data, chan) ->
         plugins = confetti.cache.get 'plugins'
         name = data
         data = data.toLowerCase()
@@ -145,7 +147,7 @@ do ->
                 confetti.msg.bot "Plugin #{plugin.name} added!", chan
                 confetti.initPlugins plugin.id
 
-    confetti.command 'removeplugin', ['removeplugin [plugin]', "Removes a plugin.", 'setmsg@removeplugin [plugin]'], (data) ->
+    confetti.command 'removeplugin', ['removeplugin [plugin]', "Removes a plugin.", 'setmsg@removeplugin plugin'], (data) ->
         name = data
         data = data.toLowerCase()
         plugins = confetti.cache.get 'plugins'

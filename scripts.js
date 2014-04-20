@@ -28,7 +28,7 @@ if (typeof confetti !== 'object') {
 confetti.version = {
   release: 2,
   major: 0,
-  minor: 7
+  minor: 8
 };
 
 confetti.scriptUrl = 'https://raw.github.com/TheUnknownOne/PO-Client-Tools/master/';
@@ -606,7 +606,7 @@ confetti.cacheFile = 'confetti.json';
     }
     return confetti.msg.html(html, chan);
   });
-  confetti.command('block', ['block [name]', "Blocks a user by automatically ignoring them.", 'setmsg@block [name]'], function(data) {
+  confetti.command('block', ['block [name]', "Blocks a user by automatically ignoring them.", 'setmsg@block name'], function(data) {
     var blocked, id, name;
     if (data.length < 1 || data.length > 20) {
       confetti.msg.bot("Uhh, that's too long, I think!");
@@ -635,7 +635,7 @@ confetti.cacheFile = 'confetti.json';
     }
     return confetti.msg.bot("" + name + " is now blocked!");
   });
-  confetti.command('unblock', ['unblock [name]', "Unblocks a user.", 'setmsg@unblock [name]'], function(data) {
+  confetti.command('unblock', ['unblock [name]', "Unblocks a user.", 'setmsg@unblock name'], function(data) {
     var blocked, id, name;
     data = data.toLowerCase();
     name = confetti.player.name(data);
@@ -666,7 +666,7 @@ confetti.cacheFile = 'confetti.json';
 })();
 
 (function() {
-  return confetti.command('define', ['define [term]', 'Attempts to find a definition for the given term.', 'setmsg@define [term]'], function(data, chan) {
+  return confetti.command('define', ['define [term]', 'Attempts to find a definition for the given term.', 'setmsg@define term'], function(data, chan) {
     if (!data) {
       confetti.msg.bot("You need to give me a term!");
       return;
@@ -777,7 +777,7 @@ confetti.cacheFile = 'confetti.json';
     }
     return [mess, chan, dirty];
   });
-  return confetti.command('encool', ['encool [type]', 'Changes your encool type to (none, spaces, smallcaps, leet, reverse).', 'setmsg@encool [type]'], function(data) {
+  return confetti.command('encool', ['encool [type]', 'Changes your encool type to (none, spaces, smallcaps, leet, reverse).', 'setmsg@encool type'], function(data) {
     data = data.toLowerCase();
     if (!(data === 'none' || data === 'spaces' || data === 'smallcaps' || data === 'leet' || data === 'l33t' || data === 'reverse')) {
       confetti.msg.bot("That doesn't look right to me!");
@@ -816,7 +816,7 @@ confetti.cacheFile = 'confetti.json';
     }
     return confetti.msg.html(html, chan);
   });
-  confetti.command('friend', ['friend [name]', "Adds [name] to your friend list.", 'setmsg@friend [name]'], function(data) {
+  confetti.command('friend', ['friend [name]', "Adds [name] to your friend list.", 'setmsg@friend name'], function(data) {
     var friends, name;
     name = confetti.player.name(data);
     data = data.toLowerCase();
@@ -837,7 +837,7 @@ confetti.cacheFile = 'confetti.json';
     confetti.cache.store('friends', friends).save();
     return confetti.msg.bot("" + name + " is now on your friends list!");
   });
-  confetti.command('unfriend', ['unfriend [name]', "Removes [name] from your friend list.", 'setmsg@unfriend [name]'], function(data) {
+  confetti.command('unfriend', ['unfriend [name]', "Removes [name] from your friend list.", 'setmsg@unfriend name'], function(data) {
     var friends, name;
     data = data.toLowerCase();
     name = confetti.player.name(data);
@@ -999,7 +999,7 @@ confetti.cacheFile = 'confetti.json';
 })();
 
 (function() {
-  confetti.command('eval', ['eval [code]', "Evaluates a JavaScript Program.", 'setmsg@eval [code]'], function(data, chan) {
+  confetti.command('eval', ['eval [code]', "Evaluates a JavaScript Program.", 'setmsg@eval code'], function(data, chan) {
     var ex, res;
     try {
       res = eval(data);
@@ -1013,7 +1013,7 @@ confetti.cacheFile = 'confetti.json';
     }
   });
   confetti.command('evalp', 'eval');
-  confetti.command('imp', ['imp [name]', "Changes your name to [name]. If the name is deemed invalid, you will be kicked, so be careful!", 'setmsg@imp [name]'], function(data) {
+  confetti.command('imp', ['imp [name]', "Changes your name to [name]. If the name is deemed invalid, you will be kicked, so be careful!", 'setmsg@imp name'], function(data) {
     if (data.length < 1 || data.length > 20) {
       confetti.msg.bot("That name is too long or too short (max 20 characters)!");
       return;
@@ -1026,10 +1026,10 @@ confetti.cacheFile = 'confetti.json';
     return confetti.msg.bot("The coin landed " + (Math.random() > 0.5 ? 'heads' : 'tails') + "!");
   });
   confetti.alias('coin', 'flip');
-  confetti.command('html', ['html [code]', "Displays some HTML [code] (for testing purposes).", 'setmsg@html [code]'], function(data, chan) {
+  confetti.command('html', ['html [code]', "Displays some HTML [code] (for testing purposes).", 'setmsg@html code'], function(data, chan) {
     return confetti.msg.html(data, chan);
   });
-  confetti.command('chan', ['chan [name]', "Joins, jumps to, or creates a channel.", 'setmsg@chan [name]'], function(data) {
+  confetti.command('chan', ['chan [name]', "Joins, jumps to, or creates a channel.", 'setmsg@chan name'], function(data) {
     var channelNames, cid, cname, exists, name;
     name = data;
     data = data.toLowerCase();
@@ -1066,7 +1066,7 @@ confetti.cacheFile = 'confetti.json';
   confetti.alias('joinchan', 'chan');
   confetti.alias('channel', 'chan');
   confetti.alias('goto', 'chan');
-  confetti.command('info', ['info [name]', "Shows info for a given user. If you are a moderator, also opens a control panel for the player.", 'setmsg@info [name]'], function(data) {
+  confetti.command('info', ['info [name]', "Shows info for a given user. If you are a moderator, also opens a control panel for the player.", 'setmsg@info name'], function(data) {
     var auth, avatar, color, id, isMod, name;
     isMod = Client.ownAuth() > 0;
     id = Client.id(data);
@@ -1244,7 +1244,7 @@ confetti.cacheFile = 'confetti.json';
       html = "";
       for (_i = 0, _len = plugins.length; _i < _len; _i++) {
         plugin = plugins[_i];
-        html += "" + confetti.msg.bullet + " <b>" + plugin.name + "</b> (" + plugin.id + ") <small>[<a href='po:send/" + (confetti.cache.get('commandindicator')) + "removeplugin " + plugin.name + "' style='text-decoration: none; color: black;'>remove</a>]</small>";
+        html += "" + confetti.msg.bullet + " <b>" + plugin.name + "</b> (" + plugin.id + ") <small>[<a href='po:send/-removeplugin " + plugin.name + "' style='text-decoration: none; color: black;'>remove</a>]</small>";
       }
       confetti.msg.html(html);
     }
@@ -1268,16 +1268,16 @@ confetti.cacheFile = 'confetti.json';
         plugin = json[_j];
         addremove = "";
         if (!hasPlugin(plugin.id, plugins)) {
-          addremove = "<small>[<a href='po:send/" + (confetti.cache.get('commandindicator')) + "addplugin " + plugin.name + "' style='text-decoration: none; color: black;'>add</a>]</small>";
+          addremove = "<small>[<a href='po:send/-addplugin " + plugin.name + "' style='text-decoration: none; color: black;'>add</a>]</small>";
         } else {
-          addremove = "<small>[<a href='po:send/" + (confetti.cache.get('commandindicator')) + "removeplugin " + plugin.name + "' style='text-decoration: none; color: black;'>remove</a>]</small>";
+          addremove = "<small>[<a href='po:send/-removeplugin " + plugin.name + "' style='text-decoration: none; color: black;'>remove</a>]</small>";
         }
         html += "" + confetti.msg.bullet + " <b>" + plugin.name + "</b> (" + plugin.id + ") " + addremove + "<br/>";
       }
       return confetti.msg.html(html, chan);
     });
   });
-  confetti.command('addplugin', ['addplugin [plugin]', "Adds a plugin.", 'setmsg@addplugin [name]'], function(data, chan) {
+  confetti.command('addplugin', ['addplugin [plugin]', "Adds a plugin.", 'setmsg@addplugin name'], function(data, chan) {
     var name, plugins;
     plugins = confetti.cache.get('plugins');
     name = data;
@@ -1323,7 +1323,7 @@ confetti.cacheFile = 'confetti.json';
       });
     });
   });
-  confetti.command('removeplugin', ['removeplugin [plugin]', "Removes a plugin.", 'setmsg@removeplugin [plugin]'], function(data) {
+  confetti.command('removeplugin', ['removeplugin [plugin]', "Removes a plugin.", 'setmsg@removeplugin plugin'], function(data) {
     var name, plugin, plugins;
     name = data;
     data = data.toLowerCase();
@@ -1507,7 +1507,7 @@ confetti.cacheFile = 'confetti.json';
     confetti.cache.store('notifications', !confetti.cache.read('notifications')).save();
     return confetti.msg.bot("Notifications are now " + (confetti.cache.read('notifications') ? 'on' : 'off') + ".");
   });
-  confetti.command('botname', ['botname [name]', "Changes the bot's name to [name].", 'setmsg@botname [name]'], function(data) {
+  confetti.command('botname', ['botname [name]', "Changes the bot's name to [name].", 'setmsg@botname name'], function(data) {
     if (data.length > 25) {
       confetti.msg.bot("Uhh, that's too long, I think!");
       return;
@@ -1519,7 +1519,7 @@ confetti.cacheFile = 'confetti.json';
     confetti.cache.store('botname', data).save();
     return confetti.msg.bot("I'm now called " + data + "!");
   });
-  confetti.command('botcolor', ['botcolor [color]', "Changes the bot's color to [color].", 'setmsg@botcolor [color]'], function(data) {
+  confetti.command('botcolor', ['botcolor [color]', "Changes the bot's color to [color].", 'setmsg@botcolor color'], function(data) {
     data = data.toLowerCase();
     if (!sys.validColor(data)) {
       confetti.msg.bot("That doesn't look like a valid color to me!");
@@ -1532,7 +1532,7 @@ confetti.cacheFile = 'confetti.json';
     confetti.cache.store('botcolor', data).save();
     return confetti.msg.bot("My color is now " + data + "!");
   });
-  confetti.command('commandindicator', ['commandindicator [char]', "Changes your command indicator (to indicate usage of commands) to [char]. <b>-</b> will remain usable, in case you ever forget.", 'setmsg@commandindicator [char]'], function(data) {
+  confetti.command('commandindicator', ['commandindicator [char]', "Changes your command indicator (to indicate usage of commands) to [char]. <b>-</b> will remain usable, in case you ever forget.", 'setmsg@commandindicator char'], function(data) {
     data = data.toLowerCase();
     if (data.length !== 1) {
       confetti.msg.bot("Your command indicator has to be one character, nothing more, nothing less!");
@@ -1553,7 +1553,7 @@ confetti.cacheFile = 'confetti.json';
     var commandindicator;
     if (data.toLowerCase() !== 'sure') {
       commandindicator = confetti.cache.get('commandindicator');
-      confetti.msg.bot("<a href='po:send/" + commandindicator + "defaults sure' style='text-decoration: none; color: black;'>Are you sure that you want to reset your settings? There is no going back. Click this message to confirm (or type <small>" + commandindicator + "defaults sure</small>).</a>");
+      confetti.msg.bot("<a href='po:send/-defaults sure' style='text-decoration: none; color: black;'>Are you sure that you want to reset your settings? There is no going back. Click this message to confirm (or type <small>" + commandindicator + "defaults sure</small>).</a>");
       return;
     }
     confetti.cache.wipe();
@@ -1597,7 +1597,7 @@ confetti.cacheFile = 'confetti.json';
   });
   confetti.alias('tracking', 'tracked');
   confetti.alias('trackinglist', 'tracked');
-  confetti.command('track', ['track [alt]:[name]', "Adds [alt] as an alt of [name] to your tracking list.", 'setmsg@track [alt]:[name]'], function(data) {
+  confetti.command('track', ['track [alt]:[name]', "Adds [alt] as an alt of [name] to your tracking list.", 'setmsg@track alt:name'], function(data) {
     var alt, altName, name, parts, tracked;
     parts = data.split(':');
     if (parts[1] == null) {
@@ -1620,7 +1620,7 @@ confetti.cacheFile = 'confetti.json';
     confetti.cache.store('tracked', tracked).save();
     return confetti.msg.bot("" + altName + " is now on your tracking list as an alt of " + (confetti.player.name(name, false)) + "!");
   });
-  confetti.command('untrack', ['untrack [alt]', "Removes [alt] from your tracking list.", 'setmsg@untrack [alt]'], function(data) {
+  confetti.command('untrack', ['untrack [alt]', "Removes [alt] from your tracking list.", 'setmsg@untrack alt'], function(data) {
     var name, tracked;
     data = data.toLowerCase();
     name = confetti.player.name(data, false);
@@ -1654,7 +1654,7 @@ confetti.cacheFile = 'confetti.json';
 (function() {
   var clearDuplicateCommas;
   clearDuplicateCommas = /,,/g;
-  confetti.command('translate', ['translate [message]:[to language code]-[from language code]', "Translates a message from a language to another one. [from language code] is optional and might even be ignored, it's purely a hint (note the dash). Language codes are two letters, for example <b>en</b> (English). A full list is available <a href='http://en.wikipedia.org/wiki/List_of_ISO_639-1_codes#Partial_ISO_639_table'>here</a>.", 'setmsg@translate [message]:[to]-[from]'], function(data, chan) {
+  confetti.command('translate', ['translate [message]:[to language code]-[from language code]', "Translates a message from a language to another one. [from language code] is optional and might even be ignored, it's purely a hint (note the dash). Language codes are two letters, for example <b>en</b> (English). A full list is available <a href='http://en.wikipedia.org/wiki/List_of_ISO_639-1_codes#Partial_ISO_639_table'>here</a>.", 'setmsg@translate message:to-from'], function(data, chan) {
     var from, languageParts, message, parts, to, url;
     parts = data.split(':');
     message = parts[0];
@@ -1731,7 +1731,7 @@ confettiScript = {
     if (!confetti.initialized) {
       if ((confetti.cache.get('lastuse') + (5 * 24 * 60 * 60)) < (+sys.time())) {
         commandindicator = confetti.cache.get('commandindicator');
-        confetti.msg.bot("Type <a href='po:send/" + commandindicator + "commands' style='text-decoration: none; color: green;'><b>" + commandindicator + "commands</b></a> for a list of client commands.", -1);
+        confetti.msg.bot("Type <a href='po:send/-commands' style='text-decoration: none; color: green;'><b>" + commandindicator + "commands</b></a> for a list of client commands.", -1);
       }
       confetti.cache.store('lastuse', +sys.time()).save();
     }

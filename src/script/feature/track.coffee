@@ -31,7 +31,7 @@ do ->
     confetti.alias 'tracking', 'tracked'
     confetti.alias 'trackinglist', 'tracked'
 
-    confetti.command 'track', ['track [alt]:[name]', "Adds [alt] as an alt of [name] to your tracking list.", 'setmsg@track [alt]:[name]'], (data) ->
+    confetti.command 'track', ['track [alt]:[name]', "Adds [alt] as an alt of [name] to your tracking list.", 'setmsg@track alt:name'], (data) ->
         parts       = data.split ':'
         parts[1] = '' unless parts[1]?
 
@@ -56,7 +56,7 @@ do ->
 
         confetti.msg.bot "#{altName} is now on your tracking list as an alt of #{confetti.player.name(name, no)}!"
 
-    confetti.command 'untrack', ['untrack [alt]', "Removes [alt] from your tracking list.", 'setmsg@untrack [alt]'], (data) ->
+    confetti.command 'untrack', ['untrack [alt]', "Removes [alt] from your tracking list.", 'setmsg@untrack alt'], (data) ->
         data = data.toLowerCase()
         name = confetti.player.name(data, no)
         tracked = confetti.cache.get 'tracked'

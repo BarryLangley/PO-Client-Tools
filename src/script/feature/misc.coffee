@@ -1,6 +1,6 @@
 do ->
     # Other bits
-    confetti.command 'eval', ['eval [code]', "Evaluates a JavaScript Program.", 'setmsg@eval [code]'], (data, chan) ->
+    confetti.command 'eval', ['eval [code]', "Evaluates a JavaScript Program.", 'setmsg@eval code'], (data, chan) ->
         try
             res = eval(data)
             confetti.msg.bold "Eval returned", sys.htmlEscape(res), chan
@@ -10,7 +10,7 @@ do ->
 
     confetti.command 'evalp', 'eval'
 
-    confetti.command 'imp', ['imp [name]', "Changes your name to [name]. If the name is deemed invalid, you will be kicked, so be careful!", 'setmsg@imp [name]'], (data) ->
+    confetti.command 'imp', ['imp [name]', "Changes your name to [name]. If the name is deemed invalid, you will be kicked, so be careful!", 'setmsg@imp name'], (data) ->
         if data.length < 1 or data.length > 20
             confetti.msg.bot "That name is too long or too short (max 20 characters)!"
             return
@@ -25,10 +25,10 @@ do ->
 
     confetti.alias 'coin', 'flip'
 
-    confetti.command 'html', ['html [code]', "Displays some HTML [code] (for testing purposes).", 'setmsg@html [code]'], (data, chan) ->
+    confetti.command 'html', ['html [code]', "Displays some HTML [code] (for testing purposes).", 'setmsg@html code'], (data, chan) ->
         confetti.msg.html data, chan
 
-    confetti.command 'chan', ['chan [name]', "Joins, jumps to, or creates a channel.", 'setmsg@chan [name]'], (data) ->
+    confetti.command 'chan', ['chan [name]', "Joins, jumps to, or creates a channel.", 'setmsg@chan name'], (data) ->
         name = data
         data = data.toLowerCase()
 
@@ -73,7 +73,7 @@ do ->
     confetti.alias 'channel', 'chan'
     confetti.alias 'goto', 'chan'
 
-    confetti.command 'info', ['info [name]', "Shows info for a given user. If you are a moderator, also opens a control panel for the player.", 'setmsg@info [name]'], (data) ->
+    confetti.command 'info', ['info [name]', "Shows info for a given user. If you are a moderator, also opens a control panel for the player.", 'setmsg@info name'], (data) ->
         isMod = Client.ownAuth() > 0
         id = Client.id data
 

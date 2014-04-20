@@ -18,7 +18,7 @@ do ->
 
         confetti.msg.html html, chan
 
-    confetti.command 'block', ['block [name]', "Blocks a user by automatically ignoring them.", 'setmsg@block [name]'], (data) ->
+    confetti.command 'block', ['block [name]', "Blocks a user by automatically ignoring them.", 'setmsg@block name'], (data) ->
         if data.length < 1 or data.length > 20
             confetti.msg.bot "Uhh, that's too long, I think!"
             return
@@ -47,7 +47,7 @@ do ->
 
         confetti.msg.bot "#{name} is now blocked!"
 
-    confetti.command 'unblock', ['unblock [name]', "Unblocks a user.", 'setmsg@unblock [name]'], (data) ->
+    confetti.command 'unblock', ['unblock [name]', "Unblocks a user.", 'setmsg@unblock name'], (data) ->
         data = data.toLowerCase()
         name = confetti.player.name data
         blocked = confetti.cache.get 'blocked'

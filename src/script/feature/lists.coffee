@@ -7,6 +7,8 @@ do ->
         if command
             parts = command.info.complete.split '@'
             indicator = confetti.cache.get 'commandindicator'
+
+            # Since '-' is always the command indicator, use it so the command remains clickable even if the user changes their command indicator (inside the send/setmsg protocol).
             complete = "<a href='po:#{parts[0]}/#{indicator}#{parts[1]}' style='text-decoration: none; color: green;'>#{indicator}#{command.info.usage}</a>"
 
             confetti.msg.html "&bull; #{complete}: #{command.info.desc}", chan
