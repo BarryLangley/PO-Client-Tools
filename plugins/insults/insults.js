@@ -40,10 +40,13 @@
   insultsLoaded = false;
   insultList = [];
   updateInsults = function(cb) {
-    return sys.webCall('https://raw.github.com/TheUnknownOne/Insults/master/src/insults.json', function(req) {
+    return sys.webCall('https://raw.github.com/TheUnknownOne/Insults/master/src/insults.txt', function(req) {
       var ex, insult, insults;
       try {
-        insults = JSON.parse(req);
+        insults = req.split('\n');
+        if (insults[insults.length - 1] === '') {
+          insults = insults.slice(0, -1);
+        }
       } catch (_error) {
         ex = _error;
         confetti.msg.bot("Failed to load insults, check your internet connection.");

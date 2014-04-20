@@ -35,9 +35,11 @@ do ->
     insultList = []
 
     updateInsults = (cb) ->
-        sys.webCall 'https://raw.github.com/TheUnknownOne/Insults/master/src/insults.json', (req) ->
+        sys.webCall 'https://raw.github.com/TheUnknownOne/Insults/master/src/insults.txt', (req) ->
             try
-                insults = JSON.parse req
+                insults = req.split '\n'
+                if insults[insults.length - 1] is ''
+                    insults = insults.slice(0, -1)
             catch ex
                 confetti.msg.bot "Failed to load insults, check your internet connection."
                 return
