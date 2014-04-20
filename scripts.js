@@ -1188,8 +1188,11 @@ confetti.cacheFile = 'confetti.json';
   hasPlugin = function(id, plugins) {
     return findPlugin(id, plugins) !== null;
   };
-  updatePlugins = function() {
+  updatePlugins = function(verbose) {
     var plugins;
+    if (verbose == null) {
+      verbose = false;
+    }
     plugins = confetti.cache.get('plugins');
     return sys.webCall(confetti.pluginsUrl + 'listing.json', function(resp) {
       var ex, json, plug, plugin, readable, toUpdate, _i, _j, _len, _len1, _results;
@@ -1197,7 +1200,9 @@ confetti.cacheFile = 'confetti.json';
         json = JSON.parse(resp);
       } catch (_error) {
         ex = _error;
-        confetti.msg.bot("Couldn't load plugin listing -- check your internet connection.");
+        if (verbose) {
+          confetti.msg.bot("Couldn't load plugin listing -- check your internet connection.");
+        }
         return;
       }
       toUpdate = [];
@@ -1242,7 +1247,9 @@ confetti.cacheFile = 'confetti.json';
         }
         return _results;
       } else {
-        return confetti.msg.bot("All plugins up to date.");
+        if (verbose) {
+          return confetti.msg.bot("All plugins up to date.");
+        }
       }
     });
   };
@@ -1366,7 +1373,7 @@ confetti.cacheFile = 'confetti.json';
       return;
     }
     confetti.msg.bot("Updating plugins...");
-    return updatePlugins();
+    return updatePlugins(true);
   });
 })();
 

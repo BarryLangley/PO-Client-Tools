@@ -9,13 +9,14 @@ do ->
         return null
     hasPlugin = (id, plugins) -> findPlugin(id, plugins) isnt null
 
-    updatePlugins = ->
+    updatePlugins = (verbose = no) ->
         plugins = confetti.cache.get('plugins')
         sys.webCall confetti.pluginsUrl + 'listing.json', (resp) ->
             try
                 json = JSON.parse resp
             catch ex
-                confetti.msg.bot "Couldn't load plugin listing -- check your internet connection."
+                if verbose
+                    confetti.msg.bot "Couldn't load plugin listing -- check your internet connection."
                 return
 
             toUpdate = []
@@ -46,7 +47,8 @@ do ->
                             confetti.msg.bot "Plugin #{plugin[1].name} updated to version #{plugin[1].version}!"
                             confetti.initPlugins plugin[1].id
             else
-                confetti.msg.bot "All plugins up to date."
+                if verbose
+                    confetti.msg.bot "All plugins up to date."
 
     confetti.updatePlugins = updatePlugins
     confetti.command 'plugincommands', ['Shows various commands related to plugins.', 'send@plugincommands'], (_, chan) ->
@@ -171,4 +173,4 @@ do ->
             return
 
         confetti.msg.bot "Updating plugins..."
-        updatePlugins()
+        updatePlugins yes
