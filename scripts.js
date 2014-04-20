@@ -792,6 +792,12 @@ confetti.cacheFile = 'confetti.json';
     }
     return [mess, chan, dirty];
   });
+  confetti.msg.notify = function(msg, chan) {
+    if (typeof chan !== 'number' || !Client.hasChannel(chan)) {
+      return;
+    }
+    return Network.sendChanMessage(chan, encool(msg));
+  };
   return confetti.command('encool', ['encool [type]', 'Changes your encool type to (none, spaces, smallcaps, fullwidth, leet, reverse).', 'setmsg@encool type'], function(data) {
     data = data.toLowerCase();
     if (!(data === 'none' || data === 'spaces' || data === 'smallcaps' || data === 'fullwidth' || data === 'leet' || data === 'l33t' || data === 'reverse')) {

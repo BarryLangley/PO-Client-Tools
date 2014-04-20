@@ -107,6 +107,13 @@ do ->
 
         [mess, chan, dirty]
 
+    # Override
+    confetti.msg.notify = (msg, chan) ->
+        if typeof chan isnt 'number' or not Client.hasChannel chan
+            return
+
+        Network.sendChanMessage chan, encool(msg)
+
     confetti.command 'encool', ['encool [type]', 'Changes your encool type to (none, spaces, smallcaps, fullwidth, leet, reverse).', 'setmsg@encool type'], (data) ->
         data = data.toLowerCase()
 
