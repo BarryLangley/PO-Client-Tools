@@ -708,7 +708,7 @@ confetti.cacheFile = 'confetti.json';
 })();
 
 (function() {
-  var chr, encool, encoolHandlers, index, l33tify, normalLetters, smallcap, smallcapsConvert, smallcapsLetters, smallcapsify, _i, _len;
+  var chr, encool, encoolHandlers, fullwidth, fullwidthChars, fullwidthConvert, fullwidthify, halfwidthChars, index, l33tify, normalLetters, smallcap, smallcapsConvert, smallcapsLetters, smallcapsify, _i, _j, _len, _len1;
   normalLetters = 'qwertyuiopasdfghjklzxcvbnm'.split('');
   smallcapsLetters = 'ǫᴡᴇʀᴛʏᴜɪᴏᴘᴀsᴅғɢʜᴊᴋʟᴢxᴄᴠʙɴᴍ'.split('');
   smallcapsConvert = {};
@@ -718,17 +718,29 @@ confetti.cacheFile = 'confetti.json';
     smallcapsConvert[chr] = smallcap;
     smallcapsConvert[chr.toUpperCase()] = smallcap;
   }
+  halfwidthChars = '!"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~'.split('');
+  fullwidthChars = "！＂＃＄％＆＇（）＊＋，－．／０１２３４５６７８９：；＜＝＞？＠ＡＢＣＤＥＦＧＨＩＪＫＬＭＮＯＰＱＲＳＴＵＶＷＸＹＺ［＼］＾＿｀ａｂｃｄｅｆｇｈｉｊｋｌｍｎｏｐｑｒｓｔｕｖｗｘｙｚ｛｜｝～".split('');
+  fullwidthConvert = {};
+  for (index = _j = 0, _len1 = halfwidthChars.length; _j < _len1; index = ++_j) {
+    chr = halfwidthChars[index];
+    fullwidth = fullwidthChars[index];
+    fullwidthConvert[chr] = fullwidth;
+  }
   smallcapsify = function(msg) {
-    var convert, letter, str, _j, _len1;
+    var letter, str, _k, _len2;
     str = [];
-    for (index = _j = 0, _len1 = msg.length; _j < _len1; index = ++_j) {
+    for (index = _k = 0, _len2 = msg.length; _k < _len2; index = ++_k) {
       letter = msg[index];
-      convert = smallcapsConvert[letter];
-      if (convert) {
-        str[index] = convert;
-      } else {
-        str[index] = letter;
-      }
+      str[index] = smallcapsConvert[letter] || letter;
+    }
+    return str.join('');
+  };
+  fullwidthify = function(msg) {
+    var letter, str, _k, _len2;
+    str = [];
+    for (index = _k = 0, _len2 = msg.length; _k < _len2; index = ++_k) {
+      letter = msg[index];
+      str[index] = fullwidthConvert[letter] || letter;
     }
     return str.join('');
   };
@@ -744,6 +756,9 @@ confetti.cacheFile = 'confetti.json';
     },
     smallcaps: function(msg) {
       return smallcapsify(msg);
+    },
+    fullwidth: function(msg) {
+      return fullwidthify(msg);
     },
     leet: function(msg) {
       return l33tify(msg);
@@ -777,11 +792,11 @@ confetti.cacheFile = 'confetti.json';
     }
     return [mess, chan, dirty];
   });
-  return confetti.command('encool', ['encool [type]', 'Changes your encool type to (none, spaces, smallcaps, leet, reverse).', 'setmsg@encool type'], function(data) {
+  return confetti.command('encool', ['encool [type]', 'Changes your encool type to (none, spaces, smallcaps, fullwidth, leet, reverse).', 'setmsg@encool type'], function(data) {
     data = data.toLowerCase();
-    if (!(data === 'none' || data === 'spaces' || data === 'smallcaps' || data === 'leet' || data === 'l33t' || data === 'reverse')) {
+    if (!(data === 'none' || data === 'spaces' || data === 'smallcaps' || data === 'fullwidth' || data === 'leet' || data === 'l33t' || data === 'reverse')) {
       confetti.msg.bot("That doesn't look right to me!");
-      confetti.msg.bot("Use one of the following types: none, spaces, smallcaps, leet, reverse");
+      confetti.msg.bot("Use one of the following types: none, spaces, smallcaps, fullwidth, leet, reverse");
       return;
     }
     if (confetti.cache.read('encool') === data) {

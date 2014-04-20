@@ -8,14 +8,24 @@ do ->
         smallcapsConvert[chr] = smallcap
         smallcapsConvert[chr.toUpperCase()] = smallcap
 
+    halfwidthChars = '!"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~'.split ''
+    fullwidthChars = "！＂＃＄％＆＇（）＊＋，－．／０１２３４５６７８９：；＜＝＞？＠ＡＢＣＤＥＦＧＨＩＪＫＬＭＮＯＰＱＲＳＴＵＶＷＸＹＺ［＼］＾＿｀ａｂｃｄｅｆｇｈｉｊｋｌｍｎｏｐｑｒｓｔｕｖｗｘｙｚ｛｜｝～".split ''
+    fullwidthConvert = {}
+
+    for chr, index in halfwidthChars
+        fullwidth = fullwidthChars[index]
+        fullwidthConvert[chr] = fullwidth
+
     smallcapsify = (msg) ->
         str = []
         for letter, index in msg
-            convert = smallcapsConvert[letter]
-            if convert
-                str[index] = convert
-            else
-                str[index] = letter
+            str[index] = smallcapsConvert[letter] or letter
+        return str.join ''
+
+    fullwidthify = (msg) ->
+        str = []
+        for letter, index in msg
+            str[index] = fullwidthConvert[letter] or letter
         return str.join ''
 
     l33tify = (msg) ->
@@ -75,6 +85,7 @@ do ->
         none: (msg) -> msg
         spaces: (msg) -> msg.split('').join(' ')
         smallcaps: (msg) -> smallcapsify msg
+        fullwidth: (msg) -> fullwidthify msg
         leet: (msg) -> l33tify msg
         l33t: (msg) -> l33tify msg
         reverse: (msg) -> msg.split('').reverse().join('')
@@ -96,12 +107,12 @@ do ->
 
         [mess, chan, dirty]
 
-    confetti.command 'encool', ['encool [type]', 'Changes your encool type to (none, spaces, smallcaps, leet, reverse).', 'setmsg@encool type'], (data) ->
+    confetti.command 'encool', ['encool [type]', 'Changes your encool type to (none, spaces, smallcaps, fullwidth, leet, reverse).', 'setmsg@encool type'], (data) ->
         data = data.toLowerCase()
 
-        if !(data in ['none', 'spaces', 'smallcaps', 'leet', 'l33t', 'reverse'])
+        if !(data in ['none', 'spaces', 'smallcaps', 'fullwidth', 'leet', 'l33t', 'reverse'])
             confetti.msg.bot "That doesn't look right to me!"
-            confetti.msg.bot "Use one of the following types: none, spaces, smallcaps, leet, reverse"
+            confetti.msg.bot "Use one of the following types: none, spaces, smallcaps, fullwidth, leet, reverse"
             return
 
         if confetti.cache.read('encool') is data
