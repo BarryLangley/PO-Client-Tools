@@ -88,8 +88,10 @@ do ->
         confetti.commandList.cmd 'emojis'
 
     confetti.hook 'manipulateChanPlayerMessage', (from, fromId, message, playerMessage, [color, auth, authSymbol], chan, html, dirty) ->
-        escapedMessage = sys.htmlEscape(playerMessage)
-        escapedMessage = Client.channel(chan).addChannelLinks(escapedMessage)
+        escapedMessage = playerMessage
+        unless html
+            escapedMessage = sys.htmlEscape(escapedMessage)
+            escapedMessage = Client.channel(chan).addChannelLinks(escapedMessage)
 
         newMessage = parseEmoji(escapedMessage)
         if newMessage isnt escapedMessage

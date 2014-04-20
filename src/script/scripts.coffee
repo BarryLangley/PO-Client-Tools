@@ -140,7 +140,7 @@ confettiScript =
                     fromId = id
                     break
 
-        playerMessage = originalMessage.substring(originalMessage.indexOf(":") + 2)
+        playerMessage = originalMessage.substring(originalMessage.indexOf(":") + 1).trim()
 
         # If it's HTML, remove the first </b>, </i>, and </font>
         if html
@@ -199,6 +199,7 @@ confettiScript =
 
             if confetti.debug
                 print message
+                print playerMessage
                 print finishedMessage
             else
                 Client.printChannelMessage finishedMessage, chan, yes

@@ -1815,7 +1815,7 @@ confettiScript = {
         }
       }
     }
-    playerMessage = originalMessage.substring(originalMessage.indexOf(":") + 2);
+    playerMessage = originalMessage.substring(originalMessage.indexOf(":") + 1).trim();
     if (html) {
       playerMessage = playerMessage.replace('</b>', '').replace('</i>', '').replace('</font>', '');
     }
@@ -1868,6 +1868,7 @@ confettiScript = {
       confetti.ignoreNextChanMessage = true;
       if (confetti.debug) {
         print(message);
+        print(playerMessage);
         return print(finishedMessage);
       } else {
         return Client.printChannelMessage(finishedMessage, chan, true);

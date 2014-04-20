@@ -92,8 +92,11 @@
   confetti.hook('manipulateChanPlayerMessage', function(from, fromId, message, playerMessage, _arg, chan, html, dirty) {
     var auth, authSymbol, color, escapedMessage, newMessage;
     color = _arg[0], auth = _arg[1], authSymbol = _arg[2];
-    escapedMessage = sys.htmlEscape(playerMessage);
-    escapedMessage = Client.channel(chan).addChannelLinks(escapedMessage);
+    escapedMessage = playerMessage;
+    if (!html) {
+      escapedMessage = sys.htmlEscape(escapedMessage);
+      escapedMessage = Client.channel(chan).addChannelLinks(escapedMessage);
+    }
     newMessage = parseEmoji(escapedMessage);
     if (newMessage !== escapedMessage) {
       playerMessage = newMessage;
