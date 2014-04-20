@@ -196,4 +196,9 @@ confettiScript =
 
             sys.stopEvent()
             confetti.ignoreNextChanMessage = yes
-            Client.printChannelMessage finishedMessage, chan, yes
+
+            if confetti.debug
+                print message
+                print finishedMessage
+            else
+                Client.printChannelMessage finishedMessage, chan, yes

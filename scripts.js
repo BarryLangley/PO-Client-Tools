@@ -17,7 +17,8 @@ if (typeof confetti !== 'object') {
     },
     players: {},
     ignoreNextChanMessage: false,
-    loginTime: 0
+    loginTime: 0,
+    debug: false
   };
   Network.playerLogin.connect(function() {
     return confetti.loginTime = +sys.time();
@@ -1865,7 +1866,12 @@ confettiScript = {
       finishedMessage = "<font color='" + color + "'><timestamp/>" + authSymbol[0] + "<b>" + from + ":" + authSymbol[1] + "</b></font> " + playerMessage;
       sys.stopEvent();
       confetti.ignoreNextChanMessage = true;
-      return Client.printChannelMessage(finishedMessage, chan, true);
+      if (confetti.debug) {
+        print(message);
+        return print(finishedMessage);
+      } else {
+        return Client.printChannelMessage(finishedMessage, chan, true);
+      }
     }
   }
 };

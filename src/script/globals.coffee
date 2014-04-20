@@ -14,6 +14,7 @@ if typeof confetti isnt 'object'
         players: {}
         ignoreNextChanMessage: no
         loginTime: 0
+        debug: no
 
     Network.playerLogin.connect ->
         confetti.loginTime = +sys.time()
