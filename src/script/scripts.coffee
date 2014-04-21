@@ -1,3 +1,6 @@
+if confetti.oldVersion
+    confetti.versionCheck(confetti.version, confetti.oldVersion)
+
 # To indicate the script was successfully reloaded, print a simple message.
 # This is false when the script loads for the first time, which is why you don't see this message if you just log in.
 if confetti.initialized and not confetti.silentReload

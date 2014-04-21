@@ -21,10 +21,11 @@ do ->
         write(confetti.dataDir + file, data)
     deleteLocal = (file) ->
         sys.deleteFile confetti.dataDir + file
-    reloadScript = (verbose = no) ->
+    reloadScript = (verbose = no, oldVersion) ->
         file = read(sys.scriptsFolder + "scripts.js")
         if file
             confetti.silentReload = !verbose
+            confetti.oldVersion = oldVersion
             sys.unsetAllTimers()
             sys.changeScript file
 

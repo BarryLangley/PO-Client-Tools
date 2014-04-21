@@ -201,7 +201,7 @@ confetti.cacheFile = 'confetti.json';
   deleteLocal = function(file) {
     return sys.deleteFile(confetti.dataDir + file);
   };
-  reloadScript = function(verbose) {
+  reloadScript = function(verbose, oldVersion) {
     var file;
     if (verbose == null) {
       verbose = false;
@@ -209,6 +209,7 @@ confetti.cacheFile = 'confetti.json';
     file = read(sys.scriptsFolder + "scripts.js");
     if (file) {
       confetti.silentReload = !verbose;
+      confetti.oldVersion = oldVersion;
       sys.unsetAllTimers();
       return sys.changeScript(file);
     }
@@ -1437,7 +1438,18 @@ confetti.cacheFile = 'confetti.json';
 })();
 
 (function() {
-  var autoUpdate, differentVersion, updateScript, versionFormat;
+  var autoUpdate, changelog, differentVersion, updateScript, versionFormat;
+  changelog = {
+    '2.0.0': 'Initial version of Confetti. Features encool, player blocking, friends, alias tracking, auto reconnect, plugins, and more.',
+    '2.0.1': 'Improved news.',
+    '2.0.2': 'Various usability improvements.',
+    '2.0.3': 'Pokedex plugin, automatic updating.',
+    '2.0.4': 'AoC Taunts plugin.',
+    '2.0.5': 'Bug fixes for tracking and reconnect.',
+    '2.0.6': 'More reconnect fixes, news and define improvements, removed dictionary.',
+    '2.0.7': 'Emoji plugin.',
+    '2.0.8': 'Plugin auto-updating and versions.'
+  };
   autoUpdate = function() {
     var now;
     if (confetti.cache.get('autoupdate') === false) {
@@ -1484,18 +1496,24 @@ confetti.cacheFile = 'confetti.json';
         return;
       }
       confetti.io.write(sys.scriptsFolder + 'scripts.js', file);
-      confetti.io.reloadScript(true);
-      return sys.setTimer(function() {
-        if (differentVersion(oldVersion, confetti.version)) {
-          return confetti.msg.bot("Script updated to version " + (versionFormat(confetti.version)) + "!");
-        } else {
-          return confetti.msg.bot("Script updated!");
-        }
-      }, 100, false);
+      return confetti.io.reloadScript(true, oldVersion);
     });
   };
   sys.setTimer(autoUpdate, 15 * 1000, false);
   sys.setTimer(autoUpdate, 10 * 60 * 1000, true);
+  confetti.versionCheck = function(newVersion, oldVersion) {
+    var vers;
+    if (differentVersion(newVersion, oldVersion)) {
+      vers = versionFormat(newVersion);
+      confetti.msg.bot("Script updated to version " + vers + "!");
+      if (changelog[vers]) {
+        return confetti.msg.bot("What's new: " + changelog[vers]);
+      }
+    } else {
+      return confetti.msg.bot("Script updated!");
+    }
+  };
+  confetti.changelog = changelog;
   confetti.autoUpdate = autoUpdate;
   confetti.updateScript = updateScript;
   confetti.hook('initCache', function() {
@@ -1508,6 +1526,7 @@ confetti.cacheFile = 'confetti.json';
     header('Script Commands', 5, chan);
     cmd('updatescript', chan);
     cmd('autoupdate', chan);
+    cmd('changelog', chan);
     cmd('version', chan);
     confetti.callHooks('commands:script');
     return border(true, chan);
@@ -1525,8 +1544,22 @@ confetti.cacheFile = 'confetti.json';
     confetti.cache.store('autoupdate', !confetti.cache.read('autoupdate')).save();
     return confetti.msg.bot("Automatic updates are now " + (confetti.cache.read('autoupdate') ? 'enabled' : 'disabled') + ".");
   });
-  return confetti.command('version', ["Shows the script's version.", 'send@version'], function() {
-    return confetti.msg.bot("Your copy of Confetti is currently on version " + (versionFormat(confetti.version)) + ".");
+  confetti.command('version', ["Shows the script's version.", 'send@version'], function() {
+    var vers;
+    vers = versionFormat(confetti.version);
+    confetti.msg.bot("Your copy of Confetti is currently on version " + vers + ".");
+    if (changelog[vers]) {
+      return confetti.msg.bot("What's new: " + changelog[vers]);
+    }
+  });
+  return confetti.command('changelog', ["Shows a changelog containing the major changes in each version.", 'send@changelog'], function() {
+    var msg, ver, _results;
+    _results = [];
+    for (ver in changelog) {
+      msg = changelog[ver];
+      _results.push(confetti.msg.bot("" + ver + ": " + msg));
+    }
+    return _results;
   });
 })();
 
@@ -1714,6 +1747,10 @@ confetti.cacheFile = 'confetti.json';
   confetti.alias('trans', 'translate');
   return confetti.alias('tr', 'translate');
 })();
+
+if (confetti.oldVersion) {
+  confetti.versionCheck(confetti.version, confetti.oldVersion);
+}
 
 if (confetti.initialized && !confetti.silentReload) {
   print("Script Check: OK");
