@@ -31,9 +31,9 @@ confetti.version = {
   minor: 8
 };
 
-confetti.scriptUrl = 'https://raw.github.com/TheUnknownOne/PO-Client-Tools/master/';
+confetti.scriptUrl = 'https://raw.githubusercontent.com/TheUnknownOne/PO-Client-Tools/master/';
 
-confetti.pluginsUrl = 'https://raw.github.com/TheUnknownOne/PO-Client-Tools/master/plugins/';
+confetti.pluginsUrl = 'https://raw.githubusercontent.com/TheUnknownOne/PO-Client-Tools/master/plugins/';
 
 confetti.dataDir = sys.scriptsFolder;
 

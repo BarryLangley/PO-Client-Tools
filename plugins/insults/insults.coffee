@@ -35,7 +35,7 @@ do ->
     insultList = []
 
     updateInsults = (cb) ->
-        sys.webCall 'https://raw.github.com/TheUnknownOne/Insults/master/src/insults.txt', (req) ->
+        sys.webCall 'https://raw.githubusercontent.com/TheUnknownOne/Insults/master/src/insults.txt', (req) ->
             try
                 insults = req.split '\n'
                 if insults[insults.length - 1] is ''
@@ -47,9 +47,10 @@ do ->
             unless confetti.cache.get('longinsults') is yes
                 insults = (insult for insult in insults when insult.length < 400)
             insultList = insults
+            insultsLoaded = yes
             cb() if cb?
 
-    getInsult = ->
+    getInsult = (target) ->
         return confetti.util.random(insultList)
             .replace(/\{name\}/g, target.toLowerCase())
             .replace(/\{Name\}/g, target)
@@ -64,14 +65,13 @@ do ->
         # If insults aren't loaded, load the list async
         unless insultsLoaded
             updateInsults ->
-                insultsLoaded = yes
                 insult(data, chan)
             return yes
 
-        insult = getInsult()
         target = confetti.player.name(data).trim()
+        msg = getInsult(target)
 
-        confetti.msg.notify insult, chan
+        confetti.msg.notify msg, chan
         return yes
 
     insultp = (data, chan) ->
@@ -82,14 +82,16 @@ do ->
         # If insults aren't loaded, load the list async
         unless insultsLoaded
             updateInsults ->
-                insultsLoaded = yes
                 insultp(data, chan)
             return yes
 
-        insult = getInsult()
         target = confetti.player.name(data).trim()
-        print insult
+        msg = getInsult(target)
+
+        print msg
         return yes
+
+    confetti.updateInsults = updateInsults
 
     confetti.command 'insult', ['insult [name]', 'Insults the given target for the greater good of mankind.', 'setmsg@insult [name]'], insult
     confetti.command 'insultp', ['insultp [name]', 'Like insult, but prints the insult instead of sending it.', 'setmsg@insultp [name]'], insultp

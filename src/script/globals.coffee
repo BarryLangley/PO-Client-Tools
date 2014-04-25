@@ -25,7 +25,7 @@ confetti.version =
     minor: 8
 
 # TODO: A command to change this
-confetti.scriptUrl  = 'https://raw.github.com/TheUnknownOne/PO-Client-Tools/master/'
-confetti.pluginsUrl = 'https://raw.github.com/TheUnknownOne/PO-Client-Tools/master/plugins/'
+confetti.scriptUrl  = 'https://raw.githubusercontent.com/TheUnknownOne/PO-Client-Tools/master/'
+confetti.pluginsUrl = 'https://raw.githubusercontent.com/TheUnknownOne/PO-Client-Tools/master/plugins/'
 confetti.dataDir    = sys.scriptsFolder
 confetti.cacheFile  = 'confetti.json'

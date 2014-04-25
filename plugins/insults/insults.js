@@ -40,7 +40,7 @@
   insultsLoaded = false;
   insultList = [];
   updateInsults = function(cb) {
-    return sys.webCall('https://raw.github.com/TheUnknownOne/Insults/master/src/insults.txt', function(req) {
+    return sys.webCall('https://raw.githubusercontent.com/TheUnknownOne/Insults/master/src/insults.txt', function(req) {
       var ex, insult, insults;
       try {
         insults = req.split('\n');
@@ -66,50 +66,50 @@
         })();
       }
       insultList = insults;
+      insultsLoaded = true;
       if (cb != null) {
         return cb();
       }
     });
   };
-  getInsult = function() {
+  getInsult = function(target) {
     return confetti.util.random(insultList).replace(/\{name\}/g, target.toLowerCase()).replace(/\{Name\}/g, target).replace(/\{NAME\}/g, target.toUpperCase());
   };
   insult = function(data, chan) {
-    var target;
+    var msg, target;
     if (data.length === 0) {
       confetti.msg.bot("Specify a target!");
       return;
     }
     if (!insultsLoaded) {
       updateInsults(function() {
-        insultsLoaded = true;
         return insult(data, chan);
       });
       return true;
     }
-    insult = getInsult();
     target = confetti.player.name(data).trim();
-    confetti.msg.notify(insult, chan);
+    msg = getInsult(target);
+    confetti.msg.notify(msg, chan);
     return true;
   };
   insultp = function(data, chan) {
-    var target;
+    var msg, target;
     if (data.length === 0) {
       confetti.msg.bot("Specify a target!");
       return;
     }
     if (!insultsLoaded) {
       updateInsults(function() {
-        insultsLoaded = true;
         return insultp(data, chan);
       });
       return true;
     }
-    insult = getInsult();
     target = confetti.player.name(data).trim();
-    print(insult);
+    msg = getInsult(target);
+    print(msg);
     return true;
   };
+  confetti.updateInsults = updateInsults;
   confetti.command('insult', ['insult [name]', 'Insults the given target for the greater good of mankind.', 'setmsg@insult [name]'], insult);
   confetti.command('insultp', ['insultp [name]', 'Like insult, but prints the insult instead of sending it.', 'setmsg@insultp [name]'], insultp);
   confetti.command('intellisult', ['intellisult [name]', 'Insults the given target for the greater good of mankind, with intelligence.', 'setmsg@intellisult [name]'], function(data, chan) {
