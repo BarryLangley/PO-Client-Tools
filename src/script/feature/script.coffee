@@ -45,6 +45,8 @@ do ->
 
             confetti.io.write sys.scriptsFolder + 'scripts.js', file
             confetti.io.reloadScript yes, oldVersion
+            if confetti.oldVersion
+                confetti.versionCheck(confetti.version, confetti.oldVersion)
 
     # Check in 15 seconds (in case the player often relogs, it will never have a chance to update), and every 10m afterwards.
     # This timer is pretty painless, so it could be less.

@@ -1496,7 +1496,10 @@ confetti.cacheFile = 'confetti.json';
         return;
       }
       confetti.io.write(sys.scriptsFolder + 'scripts.js', file);
-      return confetti.io.reloadScript(true, oldVersion);
+      confetti.io.reloadScript(true, oldVersion);
+      if (confetti.oldVersion) {
+        return confetti.versionCheck(confetti.version, confetti.oldVersion);
+      }
     });
   };
   sys.setTimer(autoUpdate, 15 * 1000, false);
@@ -1747,10 +1750,6 @@ confetti.cacheFile = 'confetti.json';
   confetti.alias('trans', 'translate');
   return confetti.alias('tr', 'translate');
 })();
-
-if (confetti.oldVersion) {
-  confetti.versionCheck(confetti.version, confetti.oldVersion);
-}
 
 if (confetti.initialized && !confetti.silentReload) {
   print("Script Check: OK");
