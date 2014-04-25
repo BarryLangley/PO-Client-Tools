@@ -9,6 +9,7 @@ do ->
         '2.0.6': 'More reconnect fixes, news and define improvements, removed dictionary.'
         '2.0.7': 'Emoji plugin.'
         '2.0.8': 'Plugin auto-updating and versions.'
+        '2.0.9': 'Changelog, usability improvements, fullwidth encool, updated script urls.'
 
     autoUpdate = ->
         return if confetti.cache.get('autoupdate') is no

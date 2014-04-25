@@ -28,7 +28,7 @@ if (typeof confetti !== 'object') {
 confetti.version = {
   release: 2,
   major: 0,
-  minor: 8
+  minor: 9
 };
 
 confetti.scriptUrl = 'https://raw.githubusercontent.com/TheUnknownOne/PO-Client-Tools/master/';
@@ -1448,7 +1448,8 @@ confetti.cacheFile = 'confetti.json';
     '2.0.5': 'Bug fixes for tracking and reconnect.',
     '2.0.6': 'More reconnect fixes, news and define improvements, removed dictionary.',
     '2.0.7': 'Emoji plugin.',
-    '2.0.8': 'Plugin auto-updating and versions.'
+    '2.0.8': 'Plugin auto-updating and versions.',
+    '2.0.9': 'Changelog, usability improvements, fullwidth encool, updated script urls.'
   };
   autoUpdate = function() {
     var now;
