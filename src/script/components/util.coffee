@@ -5,7 +5,7 @@ do ->
         else
             return array
     copyArray = (array) ->
-        [].concat(array)
+        array.slice()
     removeDuplicates = (array) ->
         dupeless = []
 

@@ -45,9 +45,15 @@ do ->
                 return
 
             unless confetti.cache.get('longinsults') is yes
-                insults = (insult for insult in insults when insult.length < 550)
+                insults = (insult for insult in insults when insult.length < 400)
             insultList = insults
             cb() if cb?
+
+    getInsult = ->
+        return confetti.util.random(insultList)
+            .replace(/\{name\}/g, target.toLowerCase())
+            .replace(/\{Name\}/g, target)
+            .replace(/\{NAME\}/g, target.toUpperCase())
 
     # Used for a recursive call (lazy loading).
     insult = (data, chan) ->
@@ -62,16 +68,31 @@ do ->
                 insult(data, chan)
             return yes
 
+        insult = getInsult()
         target = confetti.player.name(data).trim()
-        insult = confetti.util.random(insultList)
-            .replace(/\{name\}/g, target.toLowerCase())
-            .replace(/\{Name\}/g, target)
-            .replace(/\{NAME\}/g, target.toUpperCase())
 
         confetti.msg.notify insult, chan
         return yes
 
+    insultp = (data, chan) ->
+        if data.length is 0
+            confetti.msg.bot "Specify a target!"
+            return
+
+        # If insults aren't loaded, load the list async
+        unless insultsLoaded
+            updateInsults ->
+                insultsLoaded = yes
+                insultp(data, chan)
+            return yes
+
+        insult = getInsult()
+        target = confetti.player.name(data).trim()
+        print insult
+        return yes
+
     confetti.command 'insult', ['insult [name]', 'Insults the given target for the greater good of mankind.', 'setmsg@insult [name]'], insult
+    confetti.command 'insultp', ['insultp [name]', 'Like insult, but prints the insult instead of sending it.', 'setmsg@insultp [name]'], insultp
     confetti.command 'intellisult', ['intellisult [name]', 'Insults the given target for the greater good of mankind, with intelligence.', 'setmsg@intellisult [name]'], (data, chan) ->
         if data.length is 0
             confetti.msg.bot "Specify a target!"
@@ -85,7 +106,7 @@ do ->
             insultsLoaded = yes
             confetti.msg.bot "Insults have been updated."
 
-    confetti.command 'longinsults', ["Toggles whether if long insults (those > 500 characters) should be loaded as well.", 'send@longinsults'], ->
+    confetti.command 'longinsults', ["Toggles whether if long insults (those > 400 characters) should be loaded as well.", 'send@longinsults'], ->
         confetti.cache.store('longinsults', !confetti.cache.read('longinsults')).save()
         confetti.msg.bot "Long insults are now #{if confetti.cache.read('longinsults') then 'enabled' else 'disabled'}."
 
@@ -97,6 +118,7 @@ do ->
 
         header 'Insults', 4
         cmd 'insult'
+        cmd 'insultp'
         cmd 'intellisult'
         cmd 'updateinsults'
         cmd 'longinsults'

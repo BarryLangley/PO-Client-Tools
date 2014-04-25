@@ -49,7 +49,7 @@ confetti.cacheFile = 'confetti.json';
     }
   };
   copyArray = function(array) {
-    return [].concat(array);
+    return array.slice();
   };
   removeDuplicates = function(array) {
     var dupeless, val, _i, _len;
@@ -1226,7 +1226,7 @@ confetti.cacheFile = 'confetti.json';
           }
           return _results;
         })();
-        confetti.msg.bot("Updating plugins: " + (readable.join(', ')));
+        confetti.msg.bot("Updating plugins " + (confetti.util.fancyJoin(readable)));
         _results = [];
         for (_j = 0, _len1 = toUpdate.length; _j < _len1; _j++) {
           plugin = toUpdate[_j];
@@ -1373,7 +1373,7 @@ confetti.cacheFile = 'confetti.json';
       confetti.msg.bot("Please disable Safe Scripts before using this command.");
       return;
     }
-    confetti.msg.bot("Updating plugins...");
+    confetti.msg.bot("Checking if any plugins are out of date..");
     return updatePlugins(true);
   });
 })();

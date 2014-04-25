@@ -1,5 +1,5 @@
 (function() {
-  var insult, insultList, insultsLoaded, intellisult, updateInsults;
+  var getInsult, insult, insultList, insultp, insultsLoaded, intellisult, updateInsults;
   intellisult = function(name) {
     var a, b, c, d, e, f, insult, random;
     if (name == null) {
@@ -58,7 +58,7 @@
           _results = [];
           for (_i = 0, _len = insults.length; _i < _len; _i++) {
             insult = insults[_i];
-            if (insult.length < 550) {
+            if (insult.length < 400) {
               _results.push(insult);
             }
           }
@@ -70,6 +70,9 @@
         return cb();
       }
     });
+  };
+  getInsult = function() {
+    return confetti.util.random(insultList).replace(/\{name\}/g, target.toLowerCase()).replace(/\{Name\}/g, target).replace(/\{NAME\}/g, target.toUpperCase());
   };
   insult = function(data, chan) {
     var target;
@@ -84,12 +87,31 @@
       });
       return true;
     }
+    insult = getInsult();
     target = confetti.player.name(data).trim();
-    insult = confetti.util.random(insultList).replace(/\{name\}/g, target.toLowerCase()).replace(/\{Name\}/g, target).replace(/\{NAME\}/g, target.toUpperCase());
     confetti.msg.notify(insult, chan);
     return true;
   };
+  insultp = function(data, chan) {
+    var target;
+    if (data.length === 0) {
+      confetti.msg.bot("Specify a target!");
+      return;
+    }
+    if (!insultsLoaded) {
+      updateInsults(function() {
+        insultsLoaded = true;
+        return insultp(data, chan);
+      });
+      return true;
+    }
+    insult = getInsult();
+    target = confetti.player.name(data).trim();
+    print(insult);
+    return true;
+  };
   confetti.command('insult', ['insult [name]', 'Insults the given target for the greater good of mankind.', 'setmsg@insult [name]'], insult);
+  confetti.command('insultp', ['insultp [name]', 'Like insult, but prints the insult instead of sending it.', 'setmsg@insultp [name]'], insultp);
   confetti.command('intellisult', ['intellisult [name]', 'Insults the given target for the greater good of mankind, with intelligence.', 'setmsg@intellisult [name]'], function(data, chan) {
     if (data.length === 0) {
       confetti.msg.bot("Specify a target!");
@@ -104,7 +126,7 @@
       return confetti.msg.bot("Insults have been updated.");
     });
   });
-  confetti.command('longinsults', ["Toggles whether if long insults (those > 500 characters) should be loaded as well.", 'send@longinsults'], function() {
+  confetti.command('longinsults', ["Toggles whether if long insults (those > 400 characters) should be loaded as well.", 'send@longinsults'], function() {
     confetti.cache.store('longinsults', !confetti.cache.read('longinsults')).save();
     return confetti.msg.bot("Long insults are now " + (confetti.cache.read('longinsults') ? 'enabled' : 'disabled') + ".");
   });
@@ -116,6 +138,7 @@
     _ref = confetti.commandList, header = _ref.header, cmd = _ref.cmd;
     header('Insults', 4);
     cmd('insult');
+    cmd('insultp');
     cmd('intellisult');
     cmd('updateinsults');
     return cmd('longinsults');

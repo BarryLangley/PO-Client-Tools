@@ -29,7 +29,7 @@ do ->
 
             if toUpdate.length
                 readable = (plugin[1].name for plugin in toUpdate)
-                confetti.msg.bot "Updating plugins: #{readable.join(', ')}"
+                confetti.msg.bot "Updating plugins #{confetti.util.fancyJoin(readable)}"
 
                 for plugin in toUpdate
                     sys.webCall "#{confetti.pluginsUrl}#{plugin[1].id}/#{plugin[1].id}.js", do (plugin) ->
@@ -172,5 +172,5 @@ do ->
             confetti.msg.bot "Please disable Safe Scripts before using this command."
             return
 
-        confetti.msg.bot "Updating plugins..."
+        confetti.msg.bot "Checking if any plugins are out of date.."
         updatePlugins yes
