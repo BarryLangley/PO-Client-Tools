@@ -31,7 +31,7 @@ do ->
         if confetti.cache.initialized isnt no and confetti.cache.read('notifications') is on
             if Client.windowActive()
                 if allowActive
-                    html "&nbsp;&nbsp;&nbsp;#{poIcon} <b>#{title}</b><br/>#{bullet} #{msg}"
+                    html "&nbsp;&nbsp;&nbsp;#{poIcon} <b>#{title}</b><br>#{bullet} #{msg}"
             else
                 # Prefix the server name in tray message, so the user knows what server it's coming from.
                 if title isnt Client.windowTitle

@@ -6,7 +6,7 @@ do ->
             confetti.msg.bold "Eval returned", sys.htmlEscape(res), chan
         catch ex
             confetti.msg.bold "Eval error", "#{ex} on line #{ex.lineNumber}", chan
-            confetti.msg.html ex.backtrace.join('<br/>'), chan if ex.backtrace?
+            confetti.msg.html ex.backtrace.join('<br>'), chan if ex.backtrace?
 
     confetti.command 'evalp', 'eval'
 
@@ -97,7 +97,7 @@ do ->
 
         if Client.player?
             avatar = Client.player(id).avatar
-            confetti.msg.html "#{confetti.msg.bullet} <b>Avatar</b>: #{avatar}<br/>#{confetti.msg.indent}<img src='trainer:#{avatar}'>"
+            confetti.msg.html "#{confetti.msg.bullet} <b>Avatar</b>: #{avatar}<br>#{confetti.msg.indent}<img src='trainer:#{avatar}'>"
 
     confetti.alias 'userinfo', 'info'
 

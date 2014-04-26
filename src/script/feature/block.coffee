@@ -14,7 +14,7 @@ do ->
             count += 1
 
             html += "#{confetti.msg.bullet} #{confetti.player.fancyName(blocked)} #{confetti.player.status(blocked)}"
-            html += "<br/>" if count % 3 is 0
+            html += "<br>" if count % 3 is 0
 
         confetti.msg.html html, chan
 

@@ -1,5 +1,4 @@
 do ->
-    bullet = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&bull;"
     confetti.command 'tracked', ["Displays a list of tracked players.", 'send@tracked'], (_, chan) ->
         tracked = confetti.cache.get 'tracked'
         numTracked = Object.keys(tracked).length
@@ -19,12 +18,12 @@ do ->
 
         for name, alts of names
             # Forbid auto-resolve
-            html += "#{confetti.msg.bullet} #{confetti.player.fancyName(name, null, no)} #{confetti.player.status(name, no)} as <small>[#{alts.length}]</small><br/>"
+            html += "#{confetti.msg.bullet} #{confetti.player.fancyName(name, null, no)} #{confetti.player.status(name, no)} as <small>[#{alts.length}]</small><br>"
 
             alts = confetti.util.sortOnlineOffline(alts)
             for alt in alts
                 # Forbid auto-resolve
-                html += "&nbsp;&nbsp;&nbsp;&nbsp;#{confetti.msg.bullet} #{confetti.player.fancyName(alt, null, no)} #{confetti.player.status(alt, no)}<br/>"
+                html += "&nbsp;&nbsp;&nbsp;&nbsp;#{confetti.msg.bullet} #{confetti.player.fancyName(alt, null, no)} #{confetti.player.status(alt, no)}<br>"
 
         confetti.msg.html html, chan
 
@@ -32,7 +31,7 @@ do ->
     confetti.alias 'trackinglist', 'tracked'
 
     confetti.command 'track', ['track [alt]:[name]', "Adds [alt] as an alt of [name] to your tracking list.", 'setmsg@track alt:name'], (data) ->
-        parts       = data.split ':'
+        parts = data.split ':'
         parts[1] = '' unless parts[1]?
 
         [alt, name] = parts

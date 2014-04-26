@@ -14,10 +14,10 @@ do ->
             confetti.msg.html "&bull; #{complete}: #{command.info.desc}", chan
 
     header = (msg, size = 5, chan = channel) ->
-        confetti.msg.html "<br/><font size='#{size}'><b>#{msg}</b></font><br/>", chan
+        confetti.msg.html "<br><font size='#{size}'><b>#{msg}</b></font><br>", chan
 
     border = (timestamp = no, chan = channel) ->
-        confetti.msg.html "#{if timestamp then '<br/><timestamp/><br/>' else '<br/>'}<font color='skyblue'><b>≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈</b></font>#{if timestamp then '<br/>' else ''}", chan
+        confetti.msg.html "#{if timestamp then '<br><timestamp/><br>' else '<br>'}<font color='skyblue'><b>≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈</b></font>#{if timestamp then '<br>' else ''}", chan
 
         channel = null if timestamp
 
@@ -79,6 +79,12 @@ do ->
         cmd 'blocked'
 
         confetti.callHooks 'commands:block'
+
+        header 'Player Symbols', 4
+        cmd 'authsymbols'
+        cmd 'authsymbol'
+
+        confetti.callHooks 'commands:playersymbols'
 
         # Custom categories should be done in this hook, afterwards there are the misc. commands.
         confetti.callHooks 'commands:categories'

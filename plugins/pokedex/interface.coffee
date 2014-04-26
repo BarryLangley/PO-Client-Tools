@@ -166,7 +166,7 @@ do ->
         ]
 
         # Sprites
-        template.push "<img src='pokemon:num=#{pokeId}'> <img src='pokemon:num=#{pokeId}&back=true'> <img src='pokemon:num=#{pokeId}&shiny=true'> <img src='pokemon:num=#{pokeId}&shiny=true&back=true'><br/>"
+        template.push "<img src='pokemon:num=#{pokeId}'> <img src='pokemon:num=#{pokeId}&back=true'> <img src='pokemon:num=#{pokeId}&shiny=true'> <img src='pokemon:num=#{pokeId}&shiny=true&back=true'><br>"
 
         # Gender icon
         template.push  "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" + pokeGender(data)
@@ -184,7 +184,7 @@ do ->
         if data.minlvl isnt 1 and data.minlvl isnt 100
             template.push "Minimum Level: <b>#{data.minlvl}</b>"
 
-        template.push "Level in Challenge Cup: <b>#{data.cc}</b><br/>"
+        template.push "Level in Challenge Cup: <b>#{data.cc}</b><br>"
 
         template.push "Type#{if multiType then 's' else ''}: " + pokeType(pokeId)
 
@@ -198,20 +198,20 @@ do ->
         if eggInfo
             template.push "Egg Group#{if data.egg[1] then 's' else ''}: " + eggInfo
 
-        template.push "Abilit#{if multiAbility then 'ies' else 'y'}: #{pokeAbilities(pokeId)}<br/>"
+        template.push "Abilit#{if multiAbility then 'ies' else 'y'}: #{pokeAbilities(pokeId)}<br>"
 
         template.push "Weight: <b>#{data.weight}kg</b>"
         template.push "Height <b>#{data.height}m</b>"
-        template.push "Weight Attack Damage: <b>#{weightDamage(data.weight)}</b><br/>"
+        template.push "Weight Attack Damage: <b>#{weightDamage(data.weight)}</b><br>"
 
         template.push statsOf(data)
         template.push "Base Stat Total: " + baseStatTotal(data)
 
         if pokemon isnt 'Smeargle'
-            template.push "<br/> " + movesOf(data)
+            template.push "<br> " + movesOf(data)
         else
-            template.push "<br/> Smeargle learns all moves but Chatter and Transform."
+            template.push "<br> Smeargle learns all moves but Chatter and Transform."
 
-        template.push "<br/><timestamp/><br/><font color='cornflowerblue'><b>\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB</b></font>"
+        template.push "<br><timestamp/><br><font color='cornflowerblue'><b>\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB</b></font>"
 
-        confetti.msg.html template.join("<br/>"), chan
+        confetti.msg.html template.join("<br>"), chan

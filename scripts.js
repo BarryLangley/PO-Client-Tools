@@ -446,7 +446,7 @@ confetti.cacheFile = 'confetti.json';
     if (confetti.cache.initialized !== false && confetti.cache.read('notifications') === true) {
       if (Client.windowActive()) {
         if (allowActive) {
-          return html("&nbsp;&nbsp;&nbsp;" + poIcon + " <b>" + title + "</b><br/>" + bullet + " " + msg);
+          return html("&nbsp;&nbsp;&nbsp;" + poIcon + " <b>" + title + "</b><br>" + bullet + " " + msg);
         }
       } else {
         if (title !== Client.windowTitle) {
@@ -587,6 +587,98 @@ confetti.cacheFile = 'confetti.json';
 })();
 
 (function() {
+  confetti.command('authsymbols', ["Shows the auth symbols you have set.", 'send@authsymbols'], function(_, chan) {
+    var auth, authlvl, authlvls, authsymbols, end, html, numSymbols, parts, start;
+    authsymbols = confetti.cache.get('authsymbols');
+    numSymbols = Object.keys(authsymbols).length;
+    if (numSymbols === 0) {
+      confetti.msg.bot("You have not set any auth symbols.");
+      return;
+    }
+    confetti.msg.bold("Auth symbols <small>[" + numSymbols + "]</small>", '', chan);
+    html = "";
+    start = "";
+    end = "";
+    authlvls = ["", "", "", "", ""];
+    for (auth in authsymbols) {
+      parts = authsymbols[auth];
+      start = parts[0], end = parts[1];
+      authlvls[auth] = "" + confetti.msg.bullet + " Auth <b>" + auth + "</b>: " + (sys.htmlEscape(start)) + "<b>Name</b>" + (sys.htmlEscape(end));
+    }
+    authlvls = (function() {
+      var _i, _len, _results;
+      _results = [];
+      for (_i = 0, _len = authlvls.length; _i < _len; _i++) {
+        authlvl = authlvls[_i];
+        if (authlvl !== "") {
+          _results.push(authlvl);
+        }
+      }
+      return _results;
+    })();
+    return confetti.msg.html(authlvls.join("<br>") + "<br>", chan);
+  });
+  confetti.alias('authsymbollist', 'authsymbols');
+  confetti.alias('authsymbolist', 'authsymbols');
+  confetti.command('authsymbol', ['authsymbol [auth]:[start]:[end?]', "Changes the auth symbol of [auth] (0 - User, 1 - Moderator, 2 - Administrator, 3 - Owner, or 4 - \"Invisible\") to [start]. [end?] is optional and will be inserted after the name (useful for HTML). If neither [start] nor [end?] is given, the auth symbol for [auth] is reset (if you want an empty auth symbol for auth level [auth], do <code>authsymbol:</code>).", 'setmsg@authsymbol auth:start'], function(data, chan) {
+    var authl, authsymbols, end, parts, start;
+    parts = data.split(':');
+    authl = parts[0], start = parts[1], end = parts[2];
+    authl = parseInt(authl, 10);
+    if (start != null) {
+      start = start.trim();
+    }
+    if (end != null) {
+      end = end.trim();
+    }
+    authsymbols = confetti.cache.get('authsymbols');
+    if (isNaN(authl)) {
+      return confetti.msg.bot("" + parts[0] + " is not a number. Give a number in the range 0-4.", chan);
+    } else if (authl < 0) {
+      authl = 0;
+    } else if (authl > 4) {
+      authl = 4;
+    }
+    if ((start == null) && (end == null)) {
+      if (authsymbols.hasOwnProperty(authl)) {
+        delete authsymbols[authl];
+        confetti.cache.store('authsymbols', authsymbols).save();
+        return confetti.msg.bot("Auth symbol for auth level " + authl + " removed!", chan);
+      } else {
+        return confetti.msg.bot("There is no auth symbol for auth level " + authl + ". Give a start and an end for the auth level.");
+      }
+    }
+    if (start == null) {
+      start = '';
+    }
+    if (end == null) {
+      end = '';
+    }
+    authsymbols[authl] = [start, end];
+    confetti.cache.store('authsymbols', authsymbols).save();
+    return confetti.msg.bot("Players whose auth level is " + authl + " will now be formatted like so: " + start + "<b>Name</b>" + end, chan);
+  });
+  confetti.hook('initCache', function() {
+    return confetti.cache.store('authsymbols', {}, confetti.cache.once);
+  });
+  return confetti.hook('manipulateChanPlayerMessage', function(from, fromId, message, playerMessage, _arg, chan, html, dirty) {
+    var auth, authSymbol, authsymbols, color;
+    color = _arg[0], auth = _arg[1], authSymbol = _arg[2];
+    authsymbols = confetti.cache.get('authsymbols');
+    if (auth > 4) {
+      auth = 4;
+    } else if (auth < 0) {
+      auth = 0;
+    }
+    if (authsymbols[auth]) {
+      authSymbol = authsymbols[auth];
+      dirty = true;
+    }
+    return [from, fromId, message, playerMessage, [color, auth, authSymbol], chan, html, dirty];
+  });
+})();
+
+(function() {
   confetti.command('blocked', ["Displays a list of blocked players.", 'send@blocked'], function(_, chan) {
     var blocked, blocklist, count, html, _i, _len;
     blocklist = confetti.util.sortOnlineOffline(confetti.cache.get('blocked'));
@@ -602,7 +694,7 @@ confetti.cacheFile = 'confetti.json';
       count += 1;
       html += "" + confetti.msg.bullet + " " + (confetti.player.fancyName(blocked)) + " " + (confetti.player.status(blocked));
       if (count % 3 === 0) {
-        html += "<br/>";
+        html += "<br>";
       }
     }
     return confetti.msg.html(html, chan);
@@ -833,7 +925,7 @@ confetti.cacheFile = 'confetti.json';
       count += 1;
       html += "" + confetti.msg.bullet + " " + (confetti.player.fancyName(friend)) + " " + (confetti.player.status(friend));
       if (count % 3 === 0) {
-        html += "<br/>";
+        html += "<br>";
       }
     }
     return confetti.msg.html(html, chan);
@@ -939,7 +1031,7 @@ confetti.cacheFile = 'confetti.json';
     if (chan == null) {
       chan = channel;
     }
-    return confetti.msg.html("<br/><font size='" + size + "'><b>" + msg + "</b></font><br/>", chan);
+    return confetti.msg.html("<br><font size='" + size + "'><b>" + msg + "</b></font><br>", chan);
   };
   border = function(timestamp, chan) {
     if (timestamp == null) {
@@ -948,7 +1040,7 @@ confetti.cacheFile = 'confetti.json';
     if (chan == null) {
       chan = channel;
     }
-    confetti.msg.html("" + (timestamp ? '<br/><timestamp/><br/>' : '<br/>') + "<font color='skyblue'><b>≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈</b></font>" + (timestamp ? '<br/>' : ''), chan);
+    confetti.msg.html("" + (timestamp ? '<br><timestamp/><br>' : '<br>') + "<font color='skyblue'><b>≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈</b></font>" + (timestamp ? '<br>' : ''), chan);
     if (timestamp) {
       return channel = null;
     }
@@ -1000,6 +1092,10 @@ confetti.cacheFile = 'confetti.json';
     cmd('unblock');
     cmd('blocked');
     confetti.callHooks('commands:block');
+    header('Player Symbols', 4);
+    cmd('authsymbols');
+    cmd('authsymbol');
+    confetti.callHooks('commands:playersymbols');
     confetti.callHooks('commands:categories');
     confetti.msg.html("", chan);
     cmd('reconnect');
@@ -1030,7 +1126,7 @@ confetti.cacheFile = 'confetti.json';
       ex = _error;
       confetti.msg.bold("Eval error", "" + ex + " on line " + ex.lineNumber, chan);
       if (ex.backtrace != null) {
-        return confetti.msg.html(ex.backtrace.join('<br/>'), chan);
+        return confetti.msg.html(ex.backtrace.join('<br>'), chan);
       }
     }
   });
@@ -1109,7 +1205,7 @@ confetti.cacheFile = 'confetti.json';
     confetti.msg.html("" + confetti.msg.bullet + " <b>Color</b>: <b style='color: " + color + ";'>" + color + "</b>");
     if (Client.player != null) {
       avatar = Client.player(id).avatar;
-      return confetti.msg.html("" + confetti.msg.bullet + " <b>Avatar</b>: " + avatar + "<br/>" + confetti.msg.indent + "<img src='trainer:" + avatar + "'>");
+      return confetti.msg.html("" + confetti.msg.bullet + " <b>Avatar</b>: " + avatar + "<br>" + confetti.msg.indent + "<img src='trainer:" + avatar + "'>");
     }
   });
   confetti.alias('userinfo', 'info');
@@ -1156,7 +1252,7 @@ confetti.cacheFile = 'confetti.json';
       res = [];
       for (_i = 0, _len = stories.length; _i < _len; _i++) {
         story = stories[_i];
-        res.push(("" + confetti.msg.bullet + " <b>") + story.titleNoFormatting.replace(/&#39;/g, "'").replace(/`/g, "'").replace(/&quot;/g, "\"") + ("</b><br/>" + confetti.msg.indent + "&nbsp;&nbsp;&nbsp;&nbsp;→ Read more: " + (sys.htmlEscape(story.unescapedUrl))));
+        res.push(("" + confetti.msg.bullet + " <b>") + story.titleNoFormatting.replace(/&#39;/g, "'").replace(/`/g, "'").replace(/&quot;/g, "\"") + ("</b><br>" + confetti.msg.indent + "&nbsp;&nbsp;&nbsp;&nbsp;→ Read more: " + (sys.htmlEscape(story.unescapedUrl))));
       }
       if (res.length) {
         confetti.msg.bold("News " + (query ? 'on ' + query : 'Headlines'), '', chan);
@@ -1301,7 +1397,7 @@ confetti.cacheFile = 'confetti.json';
         } else {
           addremove = "<small>[<a href='po:send/-removeplugin " + plugin.name + "' style='text-decoration: none; color: black;'>remove</a>]</small>";
         }
-        html += "" + confetti.msg.bullet + " <b>" + plugin.name + "</b> (" + plugin.id + ") " + addremove + "<br/>";
+        html += "" + confetti.msg.bullet + " <b>" + plugin.name + "</b> (" + plugin.id + ") " + addremove + "<br>";
       }
       return confetti.msg.html(html, chan);
     });
@@ -1629,8 +1725,6 @@ confetti.cacheFile = 'confetti.json';
 })();
 
 (function() {
-  var bullet;
-  bullet = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&bull;";
   confetti.command('tracked', ["Displays a list of tracked players.", 'send@tracked'], function(_, chan) {
     var alt, alts, html, name, names, numTracked, tracked, _i, _len;
     tracked = confetti.cache.get('tracked');
@@ -1651,11 +1745,11 @@ confetti.cacheFile = 'confetti.json';
     }
     for (name in names) {
       alts = names[name];
-      html += "" + confetti.msg.bullet + " " + (confetti.player.fancyName(name, null, false)) + " " + (confetti.player.status(name, false)) + " as <small>[" + alts.length + "]</small><br/>";
+      html += "" + confetti.msg.bullet + " " + (confetti.player.fancyName(name, null, false)) + " " + (confetti.player.status(name, false)) + " as <small>[" + alts.length + "]</small><br>";
       alts = confetti.util.sortOnlineOffline(alts);
       for (_i = 0, _len = alts.length; _i < _len; _i++) {
         alt = alts[_i];
-        html += "&nbsp;&nbsp;&nbsp;&nbsp;" + confetti.msg.bullet + " " + (confetti.player.fancyName(alt, null, false)) + " " + (confetti.player.status(alt, false)) + "<br/>";
+        html += "&nbsp;&nbsp;&nbsp;&nbsp;" + confetti.msg.bullet + " " + (confetti.player.fancyName(alt, null, false)) + " " + (confetti.player.status(alt, false)) + "<br>";
       }
     }
     return confetti.msg.html(html, chan);
@@ -1719,7 +1813,7 @@ confetti.cacheFile = 'confetti.json';
 (function() {
   var clearDuplicateCommas;
   clearDuplicateCommas = /,,/g;
-  confetti.command('translate', ['translate [message]:[to language code]-[from language code]', "Translates a message from a language to another one. [from language code] is optional and might even be ignored, it's purely a hint (note the dash). Language codes are two letters, for example <b>en</b> (English). A full list is available <a href='http://en.wikipedia.org/wiki/List_of_ISO_639-1_codes#Partial_ISO_639_table'>here</a>.", 'setmsg@translate message:to-from'], function(data, chan) {
+  confetti.command('translate', ['translate [message]:[to language code]-[from language code]', "Translates a message from a language to another one. [from language code] is optional and might even be ignored, it's purely a hint (note the dash). Language codes are two letters, for example <b>en</b> (English), <b>es</b> (Spanish), <b>de</b> (German). A full list is available <a href='http://en.wikipedia.org/wiki/List_of_ISO_639-1_codes#Partial_ISO_639_table'>here</a> (ISO 639-1 language codes).", 'setmsg@translate message:to-from'], function(data, chan) {
     var from, languageParts, message, parts, to, url;
     parts = data.split(':');
     message = parts[0];
@@ -1917,7 +2011,7 @@ confettiScript = {
       if (auth == null) {
         auth = Client.auth(fromId);
       }
-      if (!(authSymbol[0] && authSymbol[1])) {
+      if (!((authSymbol[0] != null) && (authSymbol[1] != null))) {
         if (auth > 0 && auth < 4) {
           authSymbol = ['+<i>', '</i>'];
         } else {
@@ -1928,7 +2022,7 @@ confettiScript = {
         playerMessage = sys.htmlEscape(playerMessage);
         playerMessage = Client.channel(chan).addChannelLinks(playerMessage);
       }
-      finishedMessage = "<font color='" + color + "'><timestamp/>" + authSymbol[0] + "<b>" + from + ":" + authSymbol[1] + "</b></font> " + playerMessage;
+      finishedMessage = "<font color='" + color + "'><timestamp/>" + authSymbol[0] + "<b>" + from + ":</b>" + authSymbol[1] + "</font> " + playerMessage;
       sys.stopEvent();
       confetti.ignoreNextChanMessage = true;
       if (confetti.debug) {

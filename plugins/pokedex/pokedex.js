@@ -404,7 +404,7 @@ confetti.pokedex = function() {
     multiType = sys.pokeType2(pokeId) !== 18;
     multiAbility = sys.pokeAbility(pokeId, 1) !== 0;
     template = ["<font color='cornflowerblue'><b>\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB</b></font>", "<br><font size='5'><b><a href='http://veekun.com/dex/pokemon/" + pokemon + "' style='color: " + moveColors[sys.pokeType1(pokeId)] + "'>" + pokemon + "</a></b></font>"];
-    template.push("<img src='pokemon:num=" + pokeId + "'> <img src='pokemon:num=" + pokeId + "&back=true'> <img src='pokemon:num=" + pokeId + "&shiny=true'> <img src='pokemon:num=" + pokeId + "&shiny=true&back=true'><br/>");
+    template.push("<img src='pokemon:num=" + pokeId + "'> <img src='pokemon:num=" + pokeId + "&back=true'> <img src='pokemon:num=" + pokeId + "&shiny=true'> <img src='pokemon:num=" + pokeId + "&shiny=true&back=true'><br>");
     template.push("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" + pokeGender(data));
     template.push("National Dex Number: <b>" + pokeId + "</b>");
     template.push("Generation <b>" + (firstGen(pokeId)) + "</b> Pokémon.");
@@ -417,7 +417,7 @@ confetti.pokedex = function() {
     if (data.minlvl !== 1 && data.minlvl !== 100) {
       template.push("Minimum Level: <b>" + data.minlvl + "</b>");
     }
-    template.push("Level in Challenge Cup: <b>" + data.cc + "</b><br/>");
+    template.push("Level in Challenge Cup: <b>" + data.cc + "</b><br>");
     template.push(("Type" + (multiType ? 's' : '') + ": ") + pokeType(pokeId));
     eggInfo = "";
     if (data.egg[0]) {
@@ -429,19 +429,19 @@ confetti.pokedex = function() {
     if (eggInfo) {
       template.push(("Egg Group" + (data.egg[1] ? 's' : '') + ": ") + eggInfo);
     }
-    template.push("Abilit" + (multiAbility ? 'ies' : 'y') + ": " + (pokeAbilities(pokeId)) + "<br/>");
+    template.push("Abilit" + (multiAbility ? 'ies' : 'y') + ": " + (pokeAbilities(pokeId)) + "<br>");
     template.push("Weight: <b>" + data.weight + "kg</b>");
     template.push("Height <b>" + data.height + "m</b>");
-    template.push("Weight Attack Damage: <b>" + (weightDamage(data.weight)) + "</b><br/>");
+    template.push("Weight Attack Damage: <b>" + (weightDamage(data.weight)) + "</b><br>");
     template.push(statsOf(data));
     template.push("Base Stat Total: " + baseStatTotal(data));
     if (pokemon !== 'Smeargle') {
-      template.push("<br/> " + movesOf(data));
+      template.push("<br> " + movesOf(data));
     } else {
-      template.push("<br/> Smeargle learns all moves but Chatter and Transform.");
+      template.push("<br> Smeargle learns all moves but Chatter and Transform.");
     }
-    template.push("<br/><timestamp/><br/><font color='cornflowerblue'><b>\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB</b></font>");
-    return confetti.msg.html(template.join("<br/>"), chan);
+    template.push("<br><timestamp/><br><font color='cornflowerblue'><b>\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB\xBB</b></font>");
+    return confetti.msg.html(template.join("<br>"), chan);
   };
 })();
 

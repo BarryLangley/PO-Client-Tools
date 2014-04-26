@@ -26,7 +26,7 @@ do ->
             res = []
 
             for story in stories
-                res.push "#{confetti.msg.bullet} <b>" + story.titleNoFormatting.replace(/&#39;/g, "'").replace(/`/g, "'").replace(/&quot;/g, "\"") + "</b><br/>#{confetti.msg.indent}&nbsp;&nbsp;&nbsp;&nbsp;→ Read more: #{sys.htmlEscape(story.unescapedUrl)}"
+                res.push "#{confetti.msg.bullet} <b>" + story.titleNoFormatting.replace(/&#39;/g, "'").replace(/`/g, "'").replace(/&quot;/g, "\"") + "</b><br>#{confetti.msg.indent}&nbsp;&nbsp;&nbsp;&nbsp;→ Read more: #{sys.htmlEscape(story.unescapedUrl)}"
 
             if res.length
                 confetti.msg.bold "News #{if query then 'on ' + query else 'Headlines'}", '', chan

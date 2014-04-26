@@ -180,7 +180,7 @@ confettiScript =
             color = Client.color(fromId) unless color
             auth  = Client.auth(fromId) unless auth?
 
-            unless authSymbol[0] and authSymbol[1]
+            unless authSymbol[0]? and authSymbol[1]?
                 if auth > 0 && auth < 4
                     authSymbol = ['+<i>', '</i>']
                 else
@@ -192,7 +192,7 @@ confettiScript =
                 playerMessage = sys.htmlEscape(playerMessage)
                 playerMessage = Client.channel(chan).addChannelLinks(playerMessage)
 
-            finishedMessage = "<font color='#{color}'><timestamp/>#{authSymbol[0]}<b>#{from}:#{authSymbol[1]}</b></font> #{playerMessage}"
+            finishedMessage = "<font color='#{color}'><timestamp/>#{authSymbol[0]}<b>#{from}:</b>#{authSymbol[1]}</font> #{playerMessage}"
 
             sys.stopEvent()
             confetti.ignoreNextChanMessage = yes
