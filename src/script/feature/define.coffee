@@ -4,7 +4,6 @@ do ->
             confetti.msg.bot "You need to give me a term!"
             return
 
-        confetti.msg.bot "Loading definition..."
         sys.webCall "http://api.urbandictionary.com/v0/define?term=#{encodeURIComponent(data)}", (response) ->
             unless response
                 confetti.msg.bot "Couldn't load the definition - your internet might be down.", chan

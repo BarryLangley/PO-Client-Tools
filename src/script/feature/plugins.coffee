@@ -28,24 +28,22 @@ do ->
                         toUpdate.push [plugin, plug]
 
             if toUpdate.length
-                readable = (plugin[1].name for plugin in toUpdate)
-                confetti.msg.bot "Updating plugins #{confetti.util.fancyJoin(readable)}"
-
                 for plugin in toUpdate
-                    sys.webCall "#{confetti.pluginsUrl}#{plugin[1].id}/#{plugin[1].id}.js", do (plugin) ->
+                    plug = plugin[1]
+                    sys.webCall "#{confetti.pluginsUrl}#{plug.id}/#{plug.id}.js", do (plugin) ->
                         return (resp) ->
                             if not resp
-                                confetti.msg.bot "Couldn't load plugin source -- check your internet connection."
+                                confetti.msg.bot "Couldn't load plugin source for plugin #{plug.id} -- check your internet connection."
                                 return
 
-                            sys.writeToFile "#{confetti.dataDir}plugin-#{plugin[1].id}.js", resp
+                            sys.writeToFile "#{confetti.dataDir}plugin-#{plug.id}.js", resp
 
                             index = plugins.indexOf(plugin[0])
-                            plugins[index] = plugin[1] # Replace plugin with the new one
+                            plugins[index] = plug # Replace plugin with the new one
                             confetti.cache.store('plugins', plugins).save()
 
-                            confetti.msg.bot "Plugin #{plugin[1].name} updated to version #{plugin[1].version}!"
-                            confetti.initPlugins plugin[1].id
+                            confetti.msg.bot "Plugin #{plug.name} updated to version #{plug.version}!"
+                            confetti.initPlugins plug.id
             else
                 if verbose
                     confetti.msg.bot "All plugins up to date."
@@ -73,7 +71,7 @@ do ->
             html = ""
             for plugin in plugins
                 # Since '-' is always the command indicator, use it so the command remains clickable even if the user changes their command indicator (inside the send/setmsg protocol).
-                html += "#{confetti.msg.bullet} <b>#{plugin.name}</b> (#{plugin.id}) <small>[<a href='po:send/-removeplugin #{plugin.name}' style='text-decoration: none; color: black;'>remove</a>]</small>"
+                html += "#{confetti.msg.bullet} <b>#{plugin.name}</b> (#{plugin.id}) v#{plugin.version} <small>[<a href='po:send/-removeplugin #{plugin.name}' style='text-decoration: none; color: black;'>remove</a>]</small>"
 
             confetti.msg.html html
 
@@ -101,7 +99,7 @@ do ->
                 else
                     addremove = "<small>[<a href='po:send/-removeplugin #{plugin.name}' style='text-decoration: none; color: black;'>remove</a>]</small>"
 
-                html += "#{confetti.msg.bullet} <b>#{plugin.name}</b> (#{plugin.id}) #{addremove}<br>"
+                html += "#{confetti.msg.bullet} <b>#{plugin.name}</b> (#{plugin.id}) v#{plugin.version} #{addremove}<br>"
 
             confetti.msg.html html, chan
 
@@ -118,7 +116,6 @@ do ->
             confetti.msg.bot "#{name} is already enabled as a plugin!"
             return
 
-        confetti.msg.bot "Locating plugin source..."
         sys.webCall confetti.pluginsUrl + 'listing.json', (resp) ->
             try
                 json = JSON.parse resp
@@ -135,7 +132,6 @@ do ->
                 confetti.msg.bot "That plugin is not available! Use the 'plugins' command to see a list of available plugins.", chan
                 return
 
-            confetti.msg.bot "Downloading plugin #{plugin.name}...", chan
             sys.webCall "#{confetti.pluginsUrl}#{plugin.id}/#{plugin.id}.js", (file) ->
                 if not file
                     confetti.msg.bot "Couldn't load plugin source -- check your internet connection.", chan
@@ -172,5 +168,4 @@ do ->
             confetti.msg.bot "Please disable Safe Scripts before using this command."
             return
 
-        confetti.msg.bot "Checking if any plugins are out of date.."
         updatePlugins yes

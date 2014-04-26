@@ -120,7 +120,6 @@
     return confetti.msg.notify(intellisult(data), chan);
   });
   confetti.command('updateinsults', ['Updates the insult list from the web.', 'send@updateinsults'], function() {
-    confetti.msg.bot("Updating insults...");
     return updateInsults(function() {
       insultsLoaded = true;
       return confetti.msg.bot("Insults have been updated.");

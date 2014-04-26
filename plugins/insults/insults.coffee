@@ -103,7 +103,6 @@ do ->
         confetti.msg.notify intellisult(data), chan
 
     confetti.command 'updateinsults', ['Updates the insult list from the web.', 'send@updateinsults'], ->
-        confetti.msg.bot "Updating insults..."
         updateInsults ->
             insultsLoaded = yes
             confetti.msg.bot "Insults have been updated."

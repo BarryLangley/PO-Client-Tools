@@ -14,4 +14,8 @@
     "id": "emoji",
     "name": "Emoji",
     "version": "1.0.1"
+}, {
+    "id": "pusestats",
+    "name": "Pokémon Usage Statistics",
+    "version": "1.0.0"
 }]

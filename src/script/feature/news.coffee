@@ -10,7 +10,6 @@ do ->
         if query
             topic = "&q=#{encodeURIComponent(query.toLowerCase())}"
 
-        confetti.msg.bot "Fetching latest headlines..."
         sys.webCall "https://ajax.googleapis.com/ajax/services/search/news?v=1.0&rsz=6&hl=#{encodeURIComponent(lang)}#{topic}", (response) ->
             unless response
                 confetti.msg.bot "Couldn't load news - your internet might be down.", chan

@@ -764,7 +764,6 @@ confetti.cacheFile = 'confetti.json';
       confetti.msg.bot("You need to give me a term!");
       return;
     }
-    confetti.msg.bot("Loading definition...");
     return sys.webCall("http://api.urbandictionary.com/v0/define?term=" + (encodeURIComponent(data)), function(response) {
       var def, entry, ex, example, examples, json, list, _i, _len;
       if (!response) {
@@ -1210,7 +1209,6 @@ confetti.cacheFile = 'confetti.json';
   });
   confetti.alias('userinfo', 'info');
   return confetti.command('myip', ['Shows your IP address.', 'send@myip'], function() {
-    confetti.msg.bot("Obtaining your IP address...");
     return sys.webCall('http://bot.whatismyipaddress.com/', function(resp) {
       if (!resp) {
         confetti.msg.bot("Couldn't obtain your IP address - check your internet connection.");
@@ -1234,7 +1232,6 @@ confetti.cacheFile = 'confetti.json';
     if (query) {
       topic = "&q=" + (encodeURIComponent(query.toLowerCase()));
     }
-    confetti.msg.bot("Fetching latest headlines...");
     return sys.webCall("https://ajax.googleapis.com/ajax/services/search/news?v=1.0&rsz=6&hl=" + (encodeURIComponent(lang)) + topic, function(response) {
       var ex, json, mess, res, stories, story, _i, _j, _len, _len1;
       if (!response) {
@@ -1292,7 +1289,7 @@ confetti.cacheFile = 'confetti.json';
     }
     plugins = confetti.cache.get('plugins');
     return sys.webCall(confetti.pluginsUrl + 'listing.json', function(resp) {
-      var ex, json, plug, plugin, readable, toUpdate, _i, _j, _len, _len1, _results;
+      var ex, json, plug, plugin, toUpdate, _i, _j, _len, _len1, _results;
       try {
         json = JSON.parse(resp);
       } catch (_error) {
@@ -1313,32 +1310,23 @@ confetti.cacheFile = 'confetti.json';
         }
       }
       if (toUpdate.length) {
-        readable = (function() {
-          var _j, _len1, _results;
-          _results = [];
-          for (_j = 0, _len1 = toUpdate.length; _j < _len1; _j++) {
-            plugin = toUpdate[_j];
-            _results.push(plugin[1].name);
-          }
-          return _results;
-        })();
-        confetti.msg.bot("Updating plugins " + (confetti.util.fancyJoin(readable)));
         _results = [];
         for (_j = 0, _len1 = toUpdate.length; _j < _len1; _j++) {
           plugin = toUpdate[_j];
-          _results.push(sys.webCall("" + confetti.pluginsUrl + plugin[1].id + "/" + plugin[1].id + ".js", (function(plugin) {
+          plug = plugin[1];
+          _results.push(sys.webCall("" + confetti.pluginsUrl + plug.id + "/" + plug.id + ".js", (function(plugin) {
             return function(resp) {
               var index;
               if (!resp) {
-                confetti.msg.bot("Couldn't load plugin source -- check your internet connection.");
+                confetti.msg.bot("Couldn't load plugin source for plugin " + plug.id + " -- check your internet connection.");
                 return;
               }
-              sys.writeToFile("" + confetti.dataDir + "plugin-" + plugin[1].id + ".js", resp);
+              sys.writeToFile("" + confetti.dataDir + "plugin-" + plug.id + ".js", resp);
               index = plugins.indexOf(plugin[0]);
-              plugins[index] = plugin[1];
+              plugins[index] = plug;
               confetti.cache.store('plugins', plugins).save();
-              confetti.msg.bot("Plugin " + plugin[1].name + " updated to version " + plugin[1].version + "!");
-              return confetti.initPlugins(plugin[1].id);
+              confetti.msg.bot("Plugin " + plug.name + " updated to version " + plug.version + "!");
+              return confetti.initPlugins(plug.id);
             };
           })(plugin)));
         }
@@ -1369,7 +1357,7 @@ confetti.cacheFile = 'confetti.json';
       html = "";
       for (_i = 0, _len = plugins.length; _i < _len; _i++) {
         plugin = plugins[_i];
-        html += "" + confetti.msg.bullet + " <b>" + plugin.name + "</b> (" + plugin.id + ") <small>[<a href='po:send/-removeplugin " + plugin.name + "' style='text-decoration: none; color: black;'>remove</a>]</small>";
+        html += "" + confetti.msg.bullet + " <b>" + plugin.name + "</b> (" + plugin.id + ") v" + plugin.version + " <small>[<a href='po:send/-removeplugin " + plugin.name + "' style='text-decoration: none; color: black;'>remove</a>]</small>";
       }
       confetti.msg.html(html);
     }
@@ -1397,7 +1385,7 @@ confetti.cacheFile = 'confetti.json';
         } else {
           addremove = "<small>[<a href='po:send/-removeplugin " + plugin.name + "' style='text-decoration: none; color: black;'>remove</a>]</small>";
         }
-        html += "" + confetti.msg.bullet + " <b>" + plugin.name + "</b> (" + plugin.id + ") " + addremove + "<br>";
+        html += "" + confetti.msg.bullet + " <b>" + plugin.name + "</b> (" + plugin.id + ") v" + plugin.version + " " + addremove + "<br>";
       }
       return confetti.msg.html(html, chan);
     });
@@ -1415,7 +1403,6 @@ confetti.cacheFile = 'confetti.json';
       confetti.msg.bot("" + name + " is already enabled as a plugin!");
       return;
     }
-    confetti.msg.bot("Locating plugin source...");
     return sys.webCall(confetti.pluginsUrl + 'listing.json', function(resp) {
       var ex, json, plugin;
       try {
@@ -1434,7 +1421,6 @@ confetti.cacheFile = 'confetti.json';
         confetti.msg.bot("That plugin is not available! Use the 'plugins' command to see a list of available plugins.", chan);
         return;
       }
-      confetti.msg.bot("Downloading plugin " + plugin.name + "...", chan);
       return sys.webCall("" + confetti.pluginsUrl + plugin.id + "/" + plugin.id + ".js", function(file) {
         if (!file) {
           confetti.msg.bot("Couldn't load plugin source -- check your internet connection.", chan);
@@ -1469,7 +1455,6 @@ confetti.cacheFile = 'confetti.json';
       confetti.msg.bot("Please disable Safe Scripts before using this command.");
       return;
     }
-    confetti.msg.bot("Checking if any plugins are out of date..");
     return updatePlugins(true);
   });
 })();
@@ -1828,7 +1813,6 @@ confetti.cacheFile = 'confetti.json';
     if (from) {
       url += "&sl=" + (encodeURIComponent(from));
     }
-    confetti.msg.bot("Translating '" + message + "' to " + to + "!");
     return sys.webCall(url, function(response) {
       var ex, json;
       response = response.replace(clearDuplicateCommas, ',').replace(clearDuplicateCommas, ',');
@@ -1836,7 +1820,7 @@ confetti.cacheFile = 'confetti.json';
         json = JSON.parse(response);
       } catch (_error) {
         ex = _error;
-        confetti.msg.bot("Failed to receive a reply -- check your internet connection", chan);
+        confetti.msg.bot("Failed to translate your message -- check your internet connection", chan);
         return;
       }
       return confetti.msg.bot("'" + message + "' is '" + json[0][0][0] + "' in '" + (to.toUpperCase()) + "'.", chan);

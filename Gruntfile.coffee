@@ -19,6 +19,9 @@ module.exports = (grunt) ->
         grunt.log.ok 'Building plugin: Emoji'
         grunt.task.run 'coffee:emoji-plugin'
 
+        grunt.log.ok 'Building plugin: Pokémon Usage Statistics'
+        grunt.task.run 'coffee:pusestats-plugin'
+
     grunt.registerTask 'default', ['build-client']
 
     # Add files to build here. Keep them in order.
@@ -78,5 +81,11 @@ module.exports = (grunt) ->
                     join: yes
                 files:
                     'plugins/emoji/emoji.js': 'plugins/emoji/emoji.coffee'
+            'pusestats-plugin':
+                options:
+                    bare: yes
+                    join: yes
+                files:
+                    'plugins/pusestats/pusestats.js': 'plugins/pusestats/pusestats.coffee'
 
     grunt.initConfig gruntConfig
