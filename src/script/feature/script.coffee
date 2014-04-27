@@ -10,7 +10,7 @@ do ->
         '2.0.7': 'Emoji plugin.'
         '2.0.8': 'Plugin auto-updating and versions.'
         '2.0.9': 'Changelog, usability improvements, fullwidth encool, updated script urls.'
-        '2.0.10': 'Pokémon Usage Statistics plugin, auth symbols, flashwords.'
+        '2.0.10': 'Pok&eacute;mon Usage Statistics plugin, auth symbols, flashwords.'
 
     autoUpdate = ->
         return if confetti.cache.get('autoupdate') is no

@@ -14,7 +14,7 @@
     html += "</tr></table><br>";
     return confetti.msg.html(html, chan);
   });
-  confetti.command('usagestats', ['usagestats [tier]', "Shows usage stats of a specific tier. Hover over an entry to see the Pokémon's name, click it to go to its usage page.", 'setmsg@usagestats tier'], function(data, chan) {
+  confetti.command('usagestats', ['usagestats [tier]', "Shows usage stats of a specific tier. Hover over an entry to see the Pok&eacute;mon's name, click it to go to its usage page.", 'setmsg@usagestats tier'], function(data, chan) {
     var name, tier, tname, _i, _len;
     tier = '';
     tname = data.toLowerCase();

@@ -172,7 +172,7 @@ do ->
         template.push  "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" + pokeGender(data)
 
         template.push "National Dex Number: <b>#{pokeId}</b>"
-        template.push "Generation <b>#{firstGen(pokeId)}</b> Pokémon."
+        template.push "Generation <b>#{firstGen(pokeId)}</b> Pok&eacute;mon."
 
         # Add a white line if the pokemon has evolutions or it's min level isn't 1 or 100.
         if data.evos or (data.minlvl isnt 1 and data.minlvl isnt 100)

@@ -4,7 +4,7 @@
     "version": "1.0.5"
 }, {
     "id": "pokedex",
-    "name": "Pokédex",
+    "name": "Pok&eacute;dex",
     "version": "1.0.0"
 }, {
     "id": "aoctaunts",
@@ -16,6 +16,6 @@
     "version": "1.0.1"
 }, {
     "id": "pusestats",
-    "name": "Pokémon Usage Statistics",
+    "name": "Pok&eacute;mon Usage Statistics",
     "version": "1.0.0"
 }]

@@ -30,9 +30,9 @@ confetti.version = {
   minor: 9
 };
 
-confetti.scriptUrl = 'https://raw.githubusercontent.com/TheUnknownOne/PO-Client-Tools/master/';
+confetti.scriptUrl = 'http://theunknownone.github.io/PO-Client-Tools/';
 
-confetti.pluginsUrl = 'https://raw.githubusercontent.com/TheUnknownOne/PO-Client-Tools/master/plugins/';
+confetti.pluginsUrl = 'http://theunknownone.github.io/PO-Client-Tools/plugins/';
 
 confetti.dataDir = sys.scriptsFolder;
 
@@ -1594,7 +1594,7 @@ confetti.cacheFile = 'confetti.json';
     '2.0.7': 'Emoji plugin.',
     '2.0.8': 'Plugin auto-updating and versions.',
     '2.0.9': 'Changelog, usability improvements, fullwidth encool, updated script urls.',
-    '2.0.10': 'Pokémon Usage Statistics plugin, auth symbols, flashwords.'
+    '2.0.10': 'Pok&eacute;mon Usage Statistics plugin, auth symbols, flashwords.'
   };
   autoUpdate = function() {
     var now;

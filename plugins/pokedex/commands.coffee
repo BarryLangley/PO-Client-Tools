@@ -1,5 +1,5 @@
 do ->
-    confetti.command 'pokedex', ['pokedex [pokémon?]', 'Shows a Pokédex entry for the given Pokémon, or a random one if none was given. This command will cause slight lag when first used in this session.', 'setmsg@pokedex [pokemon]'], (data, chan) ->
+    confetti.command 'pokedex', ['pokedex [pok&eacute;mon?]', 'Shows a Pokédex entry for the given Pokémon, or a random one if none was given. This command will cause slight lag when first used in this session.', 'setmsg@pokedex [pokemon]'], (data, chan) ->
         forme = data.indexOf '-'
         if forme isnt -1
             data = data.substr 0, forme

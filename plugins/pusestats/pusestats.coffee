@@ -1,4 +1,4 @@
-# Pokémon Usage Statistics plugin
+# Pokemon Usage Statistics plugin
 do ->
     # Want to generate this list? Go here: http://stats.pokemon-online.eu/index.html
     # And type this into your browser console:
@@ -83,7 +83,7 @@ do ->
         html += "</tr></table><br>"
         confetti.msg.html html, chan
 
-    confetti.command 'usagestats', ['usagestats [tier]', "Shows usage stats of a specific tier. Hover over an entry to see the Pokémon's name, click it to go to its usage page.", 'setmsg@usagestats tier'], (data, chan) ->
+    confetti.command 'usagestats', ['usagestats [tier]', "Shows usage stats of a specific tier. Hover over an entry to see the Pok&eacute;mon's name, click it to go to its usage page.", 'setmsg@usagestats tier'], (data, chan) ->
         tier = ''
         tname = data.toLowerCase()
 

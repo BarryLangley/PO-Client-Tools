@@ -407,7 +407,7 @@ confetti.pokedex = function() {
     template.push("<img src='pokemon:num=" + pokeId + "'> <img src='pokemon:num=" + pokeId + "&back=true'> <img src='pokemon:num=" + pokeId + "&shiny=true'> <img src='pokemon:num=" + pokeId + "&shiny=true&back=true'><br>");
     template.push("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" + pokeGender(data));
     template.push("National Dex Number: <b>" + pokeId + "</b>");
-    template.push("Generation <b>" + (firstGen(pokeId)) + "</b> Pokémon.");
+    template.push("Generation <b>" + (firstGen(pokeId)) + "</b> Pok&eacute;mon.");
     if (data.evos || (data.minlvl !== 1 && data.minlvl !== 100)) {
       template.push("");
     }
@@ -446,7 +446,7 @@ confetti.pokedex = function() {
 })();
 
 (function() {
-  confetti.command('pokedex', ['pokedex [pokémon?]', 'Shows a Pokédex entry for the given Pokémon, or a random one if none was given. This command will cause slight lag when first used in this session.', 'setmsg@pokedex [pokemon]'], function(data, chan) {
+  confetti.command('pokedex', ['pokedex [pok&eacute;mon?]', 'Shows a Pokédex entry for the given Pokémon, or a random one if none was given. This command will cause slight lag when first used in this session.', 'setmsg@pokedex [pokemon]'], function(data, chan) {
     var ex, forme, num, pokeName;
     forme = data.indexOf('-');
     if (forme !== -1) {

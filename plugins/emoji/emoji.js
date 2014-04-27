@@ -2,7 +2,7 @@
   var checkEmoji, emoji, emojiRegex, parseEmoji, parsed, url;
   emoji = {};
   parsed = false;
-  url = 'https://raw.githubusercontent.com/TheUnknownOne/PO-Client-Tools/master/plugins/emoji/emoji.json';
+  url = 'http://theunknownone.github.io/PO-Client-Tools/plugins/emoji/emoji.json';
   emojiRegex = /:([a-z0-9\+\-_]+):/g;
   checkEmoji = function(verbose) {
     var content, file;
@@ -93,7 +93,7 @@
     var auth, authSymbol, color, newMessage;
     color = _arg[0], auth = _arg[1], authSymbol = _arg[2];
     newMessage = parseEmoji(playerMessage);
-    if (newMessage !== escapedMessage) {
+    if (newMessage !== playerMessage) {
       playerMessage = newMessage;
       html = true;
       dirty = true;

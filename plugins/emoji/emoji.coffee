@@ -2,7 +2,7 @@
 do ->
     emoji = {}
     parsed = no
-    url = 'https://raw.githubusercontent.com/TheUnknownOne/PO-Client-Tools/master/plugins/emoji/emoji.json'
+    url = 'http://theunknownone.github.io/PO-Client-Tools/plugins/emoji/emoji.json'
 
     emojiRegex = /:([a-z0-9\+\-_]+):/g
 
@@ -89,7 +89,7 @@ do ->
 
     confetti.hook 'manipulateChanPlayerMessage', (from, fromId, message, playerMessage, [color, auth, authSymbol], chan, html, dirty) ->
         newMessage = parseEmoji(playerMessage)
-        if newMessage isnt escapedMessage
+        if newMessage isnt playerMessage
             playerMessage = newMessage
             html = yes
             dirty = yes

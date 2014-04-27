@@ -1,4 +1,4 @@
-# Pokémon Online global shortcuts
+# Global shortcuts
 Client = client
 Network = Client.network()
 Global = this
@@ -24,7 +24,7 @@ confetti.version =
     minor: 9
 
 # TODO: A command to change this
-confetti.scriptUrl  = 'https://raw.githubusercontent.com/TheUnknownOne/PO-Client-Tools/master/'
-confetti.pluginsUrl = 'https://raw.githubusercontent.com/TheUnknownOne/PO-Client-Tools/master/plugins/'
+confetti.scriptUrl  = 'http://theunknownone.github.io/PO-Client-Tools/'
+confetti.pluginsUrl = 'http://theunknownone.github.io/PO-Client-Tools/plugins/'
 confetti.dataDir    = sys.scriptsFolder
 confetti.cacheFile  = 'confetti.json'
