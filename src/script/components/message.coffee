@@ -27,8 +27,8 @@ do ->
     bold = (title, msg = '', chan, color = 'black') ->
         html "<timestamp/><b style='color: #{color};'>#{title}:</b> #{msg}", chan
 
-    notification = (msg, title = Client.windowTitle, allowActive = yes) ->
-        if confetti.cache.initialized isnt no and confetti.cache.read('notifications') is on
+    notification = (msg, title = Client.windowTitle, allowActive = yes, force = no) ->
+        if force is yes or (confetti.cache.initialized isnt no and confetti.cache.read('notifications') is on)
             if Client.windowActive()
                 if allowActive
                     html "&nbsp;&nbsp;&nbsp;#{poIcon} <b>#{title}</b><br>#{bullet} #{msg}"

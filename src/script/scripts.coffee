@@ -200,3 +200,5 @@ confettiScript =
             confetti.ignoreNextChanMessage = yes
 
             Client.printChannelMessage finishedMessage, chan, yes
+            if flashes and playerMessage.indexOf('<ping/>') isnt -1
+                confetti.msg.notification confetti.util.stripHtml(playerMessage), "Ping in ##{Client.channelName(chan)}", no, yes

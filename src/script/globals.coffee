@@ -21,7 +21,7 @@ if typeof confetti isnt 'object'
 confetti.version =
     release: 2
     major: 0
-    minor: 9
+    minor: 10
 
 # TODO: A command to change this
 confetti.scriptUrl  = 'http://theunknownone.github.io/PO-Client-Tools/'
