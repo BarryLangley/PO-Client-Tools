@@ -1,8 +1,6 @@
 do ->
     # Command list stuff
-    channel = null
-
-    cmd = (name, chan = channel) ->
+    cmd = (name, chan = Client.currentChannel()) ->
         command = confetti.commands[name]
         if command
             parts = command.info.complete.split '@'
@@ -13,10 +11,10 @@ do ->
 
             confetti.msg.html "&bull; #{complete}: #{command.info.desc}", chan
 
-    header = (msg, size = 5, chan = channel) ->
+    header = (msg, size = 5, chan = Client.currentChannel()) ->
         confetti.msg.html "<br><font size='#{size}'><b>#{msg}</b></font><br>", chan
 
-    border = (timestamp = no, chan = channel) ->
+    border = (timestamp = no, chan = Client.currentChannel()) ->
         confetti.msg.html "#{if timestamp then '<br><timestamp/><br>' else '<br>'}<font color='skyblue'><b>≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈</b></font>#{if timestamp then '<br>' else ''}", chan
 
         channel = null if timestamp
@@ -24,8 +22,6 @@ do ->
     confetti.commandList = {cmd, header, border}
 
     confetti.command 'configcommands', ['Shows various commands that change your settings.', 'send@configcommands'], (_, chan) ->
-        channel = chan
-
         border()
 
         header 'Configuration Commands'
@@ -44,7 +40,6 @@ do ->
         border yes
 
     confetti.command 'commands', ['Shows this command list.', 'send@commands'], (_, chan) ->
-        channel = chan
         border()
 
         header 'Commands'

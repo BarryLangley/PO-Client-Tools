@@ -4,17 +4,14 @@ do ->
     smallcapsConvert = {}
 
     for chr, index in normalLetters
-        smallcap = smallcapsLetters[index]
-        smallcapsConvert[chr] = smallcap
-        smallcapsConvert[chr.toUpperCase()] = smallcap
+        smallcapsConvert[chr] = smallcapsConvert[chr.toUpperCase()] = smallcapsLetters[index]
 
     halfwidthChars = '!"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~'.split ''
     fullwidthChars = "！＂＃＄％＆＇（）＊＋，－．／０１２３４５６７８９：；＜＝＞？＠ＡＢＣＤＥＦＧＨＩＪＫＬＭＮＯＰＱＲＳＴＵＶＷＸＹＺ［＼］＾＿｀ａｂｃｄｅｆｇｈｉｊｋｌｍｎｏｐｑｒｓｔｕｖｗｘｙｚ｛｜｝～".split ''
     fullwidthConvert = {}
 
     for chr, index in halfwidthChars
-        fullwidth = fullwidthChars[index]
-        fullwidthConvert[chr] = fullwidth
+        fullwidthConvert[chr] = fullwidthChars[index]
 
     smallcapsify = (msg) ->
         str = []
@@ -114,12 +111,13 @@ do ->
 
         Network.sendChanMessage chan, encool(msg)
 
-    confetti.command 'encool', ['encool [type]', 'Changes your encool type to (none, spaces, smallcaps, fullwidth, leet, reverse).', 'setmsg@encool type'], (data) ->
+    encoolTypes = Object.keys(encoolHandlers)
+    confetti.command 'encool', ['encool [type]', "Changes your encool type to (#{encoolTypes.join(', ')}).", 'setmsg@encool type'], (data) ->
         data = data.toLowerCase()
 
-        if !(data in ['none', 'spaces', 'smallcaps', 'fullwidth', 'leet', 'l33t', 'reverse'])
+        if !(data in encoolTypes)
             confetti.msg.bot "That doesn't look right to me!"
-            confetti.msg.bot "Use one of the following types: none, spaces, smallcaps, fullwidth, leet, reverse"
+            confetti.msg.bot "Use one of the following types: #{encoolTypes.join(', ')}"
             return
 
         if confetti.cache.read('encool') is data

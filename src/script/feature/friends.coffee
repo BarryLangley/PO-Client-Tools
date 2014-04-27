@@ -4,8 +4,7 @@ do ->
         friends = confetti.util.sortOnlineOffline(confetti.cache.get('friends'))
 
         if friends.length is 0
-            confetti.msg.bot "<span title='You have 0 friends.'>There is no one on your friend list.</span>"
-            return
+            return confetti.msg.bot "<span title='You have 0 friends.'>There is no one on your friend list.</span>"
 
         confetti.msg.bold "Your friends <small>[#{friends.length}]</small>", '', chan
 
@@ -25,17 +24,14 @@ do ->
         data = data.toLowerCase()
         friends = confetti.cache.get 'friends'
 
-        if data.length is 0
-            confetti.msg.bot "Specify a name!"
-            return
+        unless data
+            return confetti.msg.bot "Specify a name!"
 
         if Client.ownName().toLowerCase() is data
-            confetti.msg.bot "You can't add yourself as a friend!"
-            return
+            return confetti.msg.bot "You can't add yourself as a friend!"
 
         if data in friends
-            confetti.msg.bot "#{name} is already on your friends list!"
-            return
+            return confetti.msg.bot "#{name} is already on your friends list!"
 
         friends.push data
         confetti.cache.store('friends', friends).save()
@@ -48,8 +44,7 @@ do ->
         friends = confetti.cache.get 'friends'
 
         unless data in friends
-            confetti.msg.bot "#{name} isn't on your friends list!"
-            return
+            return confetti.msg.bot "#{name} isn't on your friends list!"
 
         friends.splice friends.indexOf(data), 1
         confetti.cache.store('friends', friends).save()
@@ -69,7 +64,7 @@ do ->
         # In the first few seconds of connection, often a long list of players is sent.
         # If one friend is in this list, their "arrival" is notified.
         # In reality, they were already there. So don't tell about them.
-        if confetti.loginTime is 0 or +sys.time() <= confetti.loginTime + 4
+        if confetti.loginTime is 0 or sys.time() <= confetti.loginTime + 4
             return
 
         if confetti.cache.get('friendnotifications') is no

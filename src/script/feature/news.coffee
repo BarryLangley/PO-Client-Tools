@@ -12,14 +12,12 @@ do ->
 
         sys.webCall "https://ajax.googleapis.com/ajax/services/search/news?v=1.0&rsz=6&hl=#{encodeURIComponent(lang)}#{topic}", (response) ->
             unless response
-                confetti.msg.bot "Couldn't load news - your internet might be down.", chan
-                return
+                return confetti.msg.bot "Couldn't load news - your internet might be down.", chan
 
             try
                 json = JSON.parse response
             catch ex
-                confetti.msg.bot "Couldn't load news - your internet might be down.", chan
-                return
+                return confetti.msg.bot "Couldn't load news - your internet might be down.", chan
 
             stories = json.responseData.results
             res = []

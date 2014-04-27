@@ -11,9 +11,10 @@ do ->
     confetti.command 'evalp', 'eval'
 
     confetti.command 'imp', ['imp [name]', "Changes your name to [name]. If the name is deemed invalid, you will be kicked, so be careful!", 'setmsg@imp name'], (data) ->
-        if data.length < 1 or data.length > 20
-            confetti.msg.bot "That name is too long or too short (max 20 characters)!"
-            return
+        if not data
+            return confetti.msg.bot "Specify a name!"
+        else if data.length > 20
+            return confetti.msg.bot "That name is too long or too short (max 20 characters)!"
 
         confetti.msg.bot "You are now known as #{data}!"
         Client.changeName data
@@ -73,19 +74,17 @@ do ->
     confetti.alias 'channel', 'chan'
     confetti.alias 'goto', 'chan'
 
-    confetti.command 'info', ['info [name]', "Shows info for a given user. If you are a moderator, also opens a control panel for the player.", 'setmsg@info name'], (data) ->
-        isMod = Client.ownAuth() > 0
+    confetti.command 'info', ['info [name]', "Shows info for a given user. If you are a moderator, also opens a control panel for the player.", 'setmsg@info name'], (data, chan) ->
         id = Client.id data
 
-        if isMod
+        if Client.ownAuth() > 0
             Client.controlPanel id
 
             Network.getUserInfo data
             Network.getBanList()
 
         if id is -1
-            confetti.msg.bot "#{data} is offline, I can't fetch any information about them."
-            return
+            return confetti.msg.bot "#{data} is offline, I can't fetch any information about them."
 
         name = confetti.player.fancyName id
         auth = Client.auth id
@@ -97,7 +96,7 @@ do ->
 
         if Client.player?
             avatar = Client.player(id).avatar
-            confetti.msg.html "#{confetti.msg.bullet} <b>Avatar</b>: #{avatar}<br>#{confetti.msg.indent}<img src='trainer:#{avatar}'>"
+            confetti.msg.html "#{confetti.msg.bullet} <b>Avatar</b>: #{avatar}<br>#{confetti.msg.indent}<img src='trainer:#{avatar}'>", chan
 
     confetti.alias 'userinfo', 'info'
 

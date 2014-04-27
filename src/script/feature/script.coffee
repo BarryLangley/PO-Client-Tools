@@ -15,7 +15,7 @@ do ->
         return if confetti.cache.get('autoupdate') is no
         return if sys.isSafeScripts()
 
-        now = +sys.time()
+        now = sys.time()
         # Check every 6 hours
         if (confetti.cache.get('lastupdatetime') + (6 * 60 * 60)) > now
             return
@@ -29,7 +29,7 @@ do ->
                 return
 
             if differentVersion(confetti.version, json)
-                updateScript()
+                updateScript(json)
 
     versionFormat = (version) ->
         version.release + '.' + version.major + '.' + version.minor
@@ -37,31 +37,26 @@ do ->
     differentVersion = (ov, nv) ->
         versionFormat(ov) isnt versionFormat(nv)
 
-    updateScript = ->
+    updateScript = (newVersion) ->
         oldVersion = {release: confetti.version.release, major: confetti.version.major, minor: confetti.version.minor}
         sys.webCall confetti.scriptUrl + 'scripts.js', (file) ->
             unless file
-                confetti.msg.bot "Couldn't load script, check your internet connection."
-                return
+                return confetti.msg.bot "Couldn't load script, check your internet connection."
 
             confetti.io.write sys.scriptsFolder + 'scripts.js', file
             confetti.io.reloadScript yes, oldVersion
-            if confetti.oldVersion
-                confetti.versionCheck(confetti.version, confetti.oldVersion)
+            if newVersion
+                if differentVersion(newVersion, oldVersion)
+                    confetti.msg.bot "Script updated to version #{versionFormat(newVersion)}!"
+                else
+                    confetti.msg.bot "Script updated!"
+            else
+                confetti.msg.bot "Script updated!"
 
     # Check in 15 seconds (in case the player often relogs, it will never have a chance to update), and every 10m afterwards.
     # This timer is pretty painless, so it could be less.
     sys.setTimer autoUpdate, 15 * 1000, no
     sys.setTimer autoUpdate, 10 * 60 * 1000, yes
-
-    confetti.versionCheck = (newVersion, oldVersion) ->
-        if differentVersion(newVersion, oldVersion)
-            vers = versionFormat(newVersion)
-            confetti.msg.bot "Script updated to version #{vers}!"
-            if changelog[vers]
-                confetti.msg.bot "What's new: #{changelog[vers]}"
-        else
-            confetti.msg.bot "Script updated!"
 
     confetti.changelog = changelog
     confetti.autoUpdate = autoUpdate
@@ -69,27 +64,26 @@ do ->
     confetti.hook 'initCache', ->
         confetti.cache
             .store('autoupdate', yes, confetti.cache.once)
-            .store('lastupdatetime', +sys.time(), confetti.cache.once)
+            .store('lastupdatetime', sys.time(), confetti.cache.once)
 
-    confetti.command 'scriptcommands', ['Shows various commands related to the script.', 'send@scriptcommands'], (_, chan) ->
+    confetti.command 'scriptcommands', ['Shows various commands related to the script.', 'send@scriptcommands'], ->
         {header, border, cmd} = confetti.commandList
 
-        border no, chan
+        border no
 
-        header 'Script Commands', 5, chan
-        cmd 'updatescript', chan
-        cmd 'autoupdate', chan
-        cmd 'changelog', chan
-        cmd 'version', chan
+        header 'Script Commands', 5
+        cmd 'updatescript'
+        cmd 'autoupdate'
+        cmd 'changelog'
+        cmd 'version'
 
         confetti.callHooks 'commands:script'
 
-        border yes, chan
+        border yes
 
     confetti.command 'updatescript', ['Updates the script to the latest available version.', 'send@updatescript'], ->
         if sys.isSafeScripts()
-            confetti.msg.bot "Please disable Safe Scripts before using this command."
-            return
+            return confetti.msg.bot "Please disable Safe Scripts before using this command."
 
         confetti.msg.bot "Updating script..."
         updateScript()

@@ -6,12 +6,10 @@ do ->
 
     confetti.command 'botname', ['botname [name]', "Changes the bot's name to [name].", 'setmsg@botname name'], (data) ->
         if data.length > 25
-            confetti.msg.bot "Uhh, that's too long, I think!"
-            return
+            return confetti.msg.bot "Uhh, that's too long, I think!"
 
         if confetti.cache.read('botname') is data
-            confetti.msg.bot "I'm already #{data}!"
-            return
+            return confetti.msg.bot "I'm already #{data}!"
 
         confetti.cache.store('botname', data).save()
         confetti.msg.bot "I'm now called #{data}!"
@@ -20,12 +18,10 @@ do ->
         data = data.toLowerCase()
 
         unless sys.validColor(data)
-            confetti.msg.bot "That doesn't look like a valid color to me!"
-            return
+            return confetti.msg.bot "That doesn't look like a valid color to me!"
 
         if confetti.cache.read('botcolor') is data
-            confetti.msg.bot "My color is already #{data}!"
-            return
+            return confetti.msg.bot "My color is already #{data}!"
 
         confetti.cache.store('botcolor', data).save()
         confetti.msg.bot "My color is now #{data}!"
@@ -34,16 +30,13 @@ do ->
         data = data.toLowerCase()
 
         if data.length isnt 1
-            confetti.msg.bot "Your command indicator has to be one character, nothing more, nothing less!"
-            return
+            return confetti.msg.bot "Your command indicator has to be one character, nothing more, nothing less!"
 
         if data in ['/', '!']
-            confetti.msg.bot "'!' and '/' are not allowed as command indicators because they are reserved for server scripts."
-            return
+            return confetti.msg.bot "'!' and '/' are not allowed as command indicators because they are reserved for server scripts."
 
         if confetti.cache.read('commandindicator') is data
-            confetti.msg.bot "Your command indicator is already #{data}!"
-            return
+            return confetti.msg.bot "Your command indicator is already #{data}!"
 
         confetti.cache.store('commandindicator', data).save()
         confetti.msg.bot "Your command indicator is now #{data}!"
@@ -53,8 +46,7 @@ do ->
         if data.toLowerCase() isnt 'sure'
             commandindicator = confetti.cache.get 'commandindicator'
             # Since '-' is always the command indicator, use it so the command remains clickable even if the user changes their command indicator (inside the send/setmsg protocol).
-            confetti.msg.bot "<a href='po:send/-defaults sure' style='text-decoration: none; color: black;'>Are you sure that you want to reset your settings? There is no going back. Click this message to confirm (or type <small>#{commandindicator}defaults sure</small>).</a>"
-            return
+            return confetti.msg.bot "<a href='po:send/-defaults sure' style='text-decoration: none; color: black;'>Are you sure that you want to reset your settings? There is no going back. Click this message to confirm (or type <small>#{commandindicator}defaults sure</small>).</a>"
 
         # Wipe everything and reset the cache.
         # Scripts are reloaded for plugins.

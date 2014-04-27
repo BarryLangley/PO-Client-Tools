@@ -40,11 +40,10 @@ confettiScript =
 
         # The reason why we don't do this only once is because people tend to forget. Yeah.
         unless confetti.initialized
-            if (confetti.cache.get('lastuse') + (5 * 24 * 60 * 60)) < (+sys.time())
-                commandindicator = confetti.cache.get 'commandindicator'
-                confetti.msg.bot "Type <a href='po:send/-commands' style='text-decoration: none; color: green;'><b>#{commandindicator}commands</b></a> for a list of client commands.", -1
+            if (confetti.cache.get('lastuse') + (5 * 24 * 60 * 60)) < sys.time()
+                confetti.msg.bot "Type <a href='po:send/-commands' style='text-decoration:none;color:green'><b>#{confetti.cache.get('commandindicator')}commands</b></a> for a list of client commands.", -1
 
-            confetti.cache.store('lastuse', +sys.time()).save()
+            confetti.cache.store('lastuse', sys.time()).save()
 
         if sys.isSafeScripts()
             confetti.msg.bot "<b style='color: red;'>Safe Scripts is enabled</b>. This will disable persistent data storage and limit other features.", -1

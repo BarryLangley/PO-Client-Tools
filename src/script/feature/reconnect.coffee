@@ -18,7 +18,6 @@ do ->
             sys.unsetTimer autoReconnectTimer
             autoReconnectTimer = -1
             attempts = 0
-            stopTrying = no
             stopReconnecting = no
 
     Network.disconnected.connect ->

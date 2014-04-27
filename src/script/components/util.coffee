@@ -4,18 +4,6 @@ do ->
             return array[sys.rand(0, array.length)]
         else
             return array
-    copyArray = (array) ->
-        array.slice()
-    removeDuplicates = (array) ->
-        dupeless = []
-
-        for val in array
-            if dupeless.indexOf(val) is -1
-                dupeless.push val
-
-        return dupeless
-    isPlainObject = (obj) ->
-        Object::toString.call(obj) is '[object Object]'
     shuffle = (array) ->
         length = array.length
 
@@ -86,13 +74,9 @@ do ->
     isAlpha = (chr) ->
         chr = chr.toLowerCase()
         chr >= 'a' and chr <= 'z'
-    noop = ->
 
     confetti.util = {
         random
-        copyArray
-        removeDuplicates
-        isPlainObject
         isAlpha
         shuffle
         an
@@ -102,5 +86,4 @@ do ->
         truncate
         escapeRegex
         stripquotes
-        noop
     }

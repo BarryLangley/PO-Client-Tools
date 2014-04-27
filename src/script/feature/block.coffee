@@ -3,8 +3,7 @@ do ->
         blocklist = confetti.util.sortOnlineOffline(confetti.cache.get('blocked'))
 
         if blocklist.length is 0
-            confetti.msg.bot "There is no one on your block list."
-            return
+            return confetti.msg.bot "There is no one on your block list."
 
         confetti.msg.bold "Blocked players <small>[#{blocklist.length}]</small>", '', chan
 
@@ -19,25 +18,22 @@ do ->
         confetti.msg.html html, chan
 
     confetti.command 'block', ['block [name]', "Blocks a user by automatically ignoring them.", 'setmsg@block name'], (data) ->
-        if data.length < 1 or data.length > 20
-            confetti.msg.bot "Uhh, that's too long, I think!"
-            return
+        len = data.length
+
+        if not data
+            return confetti.msg.bot "Specify a name!"
+        else if len > 20
+            return confetti.msg.bot "That name's a bit too long."
 
         name = confetti.player.name data
         data = data.toLowerCase()
         blocked = confetti.cache.get 'blocked'
 
-        if data.length is 0
-            confetti.msg.bot "Specify a name!"
-            return
-
         if Client.ownName().toLowerCase() is data
-            confetti.msg.bot "You can't block yourself!"
-            return
+            return confetti.msg.bot "You can't block yourself!"
 
         if data in blocked
-            confetti.msg.bot "#{name} is already blocked!"
-            return
+            return confetti.msg.bot "#{name} is already blocked!"
 
         blocked.push data
         confetti.cache.store('blocked', blocked).save()
@@ -53,8 +49,7 @@ do ->
         blocked = confetti.cache.get 'blocked'
 
         unless data in blocked
-            confetti.msg.bot "#{name} isn't blocked!"
-            return
+            return confetti.msg.bot "#{name} isn't blocked!"
 
         blocked.splice blocked.indexOf(data), 1
         confetti.cache.store('blocked', blocked).save()

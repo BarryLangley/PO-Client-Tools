@@ -9,14 +9,14 @@ do ->
         return null
     hasPlugin = (id, plugins) -> findPlugin(id, plugins) isnt null
 
-    updatePlugins = (verbose = no) ->
+    updatePlugins = (verbose = no, chan) ->
         plugins = confetti.cache.get('plugins')
         sys.webCall confetti.pluginsUrl + 'listing.json', (resp) ->
             try
                 json = JSON.parse resp
             catch ex
                 if verbose
-                    confetti.msg.bot "Couldn't load plugin listing -- check your internet connection."
+                    confetti.msg.bot "Couldn't load plugin listing -- check your internet connection.", chan
                 return
 
             toUpdate = []
@@ -30,30 +30,31 @@ do ->
             if toUpdate.length
                 for plugin in toUpdate
                     plug = plugin[1]
-                    sys.webCall "#{confetti.pluginsUrl}#{plug.id}/#{plug.id}.js", do (plugin) ->
+                    pid = plug.id
+                    sys.webCall "#{confetti.pluginsUrl}#{pid}/#{pid}.js", do (plugin) ->
                         return (resp) ->
-                            if not resp
-                                confetti.msg.bot "Couldn't load plugin source for plugin #{plug.id} -- check your internet connection."
-                                return
+                            unless resp
+                                return confetti.msg.bot "Couldn't load plugin source for plugin #{pid} -- check your internet connection.", chan
 
-                            sys.writeToFile "#{confetti.dataDir}plugin-#{plug.id}.js", resp
+                            confetti.io.writeLocal "plugin-#{pid}.js", resp
 
                             index = plugins.indexOf(plugin[0])
                             plugins[index] = plug # Replace plugin with the new one
                             confetti.cache.store('plugins', plugins).save()
 
-                            confetti.msg.bot "Plugin #{plug.name} updated to version #{plug.version}!"
-                            confetti.initPlugins plug.id
+                            confetti.msg.bot "Plugin #{plug.name} updated to version #{plug.version}!", chan
+                            confetti.initPlugins pid
             else
                 if verbose
-                    confetti.msg.bot "All plugins up to date."
+                    confetti.msg.bot "All plugins up to date.", chan
 
     confetti.updatePlugins = updatePlugins
     confetti.command 'plugincommands', ['Shows various commands related to plugins.', 'send@plugincommands'], (_, chan) ->
-        confetti.commandList.border no, chan
+        {header, border, cmd} = confetti.commandList
+        border no, chan
 
-        confetti.commandList.header 'Plugin Commands', 5, chan
-        confetti.commandList.cmd 'plugins', chan
+        header 'Plugin Commands', 5, chan
+        cmd 'plugins', chan
         confetti.commandList.cmd 'addplugin', chan
         confetti.commandList.cmd 'removeplugin', chan
         confetti.commandList.cmd 'updateplugins', chan
@@ -66,26 +67,23 @@ do ->
     confetti.command 'plugins', ["Displays a list of enabled and available plugins.", 'send@plugins'], (_, chan) ->
         plugins = confetti.cache.get 'plugins'
         if plugins.length > 0
-            confetti.msg.bold "Loaded Plugins"
+            confetti.msg.bold "Loaded Plugins", chan
 
             html = ""
             for plugin in plugins
                 # Since '-' is always the command indicator, use it so the command remains clickable even if the user changes their command indicator (inside the send/setmsg protocol).
                 html += "#{confetti.msg.bullet} <b>#{plugin.name}</b> (#{plugin.id}) v#{plugin.version} <small>[<a href='po:send/-removeplugin #{plugin.name}' style='text-decoration: none; color: black;'>remove</a>]</small>"
 
-            confetti.msg.html html
+            confetti.msg.html html, chan
 
         sys.webCall confetti.pluginsUrl + 'listing.json', (resp) ->
             try
                 json = JSON.parse resp
             catch ex
-                print ex
-                confetti.msg.bot "Couldn't load available plugins listing -- check your internet connection.", chan
-                return
+                return confetti.msg.bot "Couldn't load available plugins listing -- check your internet connection.", chan
 
-            if json.length is 0
-                confetti.msg.bot "No plugins are available.", chan
-                return
+            unless json.length
+                return confetti.msg.bot "No plugins are available.", chan
 
             confetti.msg.bold "Available Plugins", '', chan
 
@@ -108,42 +106,36 @@ do ->
         name = data
         data = data.toLowerCase()
 
-        if name.length is 0
-            confetti.msg.bot "Specify a plugin!"
-            return
-
-        if hasPlugin(data, plugins)
-            confetti.msg.bot "#{name} is already enabled as a plugin!"
-            return
+        if not name
+            return confetti.msg.bot "Specify a plugin!"
+        else if hasPlugin(data, plugins)
+            return confetti.msg.bot "#{name} is already enabled as a plugin!"
 
         sys.webCall confetti.pluginsUrl + 'listing.json', (resp) ->
             try
                 json = JSON.parse resp
             catch ex
-                confetti.msg.bot "Couldn't load available plugins listing -- check your internet connection.", chan
-                return
+                return confetti.msg.bot "Couldn't load available plugins listing -- check your internet connection.", chan
 
             if json.length is 0
-                confetti.msg.bot "No plugins are available.", chan
-                return
+                return confetti.msg.bot "No plugins are available.", chan
 
             plugin = findPlugin data, json
             if plugin is null
-                confetti.msg.bot "That plugin is not available! Use the 'plugins' command to see a list of available plugins.", chan
-                return
+                return confetti.msg.bot "That plugin is not available! Use the 'plugins' command to see a list of available plugins.", chan
 
-            sys.webCall "#{confetti.pluginsUrl}#{plugin.id}/#{plugin.id}.js", (file) ->
+            pid = plugin.id
+            sys.webCall "#{confetti.pluginsUrl}#{pid}/#{pid}.js", (file) ->
                 if not file
-                    confetti.msg.bot "Couldn't load plugin source -- check your internet connection.", chan
-                    return
+                    return confetti.msg.bot "Couldn't load plugin source -- check your internet connection.", chan
 
-                sys.writeToFile "#{confetti.dataDir}plugin-#{plugin.id}.js", file
+                confetti.io.writeLocal "plugin-#{pid}.js", file
 
                 plugins.push plugin
                 confetti.cache.store('plugins', plugins).save()
 
                 confetti.msg.bot "Plugin #{plugin.name} added!", chan
-                confetti.initPlugins plugin.id
+                confetti.initPlugins pid
 
     confetti.command 'removeplugin', ['removeplugin [plugin]', "Removes a plugin.", 'setmsg@removeplugin plugin'], (data) ->
         name = data
@@ -152,8 +144,7 @@ do ->
         plugin  = findPlugin(data, plugins)
 
         if plugin is null
-            confetti.msg.bot "#{name} isn't an enabled plugin!"
-            return
+            return confetti.msg.bot "#{name} isn't an enabled plugin!"
 
         plugins.splice plugins.indexOf(plugin), 1
         confetti.cache.store('plugins', plugins).save()
@@ -163,9 +154,8 @@ do ->
 
         confetti.msg.bot "Plugin #{plugin.name} removed."
 
-    confetti.command 'updateplugins', ['Updates your plugins to the latest version.', 'send@updateplugins'], ->
+    confetti.command 'updateplugins', ['Updates your plugins to the latest version.', 'send@updateplugins'], (_, chan) ->
         if sys.isSafeScripts()
-            confetti.msg.bot "Please disable Safe Scripts before using this command."
-            return
+            return confetti.msg.bot "Please disable Safe Scripts before using this command."
 
-        updatePlugins yes
+        updatePlugins yes, chan

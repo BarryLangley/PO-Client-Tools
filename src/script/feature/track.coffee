@@ -4,8 +4,7 @@ do ->
         numTracked = Object.keys(tracked).length
 
         if numTracked is 0
-            confetti.msg.bot "There is no one on your tracking list."
-            return
+            return confetti.msg.bot "There is no one on your tracking list."
 
         confetti.msg.bold "Tracked players <small>[#{numTracked}]</small>", '', chan
 
@@ -42,13 +41,11 @@ do ->
 
         tracked = confetti.cache.get 'tracked'
 
-        if alt.length is 0 or name.length is 0
-            confetti.msg.bot "Specify both the alt and the name!"
-            return
+        if !alt and !name
+            return confetti.msg.bot "Specify both the alt and the name!"
 
         if tracked.hasOwnProperty(alt)
-            confetti.msg.bot "#{altName} is already on your tracking list!"
-            return
+            return confetti.msg.bot "#{altName} is already on your tracking list!"
 
         tracked[alt] = name
         confetti.cache.store('tracked', tracked).save()
@@ -61,8 +58,7 @@ do ->
         tracked = confetti.cache.get 'tracked'
 
         unless tracked.hasOwnProperty(data)
-            confetti.msg.bot "#{name} isn't on your tracking list!"
-            return
+            return confetti.msg.bot "#{name} isn't on your tracking list!"
 
         delete tracked[data]
         confetti.cache.store('tracked', tracked).save()

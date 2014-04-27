@@ -17,7 +17,7 @@ if typeof confetti isnt 'object'
         debug: no
 
     Network.playerLogin.connect ->
-        confetti.loginTime = +sys.time()
+        confetti.loginTime = sys.time()
 
 confetti.version =
     release: 2

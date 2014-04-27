@@ -79,13 +79,14 @@ do ->
 
         success = no
         for plugin in plugins
-            if typeof id is 'string' and plugin.id isnt id
+            pid = plugin.id
+            if typeof id is 'string' and pid isnt id
                 continue
 
-            src = confetti.io.readLocal "plugin-#{plugin.id}.js"
+            src = confetti.io.readLocal "plugin-#{pid}.js"
             if src
                 try
-                    sys.eval(src, "plugin-#{plugin.id}.js")
+                    sys.eval(src, "plugin-#{pid}.js")
                     success = yes
                 catch ex
                     print "Couldn't load plugin #{plugin.name}:"

@@ -4,8 +4,7 @@ do ->
         numSymbols = Object.keys(authsymbols).length
 
         if numSymbols is 0
-            confetti.msg.bot "You have not set any auth symbols."
-            return
+            return confetti.msg.bot "You have not set any auth symbols."
 
         confetti.msg.bold "Auth symbols <small>[#{numSymbols}]</small>", '', chan
 
@@ -24,7 +23,7 @@ do ->
     confetti.alias 'authsymbollist', 'authsymbols'
     confetti.alias 'authsymbolist', 'authsymbols'
 
-    confetti.command 'authsymbol', ['authsymbol [auth]:[start]:[end?]', "Changes the auth symbol of [auth] (0 - User, 1 - Moderator, 2 - Administrator, 3 - Owner, or 4 - \"Invisible\") to [start]. [end?] is optional and will be inserted after the name (useful for HTML). If neither [start] nor [end?] is given, the auth symbol for [auth] is reset (if you want an empty auth symbol for auth level [auth], do <code>authsymbol:</code>).", 'setmsg@authsymbol auth:start'], (data, chan) ->
+    confetti.command 'authsymbol', ['authsymbol [auth]:[start]:[end?]', "Changes the auth symbol of [auth] (0 - User, 1 - Moderator, 2 - Administrator, 3 - Owner, or 4 - \"Invisible\") to [start]. [end?] is optional and will be inserted after the name (useful for HTML). If neither [start] nor [end?] is given, the auth symbol for [auth] is reset (if you want an empty auth symbol for auth level [auth], do <code>authsymbol:</code>).", 'setmsg@authsymbol auth:start'], (data) ->
         parts = data.split ':'
         [authl, start, end] = parts
 
@@ -34,7 +33,7 @@ do ->
 
         authsymbols = confetti.cache.get 'authsymbols'
         if isNaN(authl)
-            return confetti.msg.bot "#{parts[0]} is not a number. Give a number in the range 0-4.", chan
+            return confetti.msg.bot "#{parts[0]} is not a number. Give a number in the range 0-4."
         else if authl < 0
             authl = 0
         else if authl > 4
@@ -45,7 +44,7 @@ do ->
                 delete authsymbols[authl]
                 confetti.cache.store('authsymbols', authsymbols).save()
 
-                return confetti.msg.bot "Auth symbol for auth level #{authl} removed!", chan
+                return confetti.msg.bot "Auth symbol for auth level #{authl} removed!"
             else
                 return confetti.msg.bot "There is no auth symbol for auth level #{authl}. Give a start and an end for the auth level."
 
@@ -54,7 +53,7 @@ do ->
         authsymbols[authl] = [start, end]
         confetti.cache.store('authsymbols', authsymbols).save()
 
-        confetti.msg.bot "Players whose auth level is #{authl} will now be formatted like so: #{start}<b>Name</b>#{end}", chan
+        confetti.msg.bot "Players whose auth level is #{authl} will now be formatted like so: #{start}<b>Name</b>#{end}"
 
     confetti.hook 'initCache', ->
         confetti.cache.store('authsymbols', {}, confetti.cache.once)

@@ -10,8 +10,7 @@ do ->
         from = languageParts[1] or ''
 
         unless message and to
-            confetti.msg.bot "You have to specify a message and a language to translate to (message:es, for example)."
-            return no
+            return confetti.msg.bot "You have to specify a message and a language to translate to (message:es, for example)."
 
         url = "http://translate.google.com/translate_a/t?client=t&text=#{encodeURIComponent(message)}&hl=en&ie=UTF-8&oe=UTF-8&multires=1&otf=1&pc=1&trs=1&ssel=3&tsel=6&sc=1&tl=#{encodeURIComponent(to)}"
         url += "&sl=#{encodeURIComponent(from)}" if from
@@ -22,8 +21,7 @@ do ->
             try
                 json = JSON.parse(response)
             catch ex
-                confetti.msg.bot "Failed to translate your message -- check your internet connection", chan
-                return
+                return confetti.msg.bot "Failed to translate your message -- check your internet connection", chan
 
             confetti.msg.bot "'#{message}' is '#{json[0][0][0]}' in '#{to.toUpperCase()}'.", chan
 
