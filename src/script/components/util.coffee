@@ -75,6 +75,13 @@ do ->
         chr = chr.toLowerCase()
         chr >= 'a' and chr <= 'z'
 
+    addNameHighlights = (msg, name) ->
+        msg.replace(new RegExp("\\b(#{escapeRegex(name)})\\b(?![^\\s<]*>)", "i"), "<span class='name-hilight'>$1</span><ping/>")
+
+    willFlash = (msg, name) ->
+        regex = new RegExp("\\b#{escapeRegex(name)}\\b(?![^\\s<]*>)", "i")
+        msg.search(regex) isnt -1
+
     confetti.util = {
         random
         isAlpha
@@ -86,4 +93,6 @@ do ->
         truncate
         escapeRegex
         stripquotes
+        addNameHighlights
+        willFlash
     }

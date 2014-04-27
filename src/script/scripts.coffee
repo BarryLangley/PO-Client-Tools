@@ -162,43 +162,41 @@ confettiScript =
                 sys.stopEvent()
                 return
 
-        dirty = no
+        channel = Client.channel(chan)
+        ownName = Client.ownName()
+        willFlash = confetti.util.willFlash(playerMessage, ownName)
+        flashes = confetti.cache.get('flashes') is on
+
+        dirty = !flashes and willFlash
         color = Client.color(fromId)
         auth  = Client.auth(fromId)
-        authSymbol = ['', '']
+        authSymbol = []
 
         if auth > 4
             auth = 4
-        else if auth < 0
-            auth = 0
+
+        # Servers with custom HTML will have escaped themselves.
+        # And of course the HTML wouldn't render if we wouldn't do this
+        unless html
+            playerMessage = sys.htmlEscape(playerMessage)
+            playerMessage = Client.channel(chan).addChannelLinks(playerMessage)
 
         [from, fromId, message, playerMessage, [color, auth, authSymbol], chan, html, dirty] =
             confetti.callHooks('manipulateChanPlayerMessage', from, fromId, message, playerMessage, [color, auth, authSymbol], chan, html, dirty)
 
         if dirty
-            color = Client.color(fromId) unless color
-            auth  = Client.auth(fromId) unless auth?
-
-            unless authSymbol[0]? and authSymbol[1]?
-                if auth > 0 && auth < 4
+            if authSymbol.length isnt 2
+                if 4 > auth > 0
                     authSymbol = ['+<i>', '</i>']
                 else
                     authSymbol = ['', '']
 
-            # Servers with custom HTML will have escaped themselves.
-            # And of course the HTML wouldn't render if we wouldn't do this
-            unless html
-                playerMessage = sys.htmlEscape(playerMessage)
-                playerMessage = Client.channel(chan).addChannelLinks(playerMessage)
+            if flashes
+                playerMessage = confetti.util.addNameHighlights(playerMessage, ownName)
 
             finishedMessage = "<font color='#{color}'><timestamp/>#{authSymbol[0]}<b>#{from}:</b>#{authSymbol[1]}</font> #{playerMessage}"
 
             sys.stopEvent()
             confetti.ignoreNextChanMessage = yes
 
-            if confetti.debug
-                print message
-                print playerMessage
-                print finishedMessage
-            else
-                Client.printChannelMessage finishedMessage, chan, yes
+            Client.printChannelMessage finishedMessage, chan, yes

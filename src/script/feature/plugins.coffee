@@ -67,12 +67,15 @@ do ->
     confetti.command 'plugins', ["Displays a list of enabled and available plugins.", 'send@plugins'], (_, chan) ->
         plugins = confetti.cache.get 'plugins'
         if plugins.length > 0
-            confetti.msg.bold "Loaded Plugins", chan
+            confetti.msg.bold "Loaded Plugins <small>[#{plugins.length}]</small>", '', chan
 
             html = ""
-            for plugin in plugins
+            for plugin, index in plugins
                 # Since '-' is always the command indicator, use it so the command remains clickable even if the user changes their command indicator (inside the send/setmsg protocol).
                 html += "#{confetti.msg.bullet} <b>#{plugin.name}</b> (#{plugin.id}) v#{plugin.version} <small>[<a href='po:send/-removeplugin #{plugin.name}' style='text-decoration: none; color: black;'>remove</a>]</small>"
+
+                if index isnt 0 and index % 4 is 0
+                    html += "<br>"
 
             confetti.msg.html html, chan
 

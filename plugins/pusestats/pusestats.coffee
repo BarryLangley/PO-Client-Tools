@@ -78,7 +78,7 @@ do ->
             if index % 12 is 0
                 html += "</tr><tr>"
 
-            html += "<td><a href='po:send/-usagestats #{tier}' style='color:#2a6aaa;text-decoration:none;'><b>#{tier}</b></a></td>"
+            html += "<td><a href='po:send/-usagestats #{tier}' style='color:#aa6a2b;text-decoration:none;'><b>#{tier}</b></a></td>"
 
         html += "</tr></table><br>"
         confetti.msg.html html, chan
@@ -101,9 +101,8 @@ do ->
             if resp.indexOf("<!DOCTYPE html>") isnt -1
                 return confetti.msg.bot "Usage statistics for this tier are unavailable as there were insufficient battles.", chan
 
-            html = "<table cellpadding='0.8'><tr><th colspan=8><font color=#aa6a2b>Usage Statistics for #{tier} <small>[&1 battles]</small></font></th></tr><tr>"
+            html = "<table cellpadding='0.8'><tr><th colspan=8><font color=#aa6a2b>Usage Statistics for #{tier}</font></th></tr><tr>"
             pokemon = resp.split '\n'
-            battleTotal = 0
             for poke, index in pokemon
                 parts = poke.split(' ')
 
@@ -117,18 +116,16 @@ do ->
 
                 usage = (+parts.slice(-2, -1)).toFixed(2)
                 battles = +parts.slice(-1)
-                battleTotal += battles
 
                 # Don't render pokemon with 0.00% usage
                 if +usage is 0
                     continue
 
-                if index % 5 is 0
+                if index % 6 is 0
                     html += "</tr><tr>"
 
-                html += "<td><a href='http://stats.pokemon-online.eu/#{tier}/#{num}.html' style='font-weight:none;text-decoration:none;color:black;' title='#{name}'><b>#{index + 1}</b>. <img src='icon:#{num}' title='Shaymin'> - <b>#{usage}%</b> <small>(#{battles} battles)</small></a></td>"
+                html += "<td><a href='http://stats.pokemon-online.eu/#{tier}/#{num}.html' style='font-weight:none;text-decoration:none;color:black;' title='#{name}'><b>#{index + 1}</b>. <img src='icon:#{num}'> - <b>#{usage}%</b> <small>(#{battles} battle#{if battles is 1 then '' else 's'})</small></a></td>"
 
-            html = html.replace('&1', battleTotal)
             confetti.msg.html html, chan
 
     confetti.hook 'commands:misc', ->

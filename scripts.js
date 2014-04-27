@@ -17,8 +17,7 @@ if (typeof confetti !== 'object') {
     },
     players: {},
     ignoreNextChanMessage: false,
-    loginTime: 0,
-    debug: false
+    loginTime: 0
   };
   Network.playerLogin.connect(function() {
     return confetti.loginTime = sys.time();
@@ -40,7 +39,7 @@ confetti.dataDir = sys.scriptsFolder;
 confetti.cacheFile = 'confetti.json';
 
 (function() {
-  var an, escapeRegex, fancyJoin, isAlpha, random, shuffle, sortOnlineOffline, stripHtml, stripquotes, truncate;
+  var addNameHighlights, an, escapeRegex, fancyJoin, isAlpha, random, shuffle, sortOnlineOffline, stripHtml, stripquotes, truncate, willFlash;
   random = function(array) {
     if (Array.isArray(array)) {
       return array[sys.rand(0, array.length)];
@@ -132,6 +131,14 @@ confetti.cacheFile = 'confetti.json';
     chr = chr.toLowerCase();
     return chr >= 'a' && chr <= 'z';
   };
+  addNameHighlights = function(msg, name) {
+    return msg.replace(new RegExp("\\b(" + (escapeRegex(name)) + ")\\b(?![^\\s<]*>)", "i"), "<span class='name-hilight'>$1</span><ping/>");
+  };
+  willFlash = function(msg, name) {
+    var regex;
+    regex = new RegExp("\\b" + (escapeRegex(name)) + "\\b(?![^\\s<]*>)", "i");
+    return msg.search(regex) !== -1;
+  };
   return confetti.util = {
     random: random,
     isAlpha: isAlpha,
@@ -142,7 +149,9 @@ confetti.cacheFile = 'confetti.json';
     sortOnlineOffline: sortOnlineOffline,
     truncate: truncate,
     escapeRegex: escapeRegex,
-    stripquotes: stripquotes
+    stripquotes: stripquotes,
+    addNameHighlights: addNameHighlights,
+    willFlash: willFlash
   };
 })();
 
@@ -523,7 +532,7 @@ confetti.cacheFile = 'confetti.json';
     var once;
     confetti.cache = new confetti.Cache;
     once = confetti.cache.once;
-    confetti.cache.store('botname', '±Confetti', once).store('botcolor', '#07b581', once).store('notifications', true, once).store('commandindicator', '-', once).store('lastuse', 0, once).store('plugins', [], once).store('tracked', {}, once).store('trackingresolve', true, once);
+    confetti.cache.store('botname', '±Confetti', once).store('botcolor', '#07b581', once).store('notifications', true, once).store('commandindicator', '-', once).store('lastuse', 0, once).store('plugins', [], once).store('tracked', {}, once).store('trackingresolve', true, once).store('flashes', true, once);
     confetti.callHooks('initCache');
     return confetti.cache.save();
   };
@@ -640,16 +649,15 @@ confetti.cacheFile = 'confetti.json';
     return confetti.cache.store('authsymbols', {}, confetti.cache.once);
   });
   return confetti.hook('manipulateChanPlayerMessage', function(from, fromId, message, playerMessage, _arg, chan, html, dirty) {
-    var auth, authSymbol, authsymbols, color;
+    var auth, authSymbol, authsymbols, color, symbol;
     color = _arg[0], auth = _arg[1], authSymbol = _arg[2];
     authsymbols = confetti.cache.get('authsymbols');
     if (auth > 4) {
       auth = 4;
-    } else if (auth < 0) {
-      auth = 0;
     }
-    if (authsymbols[auth]) {
-      authSymbol = authsymbols[auth];
+    symbol = authsymbols[auth];
+    if (symbol) {
+      authSymbol = symbol;
       dirty = true;
     }
     return [from, fromId, message, playerMessage, [color, auth, authSymbol], chan, html, dirty];
@@ -873,6 +881,107 @@ confetti.cacheFile = 'confetti.json';
 })();
 
 (function() {
+  var flashwordCategory;
+  flashwordCategory = function(word) {
+    var flags, parts, regex;
+    parts = word.split('/');
+    if (parts.length < 3) {
+      return {
+        type: 'word',
+        word: word
+      };
+    }
+    flags = parts.pop();
+    regex = parts.slice(1);
+    return {
+      type: 'regex',
+      regex: regex,
+      flags: flags
+    };
+  };
+  confetti.command('flashwords', ["Shows your flash words (sequences of characters that ping you when said).", 'send@flashwords'], function(_, chan) {
+    var flashwords, html, index, numWords, word, _i, _len;
+    flashwords = confetti.cache.get('flashwords');
+    numWords = flashwords.length;
+    if (numWords === 0) {
+      return confetti.msg.bot("You have no flash words.");
+    }
+    confetti.msg.bold("Flash words <small>[" + numWords + "]</small>", '', chan);
+    html = "";
+    for (index = _i = 0, _len = flashwords.length; _i < _len; index = ++_i) {
+      word = flashwords[index];
+      html += confetti.msg.bullet + (" " + (flashwordCategory(word).type === 'word' ? 'Word' : 'Regex') + ": <b>" + word + "</b> <small>[<a href='po:send/-removeflashword " + word + "' style='text-decoration:none;color:black'>remove</a>]</small><br>");
+    }
+    return confetti.msg.html(html, chan);
+  });
+  confetti.alias('flashwordlist', 'flashwords');
+  confetti.command('flashword', ['flashword [word]', "Adds [word] to your flash word list. [word] may also be a <a href='http://www.regexr.com/' title='Regexr'>regular expression</a>, prefix it with <b>/</b> like so: /(word)/i. The first capture group will be the flashword.", 'setmsg@flashword word'], function(data) {
+    var flashwords, index;
+    flashwords = confetti.cache.get('flashwords');
+    if (!data) {
+      return confetti.msg.bot("Specify the flashword!");
+    }
+    index = flashwords.indexOf(data);
+    if (index !== -1) {
+      return confetti.msg.bot("" + (sys.htmlEscape(data)) + " is already in your flashwords list!");
+    }
+    flashwords.push(data);
+    confetti.cache.store('flashwords', flashwords).save();
+    return confetti.msg.bot("" + (sys.htmlEscape(data)) + " will now ping you when said!");
+  });
+  confetti.alias('stalkword', 'flashword');
+  confetti.alias('addstalkword', 'flashword');
+  confetti.command('removeflashword', ['removeflashword [flashword]', "Removes [flashword] from your flashword list.", 'setmsg@removeflashword flashword'], function(data) {
+    var flashwords, index;
+    flashwords = confetti.cache.get('flashwords');
+    if (!data) {
+      return confetti.msg.bot("Specify the flash word!");
+    }
+    index = flashwords.indexOf(data);
+    if (index === -1) {
+      return confetti.msg.bot("" + (sys.htmlEscape(data)) + " is not in your flashwords list, check the spelling!");
+    }
+    flashwords.splice(index, 1);
+    confetti.cache.store('flashwords', flashwords).save();
+    return confetti.msg.bot("" + (sys.htmlEscape(data)) + " will no longer ping you!");
+  });
+  confetti.command('flashes', ["Toggles whether if name flashes and flash words should be enabled.", 'send@flashes'], function() {
+    confetti.cache.store('flashes', !confetti.cache.read('flashes')).save();
+    return confetti.msg.bot("Flashes are now " + (confetti.cache.read('flashes') ? 'on' : 'off') + ".");
+  });
+  confetti.alias('rmflashword', 'removeflashword');
+  confetti.alias('unflashword', 'removeflashword');
+  confetti.alias('removestalkword', 'removeflashword');
+  confetti.alias('rmstalkword', 'removeflashword');
+  confetti.alias('unstalkword', 'removeflashword');
+  confetti.hook('initCache', function() {
+    return confetti.cache.store('flashwords', [], confetti.cache.once);
+  });
+  return confetti.hook('manipulateChanPlayerMessage', function(from, fromId, message, playerMessage, _arg, chan, html, dirty) {
+    var auth, authSymbol, cat, color, flashMessage, flashword, flashwords, _i, _len;
+    color = _arg[0], auth = _arg[1], authSymbol = _arg[2];
+    if (confetti.cache.get('flashes') === true) {
+      flashwords = confetti.cache.get('flashwords');
+      flashMessage = playerMessage;
+      for (_i = 0, _len = flashwords.length; _i < _len; _i++) {
+        flashword = flashwords[_i];
+        cat = flashwordCategory(flashword);
+        if (cat.type === 'word') {
+          flashMessage = flashMessage.replace(new RegExp("\\b(" + (confetti.util.escapeRegex(cat.word)) + ")\\b(?![^\\s<]*>)", "i"), "<span class='name-hilight'>$1</span><ping/>");
+        } else {
+          flashMessage = flashMessage.replace(new RegExp(cat.regex, cat.flags), "<span class='name-hilight'>$1</span><ping/>");
+        }
+      }
+      if (flashMessage !== playerMessage) {
+        playerMessage = flashMessage;
+        dirty = true;
+      }
+    }
+    return [from, fromId, message, playerMessage, [color, auth, authSymbol], chan, html, dirty];
+  });
+})();
+
+(function() {
   var bullet;
   bullet = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&bull;";
   confetti.command('friends', ["Displays your friends list.", 'send@friends'], function(_, chan) {
@@ -1039,17 +1148,23 @@ confetti.cacheFile = 'confetti.json';
     cmd('friends');
     cmd('friendnotifications');
     confetti.callHooks('commands:friends');
+    header('Blocking', 4);
+    cmd('block');
+    cmd('unblock');
+    cmd('blocked');
+    confetti.callHooks('commands:block');
     header('Tracking', 4);
     cmd('track');
     cmd('untrack');
     cmd('tracked');
     cmd('trackingresolve');
     confetti.callHooks('commands:track');
-    header('Blocking', 4);
-    cmd('block');
-    cmd('unblock');
-    cmd('blocked');
-    confetti.callHooks('commands:block');
+    header('Flashwords', 4);
+    cmd('flashword');
+    cmd('removeflashword');
+    cmd('flashwords');
+    cmd('flashes');
+    confetti.callHooks('commands:flashwords');
     header('Player Symbols', 4);
     cmd('authsymbols');
     cmd('authsymbol');
@@ -1308,14 +1423,17 @@ confetti.cacheFile = 'confetti.json';
     return confetti.commandList.border(true, chan);
   });
   confetti.command('plugins', ["Displays a list of enabled and available plugins.", 'send@plugins'], function(_, chan) {
-    var html, plugin, plugins, _i, _len;
+    var html, index, plugin, plugins, _i, _len;
     plugins = confetti.cache.get('plugins');
     if (plugins.length > 0) {
-      confetti.msg.bold("Loaded Plugins", chan);
+      confetti.msg.bold("Loaded Plugins <small>[" + plugins.length + "]</small>", '', chan);
       html = "";
-      for (_i = 0, _len = plugins.length; _i < _len; _i++) {
-        plugin = plugins[_i];
+      for (index = _i = 0, _len = plugins.length; _i < _len; index = ++_i) {
+        plugin = plugins[index];
         html += "" + confetti.msg.bullet + " <b>" + plugin.name + "</b> (" + plugin.id + ") v" + plugin.version + " <small>[<a href='po:send/-removeplugin " + plugin.name + "' style='text-decoration: none; color: black;'>remove</a>]</small>";
+        if (index !== 0 && index % 4 === 0) {
+          html += "<br>";
+        }
       }
       confetti.msg.html(html, chan);
     }
@@ -1475,7 +1593,8 @@ confetti.cacheFile = 'confetti.json';
     '2.0.6': 'More reconnect fixes, news and define improvements, removed dictionary.',
     '2.0.7': 'Emoji plugin.',
     '2.0.8': 'Plugin auto-updating and versions.',
-    '2.0.9': 'Changelog, usability improvements, fullwidth encool, updated script urls.'
+    '2.0.9': 'Changelog, usability improvements, fullwidth encool, updated script urls.',
+    '2.0.10': 'Pokémon Usage Statistics plugin, auth symbols, flashwords.'
   };
   autoUpdate = function() {
     var now;
@@ -1850,7 +1969,7 @@ confettiScript = {
     }
   },
   beforeChannelMessage: function(message, chan, html) {
-    var auth, authSymbol, color, dirty, finishedMessage, from, fromId, fromSrc, id, line, name, originalMessage, ownId, playerMessage, _ref, _ref1, _ref2, _ref3;
+    var auth, authSymbol, channel, color, dirty, finishedMessage, flashes, from, fromId, fromSrc, id, line, name, originalMessage, ownId, ownName, playerMessage, willFlash, _ref, _ref1, _ref2, _ref3;
     if (confetti.ignoreNextChanMessage) {
       confetti.ignoreNextChanMessage = false;
       return;
@@ -1899,44 +2018,37 @@ confettiScript = {
         return;
       }
     }
-    dirty = false;
+    channel = Client.channel(chan);
+    ownName = Client.ownName();
+    willFlash = confetti.util.willFlash(playerMessage, ownName);
+    flashes = confetti.cache.get('flashes') === true;
+    dirty = !flashes && willFlash;
     color = Client.color(fromId);
     auth = Client.auth(fromId);
-    authSymbol = ['', ''];
+    authSymbol = [];
     if (auth > 4) {
       auth = 4;
-    } else if (auth < 0) {
-      auth = 0;
+    }
+    if (!html) {
+      playerMessage = sys.htmlEscape(playerMessage);
+      playerMessage = Client.channel(chan).addChannelLinks(playerMessage);
     }
     _ref2 = confetti.callHooks('manipulateChanPlayerMessage', from, fromId, message, playerMessage, [color, auth, authSymbol], chan, html, dirty), from = _ref2[0], fromId = _ref2[1], message = _ref2[2], playerMessage = _ref2[3], (_ref3 = _ref2[4], color = _ref3[0], auth = _ref3[1], authSymbol = _ref3[2]), chan = _ref2[5], html = _ref2[6], dirty = _ref2[7];
     if (dirty) {
-      if (!color) {
-        color = Client.color(fromId);
-      }
-      if (auth == null) {
-        auth = Client.auth(fromId);
-      }
-      if (!((authSymbol[0] != null) && (authSymbol[1] != null))) {
-        if (auth > 0 && auth < 4) {
+      if (authSymbol.length !== 2) {
+        if ((4 > auth && auth > 0)) {
           authSymbol = ['+<i>', '</i>'];
         } else {
           authSymbol = ['', ''];
         }
       }
-      if (!html) {
-        playerMessage = sys.htmlEscape(playerMessage);
-        playerMessage = Client.channel(chan).addChannelLinks(playerMessage);
+      if (flashes) {
+        playerMessage = confetti.util.addNameHighlights(playerMessage, ownName);
       }
       finishedMessage = "<font color='" + color + "'><timestamp/>" + authSymbol[0] + "<b>" + from + ":</b>" + authSymbol[1] + "</font> " + playerMessage;
       sys.stopEvent();
       confetti.ignoreNextChanMessage = true;
-      if (confetti.debug) {
-        print(message);
-        print(playerMessage);
-        return print(finishedMessage);
-      } else {
-        return Client.printChannelMessage(finishedMessage, chan, true);
-      }
+      return Client.printChannelMessage(finishedMessage, chan, true);
     }
   }
 };

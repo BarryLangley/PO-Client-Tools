@@ -66,6 +66,7 @@ do ->
             .store('plugins', [], once)
             .store('tracked', {}, once)
             .store('trackingresolve', yes, once)
+            .store('flashes', yes, once)
 
         confetti.callHooks 'initCache'
         confetti.cache.save()

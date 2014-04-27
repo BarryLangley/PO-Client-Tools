@@ -90,14 +90,9 @@
     return confetti.commandList.cmd('emojis');
   });
   confetti.hook('manipulateChanPlayerMessage', function(from, fromId, message, playerMessage, _arg, chan, html, dirty) {
-    var auth, authSymbol, color, escapedMessage, newMessage;
+    var auth, authSymbol, color, newMessage;
     color = _arg[0], auth = _arg[1], authSymbol = _arg[2];
-    escapedMessage = playerMessage;
-    if (!html) {
-      escapedMessage = sys.htmlEscape(escapedMessage);
-      escapedMessage = Client.channel(chan).addChannelLinks(escapedMessage);
-    }
-    newMessage = parseEmoji(escapedMessage);
+    newMessage = parseEmoji(playerMessage);
     if (newMessage !== escapedMessage) {
       playerMessage = newMessage;
       html = true;

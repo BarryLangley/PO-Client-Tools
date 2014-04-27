@@ -9,7 +9,7 @@
       if (index % 12 === 0) {
         html += "</tr><tr>";
       }
-      html += "<td><a href='po:send/-usagestats " + tier + "' style='color:#2a6aaa;text-decoration:none;'><b>" + tier + "</b></a></td>";
+      html += "<td><a href='po:send/-usagestats " + tier + "' style='color:#aa6a2b;text-decoration:none;'><b>" + tier + "</b></a></td>";
     }
     html += "</tr></table><br>";
     return confetti.msg.html(html, chan);
@@ -29,16 +29,15 @@
       return confetti.msg.bot("The tier " + (sys.htmlEscape(data)) + " doesn't have any usage or doesn't exist. For a list of tiers, use the <a href='po:send/-usagetiers'>" + (confetti.cache.get('commandindicator')) + "usagetiers</a> command.", chan);
     }
     return sys.webCall("http://stats.pokemon-online.eu/" + tier + "/ranked_stats.txt", function(resp) {
-      var battleTotal, battles, html, index, num, parts, poke, pokemon, species, usage, _j, _len1;
+      var battles, html, index, num, parts, poke, pokemon, species, usage, _j, _len1;
       if (!resp) {
         return confetti.msg.bot("Couldn't load usage statistics for tier " + tier + " -- maybe your internet connection is down? The plugin might also be out of date, or the PO site is having issues (try again later).", chan);
       }
       if (resp.indexOf("<!DOCTYPE html>") !== -1) {
         return confetti.msg.bot("Usage statistics for this tier are unavailable as there were insufficient battles.", chan);
       }
-      html = "<table cellpadding='0.8'><tr><th colspan=8><font color=#aa6a2b>Usage Statistics for " + tier + " <small>[&1 battles]</small></font></th></tr><tr>";
+      html = "<table cellpadding='0.8'><tr><th colspan=8><font color=#aa6a2b>Usage Statistics for " + tier + "</font></th></tr><tr>";
       pokemon = resp.split('\n');
-      battleTotal = 0;
       for (index = _j = 0, _len1 = pokemon.length; _j < _len1; index = ++_j) {
         poke = pokemon[index];
         parts = poke.split(' ');
@@ -50,16 +49,14 @@
         species = num & 65535;
         usage = (+parts.slice(-2, -1)).toFixed(2);
         battles = +parts.slice(-1);
-        battleTotal += battles;
         if (+usage === 0) {
           continue;
         }
-        if (index % 5 === 0) {
+        if (index % 6 === 0) {
           html += "</tr><tr>";
         }
-        html += "<td><a href='http://stats.pokemon-online.eu/" + tier + "/" + num + ".html' style='font-weight:none;text-decoration:none;color:black;' title='" + name + "'><b>" + (index + 1) + "</b>. <img src='icon:" + num + "' title='Shaymin'> - <b>" + usage + "%</b> <small>(" + battles + " battles)</small></a></td>";
+        html += "<td><a href='http://stats.pokemon-online.eu/" + tier + "/" + num + ".html' style='font-weight:none;text-decoration:none;color:black;' title='" + name + "'><b>" + (index + 1) + "</b>. <img src='icon:" + num + "'> - <b>" + usage + "%</b> <small>(" + battles + " battle" + (battles === 1 ? '' : 's') + ")</small></a></td>";
       }
-      html = html.replace('&1', battleTotal);
       return confetti.msg.html(html, chan);
     });
   });

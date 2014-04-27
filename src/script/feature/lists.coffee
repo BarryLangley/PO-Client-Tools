@@ -60,6 +60,13 @@ do ->
 
         confetti.callHooks 'commands:friends'
 
+        header 'Blocking', 4
+        cmd 'block'
+        cmd 'unblock'
+        cmd 'blocked'
+
+        confetti.callHooks 'commands:block'
+
         header 'Tracking', 4
         cmd 'track'
         cmd 'untrack'
@@ -68,12 +75,13 @@ do ->
 
         confetti.callHooks 'commands:track'
 
-        header 'Blocking', 4
-        cmd 'block'
-        cmd 'unblock'
-        cmd 'blocked'
+        header 'Flashwords', 4
+        cmd 'flashword'
+        cmd 'removeflashword'
+        cmd 'flashwords'
+        cmd 'flashes'
 
-        confetti.callHooks 'commands:block'
+        confetti.callHooks 'commands:flashwords'
 
         header 'Player Symbols', 4
         cmd 'authsymbols'

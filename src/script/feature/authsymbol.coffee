@@ -63,11 +63,10 @@ do ->
 
         if auth > 4
             auth = 4
-        else if auth < 0
-            auth = 0
 
-        if authsymbols[auth]
-            authSymbol = authsymbols[auth]
+        symbol = authsymbols[auth]
+        if symbol
+            authSymbol = symbol
             dirty = true
 
         [from, fromId, message, playerMessage, [color, auth, authSymbol], chan, html, dirty]
