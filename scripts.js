@@ -27,7 +27,7 @@ if (typeof confetti !== 'object') {
 confetti.version = {
   release: 2,
   major: 0,
-  minor: 9
+  minor: 10
 };
 
 confetti.scriptUrl = 'http://theunknownone.github.io/PO-Client-Tools/';
@@ -423,14 +423,17 @@ confetti.cacheFile = 'confetti.json';
     }
     return html("<timestamp/><b style='color: " + color + ";'>" + title + ":</b> " + msg, chan);
   };
-  notification = function(msg, title, allowActive) {
+  notification = function(msg, title, allowActive, force) {
     if (title == null) {
       title = Client.windowTitle;
     }
     if (allowActive == null) {
       allowActive = true;
     }
-    if (confetti.cache.initialized !== false && confetti.cache.read('notifications') === true) {
+    if (force == null) {
+      force = false;
+    }
+    if (force === true || (confetti.cache.initialized !== false && confetti.cache.read('notifications') === true)) {
       if (Client.windowActive()) {
         if (allowActive) {
           return html("&nbsp;&nbsp;&nbsp;" + poIcon + " <b>" + title + "</b><br>" + bullet + " " + msg);
@@ -2048,7 +2051,10 @@ confettiScript = {
       finishedMessage = "<font color='" + color + "'><timestamp/>" + authSymbol[0] + "<b>" + from + ":</b>" + authSymbol[1] + "</font> " + playerMessage;
       sys.stopEvent();
       confetti.ignoreNextChanMessage = true;
-      return Client.printChannelMessage(finishedMessage, chan, true);
+      Client.printChannelMessage(finishedMessage, chan, true);
+      if (flashes && playerMessage.indexOf('<ping/>') !== -1) {
+        return confetti.msg.notification("Ping in #" + (Client.channelName(chan)), confetti.util.stripHtml(playerMessage), false, true);
+      }
     }
   }
 };

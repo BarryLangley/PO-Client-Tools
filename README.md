@@ -1,7 +1,7 @@
 # Client Tools
 
 ## Confetti (scripts.js)
-Version: 2.0.9
+Version: 2.0.10
 
 See the [thread](http://pokemon-online.eu/forums/showthread.php?24230-Confetti-Another-client-script) on the forums for more information.
 

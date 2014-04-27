@@ -14,10 +14,12 @@
     html += "</tr></table><br>";
     return confetti.msg.html(html, chan);
   });
-  confetti.command('usagestats', ['usagestats [tier]', "Shows usage stats of a specific tier. Hover over an entry to see the Pok&eacute;mon's name, click it to go to its usage page.", 'setmsg@usagestats tier'], function(data, chan) {
-    var name, tier, tname, _i, _len;
+  confetti.command('usagestats', ['usagestats [tier]:[all?]', "Shows usage stats of a specific tier. Hover over an entry to see the Pok&eacute;mon's name, click it to go to its usage page. If [all] is 'all', ", 'setmsg@usagestats tier'], function(data, chan) {
+    var all, name, parts, tier, tname, _i, _len;
     tier = '';
-    tname = data.toLowerCase();
+    parts = data.split(':');
+    tname = parts[0].toLowerCase();
+    all = parts[1].toLowerCase() === 'all';
     for (_i = 0, _len = tiers.length; _i < _len; _i++) {
       name = tiers[_i];
       if (name.toLowerCase() === tname) {
@@ -29,7 +31,7 @@
       return confetti.msg.bot("The tier " + (sys.htmlEscape(data)) + " doesn't have any usage or doesn't exist. For a list of tiers, use the <a href='po:send/-usagetiers'>" + (confetti.cache.get('commandindicator')) + "usagetiers</a> command.", chan);
     }
     return sys.webCall("http://stats.pokemon-online.eu/" + tier + "/ranked_stats.txt", function(resp) {
-      var battles, html, index, num, parts, poke, pokemon, species, usage, _j, _len1;
+      var battles, html, index, num, poke, pokemon, species, usage, _j, _len1;
       if (!resp) {
         return confetti.msg.bot("Couldn't load usage statistics for tier " + tier + " -- maybe your internet connection is down? The plugin might also be out of date, or the PO site is having issues (try again later).", chan);
       }
@@ -49,7 +51,7 @@
         species = num & 65535;
         usage = (+parts.slice(-2, -1)).toFixed(2);
         battles = +parts.slice(-1);
-        if (+usage === 0) {
+        if (!all && +usage <= 1) {
           continue;
         }
         if (index % 6 === 0) {

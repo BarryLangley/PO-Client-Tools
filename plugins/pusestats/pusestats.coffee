@@ -83,9 +83,11 @@ do ->
         html += "</tr></table><br>"
         confetti.msg.html html, chan
 
-    confetti.command 'usagestats', ['usagestats [tier]', "Shows usage stats of a specific tier. Hover over an entry to see the Pok&eacute;mon's name, click it to go to its usage page.", 'setmsg@usagestats tier'], (data, chan) ->
+    confetti.command 'usagestats', ['usagestats [tier]:[all?]', "Shows usage stats of a specific tier. Hover over an entry to see the Pok&eacute;mon's name, click it to go to its usage page. If [all] is 'all', ", 'setmsg@usagestats tier'], (data, chan) ->
         tier = ''
-        tname = data.toLowerCase()
+        parts = data.split(':')
+        tname = parts[0].toLowerCase()
+        all = (parts[1]).toLowerCase() is 'all'
 
         for name in tiers
             if name.toLowerCase() is tname
@@ -117,8 +119,8 @@ do ->
                 usage = (+parts.slice(-2, -1)).toFixed(2)
                 battles = +parts.slice(-1)
 
-                # Don't render pokemon with 0.00% usage
-                if +usage is 0
+                # Don't render pokemon with < 1% usage
+                if !all and +usage <= 1
                     continue
 
                 if index % 6 is 0
