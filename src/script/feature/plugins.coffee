@@ -53,6 +53,7 @@ do ->
     confetti.command 'plugincommands', ['Shows various commands related to plugins.', 'send@plugincommands'], ->
         new confetti.CommandList("Plugin Commands")
             .cmds('plugins addplugin removeplugin updateplugins').hooks('plugins')
+            .render()
 
     # TODO: Possibility for local plugins
     confetti.command 'plugins', ["Displays a list of enabled and available plugins.", 'send@plugins'], (_, chan) ->

@@ -1395,7 +1395,7 @@ confetti.cacheFile = 'confetti.json';
   };
   confetti.updatePlugins = updatePlugins;
   confetti.command('plugincommands', ['Shows various commands related to plugins.', 'send@plugincommands'], function() {
-    return new confetti.CommandList("Plugin Commands").cmds('plugins addplugin removeplugin updateplugins').hooks('plugins');
+    return new confetti.CommandList("Plugin Commands").cmds('plugins addplugin removeplugin updateplugins').hooks('plugins').render();
   });
   confetti.command('plugins', ["Displays a list of enabled and available plugins.", 'send@plugins'], function(_, chan) {
     var count, html, plugin, plugins, _i, _len;
@@ -1629,7 +1629,7 @@ confetti.cacheFile = 'confetti.json';
     return confetti.cache.store('autoupdate', true, confetti.cache.once).store('lastupdatetime', sys.time(), confetti.cache.once);
   });
   confetti.command('scriptcommands', ['Shows various commands related to Confetti.', 'send@scriptcommands'], function() {
-    return new confetti.CommandList("Script Commands").cmds('updatescript autoupdate changelog version').hooks('script');
+    return new confetti.CommandList("Script Commands").cmds('updatescript autoupdate changelog version').hooks('script').render();
   });
   confetti.command('updatescript', ['Updates the script to the latest available version.', 'send@updatescript'], function() {
     if (sys.isSafeScripts()) {

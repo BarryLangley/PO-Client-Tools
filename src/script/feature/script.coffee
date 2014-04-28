@@ -61,6 +61,7 @@ do ->
     confetti.command 'scriptcommands', ['Shows various commands related to Confetti.', 'send@scriptcommands'], ->
         new confetti.CommandList("Script Commands")
             .cmds('updatescript autoupdate changelog version').hooks('script')
+            .render()
 
     confetti.command 'updatescript', ['Updates the script to the latest available version.', 'send@updatescript'], ->
         if sys.isSafeScripts()
