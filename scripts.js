@@ -26,8 +26,8 @@ if (typeof confetti !== 'object') {
 
 confetti.version = {
   release: 2,
-  major: 0,
-  minor: 10
+  major: 1,
+  minor: 0
 };
 
 confetti.scriptUrl = 'http://theunknownone.github.io/PO-Client-Tools/';
@@ -1574,7 +1574,8 @@ confetti.cacheFile = 'confetti.json';
     '2.0.7': 'Emoji plugin.',
     '2.0.8': 'Plugin auto-updating and versions.',
     '2.0.9': 'Changelog, usability improvements, fullwidth encool, updated script urls.',
-    '2.0.10': 'Pok&eacute;mon Usage Statistics plugin, auth symbols, flashwords.'
+    '2.0.10': 'Pok&eacute;mon Usage Statistics plugin, auth symbols, flashwords.',
+    '2.1.0': 'Reworked command lists, pm utility command.'
   };
   autoUpdate = function() {
     var now;

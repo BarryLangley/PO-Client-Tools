@@ -11,6 +11,7 @@ do ->
         '2.0.8': 'Plugin auto-updating and versions.'
         '2.0.9': 'Changelog, usability improvements, fullwidth encool, updated script urls.'
         '2.0.10': 'Pok&eacute;mon Usage Statistics plugin, auth symbols, flashwords.'
+        '2.1.0': 'Reworked command lists, pm utility command.'
 
     autoUpdate = ->
         return if confetti.cache.get('autoupdate') is no
