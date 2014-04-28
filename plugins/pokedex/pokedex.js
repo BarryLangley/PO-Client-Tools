@@ -471,7 +471,7 @@ confetti.pokedex = function() {
     }
   });
   confetti.alias('dex', 'pokedex');
-  return confetti.hook('commands:misc', function() {
-    return confetti.commandList.cmd('pokedex');
+  return confetti.hook('commands:misc', function(template) {
+    return template.cmd('pokedex');
   });
 })();

@@ -42,11 +42,10 @@ do ->
         confetti.msg.bot "Your command indicator is now #{data}!"
 
     # Use setmsg here as this command can be dangerous.
-    confetti.command 'defaults', ['Resets all settings back to their defaults. There might be some plugins that do not support this.', 'setmsg@defaults'], (data) ->
+    confetti.command 'defaults', ['Sets all settings back to their defaults. There may be some plugins that do not support this.', 'setmsg@defaults'], (data) ->
         if data.toLowerCase() isnt 'sure'
-            commandindicator = confetti.cache.get 'commandindicator'
             # Since '-' is always the command indicator, use it so the command remains clickable even if the user changes their command indicator (inside the send/setmsg protocol).
-            return confetti.msg.bot "<a href='po:send/-defaults sure' style='text-decoration: none; color: black;'>Are you sure that you want to reset your settings? There is no going back. Click this message to confirm (or type <small>#{commandindicator}defaults sure</small>).</a>"
+            return confetti.msg.bot "<a href='po:send/-defaults sure' style='text-decoration: none; color: black;'>Are you sure that you want to reset your settings? There is no going back. Click this message to confirm (or type <small>#{confetti.cache.get('commandindicator')}defaults sure</small>).</a>"
 
         # Wipe everything and reset the cache.
         # Scripts are reloaded for plugins.

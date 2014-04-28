@@ -42,8 +42,8 @@
   confetti.hook('initCache', function() {
     return confetti.cache.store('aoctaunts', true, confetti.cache.once);
   });
-  confetti.hook('commands:misc', function() {
-    return confetti.commandList.cmd('aoctaunts');
+  confetti.hook('commands:misc', function(template) {
+    return template.cmd('aoctaunts');
   });
   confetti.hook('manipulateChanPlayerMessage', function(from, fromId, message, playerMessage, _arg, chan, html, dirty) {
     var auth, authSymbol, color;

@@ -85,11 +85,8 @@
     confetti.cache.store('emoji', true, confetti.cache.once);
     return confetti.cache.store('emojimax', 5, confetti.cache.once);
   });
-  confetti.hook('commands:misc', function() {
-    var cmd;
-    cmd = confetti.commandList.cmd;
-    cmd('emoji');
-    return cmd('emojis');
+  confetti.hook('commands:misc', function(template) {
+    return template.cmds('emoji emojis');
   });
   confetti.hook('manipulateChanPlayerMessage', function(from, fromId, message, playerMessage, _arg, chan, html, dirty) {
     var auth, authSymbol, color, newMessage;

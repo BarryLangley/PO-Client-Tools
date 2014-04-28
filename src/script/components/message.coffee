@@ -22,7 +22,7 @@ do ->
             Client.printHtml msg
 
     bold = (title, msg = '', chan, color = 'black') ->
-        html "<timestamp/><b style='color: #{color};'>#{title}:</b> #{msg}", chan
+        html "<timestamp/><b style='color:#{color}'>#{title}:</b> #{msg}", chan
 
     notification = (msg, title = Client.windowTitle, allowActive = yes, force = no) ->
         if force is yes or (confetti.cache.initialized isnt no and confetti.cache.read('notifications') is on)
@@ -37,7 +37,7 @@ do ->
                 Client.trayMessage title, confetti.util.stripHtml(msg)
 
     bot = (msg, chan = Client.currentChannel()) ->
-        html "<font color='#{confetti.cache.get('botcolor')}'><timestamp/><b>#{confetti.cache.get('botname')}:</b></font> #{msg}", chan
+        html "<font color=#{confetti.cache.get('botcolor')}><timestamp/><b>#{confetti.cache.get('botname')}:</b></font> #{msg}", chan
 
     confetti.msg = {
         notify

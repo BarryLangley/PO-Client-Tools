@@ -130,8 +130,5 @@ do ->
 
             confetti.msg.html html, chan
 
-    confetti.hook 'commands:misc', ->
-        cmd = confetti.commandList.cmd
-
-        cmd 'usagetiers'
-        cmd 'usagestats'
+    confetti.hook 'commands:misc', (template) ->
+        template.cmds('usagetiers usagestats')

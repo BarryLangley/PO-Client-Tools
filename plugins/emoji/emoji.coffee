@@ -83,11 +83,8 @@ do ->
         confetti.cache.store('emoji', yes, confetti.cache.once)
         confetti.cache.store('emojimax', 5, confetti.cache.once)
 
-    confetti.hook 'commands:misc', ->
-        cmd = confetti.commandList.cmd
-
-        cmd 'emoji'
-        cmd 'emojis'
+    confetti.hook 'commands:misc', (template) ->
+        template.cmds('emoji emojis')
 
     confetti.hook 'manipulateChanPlayerMessage', (from, fromId, message, playerMessage, [color, auth, authSymbol], chan, html, dirty) ->
         newMessage = parseEmoji(playerMessage)

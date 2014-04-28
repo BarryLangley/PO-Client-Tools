@@ -21,5 +21,5 @@ do ->
 
     confetti.alias 'dex', 'pokedex'
 
-    confetti.hook 'commands:misc', ->
-        confetti.commandList.cmd 'pokedex'
+    confetti.hook 'commands:misc', (template) ->
+        template.cmd('pokedex')

@@ -62,10 +62,7 @@
       return confetti.msg.html(html, chan);
     });
   });
-  return confetti.hook('commands:misc', function() {
-    var cmd;
-    cmd = confetti.commandList.cmd;
-    cmd('usagetiers');
-    return cmd('usagestats');
+  return confetti.hook('commands:misc', function(template) {
+    return template.cmds('usagetiers usagestats');
   });
 })();

@@ -49,8 +49,7 @@
         }
       } catch (_error) {
         ex = _error;
-        confetti.msg.bot("Failed to load insults, check your internet connection.");
-        return;
+        return confetti.msg.bot("Failed to load insults, check your internet connection.");
       }
       if (confetti.cache.get('longinsults') !== true) {
         insults = (function() {
@@ -85,37 +84,33 @@
       updateInsults(function() {
         return insult(data, chan);
       });
-      return true;
+      return;
     }
     target = confetti.player.name(data).trim();
     msg = getInsult(target);
-    confetti.msg.notify(msg, chan);
-    return true;
+    return confetti.msg.notify(msg, chan);
   };
   insultp = function(data, chan) {
     var msg, target;
-    if (data.length === 0) {
-      confetti.msg.bot("Specify a target!");
-      return;
+    if (!data) {
+      return confetti.msg.bot("Specify a target!");
     }
     if (!insultsLoaded) {
       updateInsults(function() {
         return insultp(data, chan);
       });
-      return true;
+      return;
     }
     target = confetti.player.name(data).trim();
     msg = getInsult(target);
-    print(msg);
-    return true;
+    return confetti.msg.html("<a href='po:setmsg/" + msg + "'><b>" + msg + "</b></a> <small>(click to copy to line edit)</small>", chan);
   };
   confetti.updateInsults = updateInsults;
   confetti.command('insult', ['insult [name]', 'Insults the given target for the greater good of mankind.', 'setmsg@insult [name]'], insult);
   confetti.command('insultp', ['insultp [name]', 'Like insult, but prints the insult instead of sending it.', 'setmsg@insultp [name]'], insultp);
   confetti.command('intellisult', ['intellisult [name]', 'Insults the given target for the greater good of mankind, with intelligence.', 'setmsg@intellisult [name]'], function(data, chan) {
-    if (data.length === 0) {
-      confetti.msg.bot("Specify a target!");
-      return;
+    if (!data) {
+      return confetti.msg.bot("Specify a target!");
     }
     return confetti.msg.notify(intellisult(data), chan);
   });
@@ -132,14 +127,10 @@
   confetti.hook('initCache', function() {
     return confetti.cache.store('longinsults', false, confetti.cache.once);
   });
-  return confetti.hook('commands:categories', function() {
-    var cmd, header, _ref;
-    _ref = confetti.commandList, header = _ref.header, cmd = _ref.cmd;
-    header('Insults', 4);
-    cmd('insult');
-    cmd('insultp');
-    cmd('intellisult');
-    cmd('updateinsults');
-    return cmd('longinsults');
+  confetti.command('insultcommands', ['Shows various commands related to insults.', 'send@insultcommands'], function() {
+    return new confetti.CommandList("Insult Commands").cmds('insult insultp intellisult updateinsults longinsults').hooks('insult');
+  });
+  return confetti.hook('commands:list', function(template) {
+    return template.cmd('insultcommands');
   });
 })();

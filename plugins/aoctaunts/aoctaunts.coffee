@@ -83,8 +83,8 @@ do ->
     confetti.hook 'initCache', ->
         confetti.cache.store('aoctaunts', yes, confetti.cache.once)
 
-    confetti.hook 'commands:misc', ->
-        confetti.commandList.cmd 'aoctaunts'
+    confetti.hook 'commands:misc', (template) ->
+        template.cmd 'aoctaunts'
 
     confetti.hook 'manipulateChanPlayerMessage', (from, fromId, message, playerMessage, [color, auth, authSymbol], chan, html, dirty) ->
         playTaunt(playerMessage)

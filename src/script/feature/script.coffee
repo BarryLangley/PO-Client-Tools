@@ -57,20 +57,9 @@ do ->
             .store('autoupdate', yes, confetti.cache.once)
             .store('lastupdatetime', sys.time(), confetti.cache.once)
 
-    confetti.command 'scriptcommands', ['Shows various commands related to the script.', 'send@scriptcommands'], ->
-        {header, border, cmd} = confetti.commandList
-
-        border no
-
-        header 'Script Commands', 5
-        cmd 'updatescript'
-        cmd 'autoupdate'
-        cmd 'changelog'
-        cmd 'version'
-
-        confetti.callHooks 'commands:script'
-
-        border yes
+    confetti.command 'scriptcommands', ['Shows various commands related to Confetti.', 'send@scriptcommands'], ->
+        new confetti.CommandList("Script Commands")
+            .cmds('updatescript autoupdate changelog version').hooks('script')
 
     confetti.command 'updatescript', ['Updates the script to the latest available version.', 'send@updatescript'], ->
         if sys.isSafeScripts()

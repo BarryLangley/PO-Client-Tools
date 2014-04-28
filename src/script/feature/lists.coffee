@@ -1,115 +1,76 @@
 do ->
-    # Command list stuff
-    cmd = (name, chan = Client.currentChannel()) ->
-        command = confetti.commands[name]
-        if command
-            parts = command.info.complete.split '@'
-            indicator = confetti.cache.get 'commandindicator'
+    # Command list class
+    class CommandList
+        constructor: (@name) ->
+            commandindicator = confetti.cache.get 'commandindicator'
+            @template = [
+                "<table width=25%><tr><td><center><font size=5><b>#{@name}</b></font></center></td></tr></table>"
+                ""
+                "<b style='color:teal'>To use any of these commands, prefix them with '#{commandindicator}' like so:</b> <u>#{commandindicator}commands</u>"
+                ""
+            ]
+        cmd: (name) ->
+            command = confetti.commands[name]
+            if command
+                parts = command.info.complete.split '@'
 
-            # Since '-' is always the command indicator, use it so the command remains clickable even if the user changes their command indicator (inside the send/setmsg protocol).
-            complete = "<a href='po:#{parts[0]}/#{indicator}#{parts[1]}' style='text-decoration: none; color: green;'>#{indicator}#{command.info.usage}</a>"
+                aliases = confetti.aliasesOf(name)
+                aliasstr = ''
+                if aliases
+                    aliasstr = " (Alias#{if aliases.length is 1 then '' else 'es'}: <i>#{aliases.join(', ')}</i>)"
 
-            confetti.msg.html "&bull; #{complete}: #{command.info.desc}", chan
+                cmdname = "<a href='po:#{parts[0]}/-#{parts[1]}' style='text-decoration:none;color:teal'>#{command.info.usage}</a>"
+                @template.push("\u00bb #{cmdname} - #{command.info.desc}#{aliasstr}")
+            return this
+        cmds: (names) ->
+            if typeof names is 'string'
+                names = names.split(' ')
 
-    header = (msg, size = 5, chan = Client.currentChannel()) ->
-        confetti.msg.html "<br><font size='#{size}'><b>#{msg}</b></font><br>", chan
+            for name in names
+                @cmd(name)
+            return this
+        group: (name) ->
+            @whiteline()
+            @template.push("<font size=4><b>#{name}</b></font>");
+            @whiteline()
+            return this
+        whiteline: ->
+            @template.push("")
+            return this
+        hooks: (name) ->
+            confetti.callHooks("commands:#{name}", this)
+            return this
+        render: (chan = Client.currentChannel()) ->
+            @whiteline()
+            confetti.msg.html @template.join("<br>"), chan
 
-    border = (timestamp = no, chan = Client.currentChannel()) ->
-        confetti.msg.html "#{if timestamp then '<br><timestamp/><br>' else '<br>'}<font color='skyblue'><b>≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈</b></font>#{if timestamp then '<br>' else ''}", chan
+    confetti.CommandList = CommandList
 
-        channel = null if timestamp
+    # Command lists
+    confetti.command 'configcommands', ['Shows various commands that change your settings.', 'send@configcommands'], ->
+        new CommandList("Configuration Commands")
+            .cmds('botname botcolor encool notifications commandindicator autoreconnect')
+            .hooks('config')
 
-    confetti.commandList = {cmd, header, border}
+            .whiteline()
 
-    confetti.command 'configcommands', ['Shows various commands that change your settings.', 'send@configcommands'], (_, chan) ->
-        border()
+            .cmd('defaults')
+            .render()
 
-        header 'Configuration Commands'
-        cmd 'botname'
-        cmd 'botcolor'
-        cmd 'encool'
-        cmd 'notifications'
-        cmd 'commandindicator'
-        cmd 'autoreconnect'
+    confetti.command 'commands', ['Shows this command list.', 'send@commands'], ->
+        new CommandList("Commands")
+            .group("Command Lists").cmds('commands configcommands scriptcommands plugincommands').hooks('list')
+            .group("Friends").cmds('friend unfriend friends friendnotifications').hooks('friends')
+            .group("Blocking").cmds('block unblock blocked').hooks('block')
+            .group("Tracking").cmds('track untrack tracked trackingresolve').hooks('track')
+            .group("Flashwords").cmds('flashword removeflashword flashwords flashes').hooks('flashwords')
+            .group("Player Symbols").cmds('authsymbols authsymbol').hooks('playersymbols')
+            # Custom categories should be done in this hook, afterwards there are the misc. commands.
+            .hooks('categories')
+            .whiteline()
 
-        confetti.callHooks 'commands:config'
-
-        confetti.msg.html "", chan
-        cmd 'defaults'
-
-        border yes
-
-    confetti.command 'commands', ['Shows this command list.', 'send@commands'], (_, chan) ->
-        border()
-
-        header 'Commands'
-
-        header 'Command Lists', 4
-        cmd 'commands'
-        cmd 'configcommands'
-        cmd 'scriptcommands'
-        cmd 'plugincommands'
-
-        confetti.callHooks 'commands:list'
-
-        header 'Friends', 4
-        cmd 'friend'
-        cmd 'unfriend'
-        cmd 'friends'
-        cmd 'friendnotifications'
-
-        confetti.callHooks 'commands:friends'
-
-        header 'Blocking', 4
-        cmd 'block'
-        cmd 'unblock'
-        cmd 'blocked'
-
-        confetti.callHooks 'commands:block'
-
-        header 'Tracking', 4
-        cmd 'track'
-        cmd 'untrack'
-        cmd 'tracked'
-        cmd 'trackingresolve'
-
-        confetti.callHooks 'commands:track'
-
-        header 'Flashwords', 4
-        cmd 'flashword'
-        cmd 'removeflashword'
-        cmd 'flashwords'
-        cmd 'flashes'
-
-        confetti.callHooks 'commands:flashwords'
-
-        header 'Player Symbols', 4
-        cmd 'authsymbols'
-        cmd 'authsymbol'
-
-        confetti.callHooks 'commands:playersymbols'
-
-        # Custom categories should be done in this hook, afterwards there are the misc. commands.
-        confetti.callHooks 'commands:categories'
-        confetti.msg.html "", chan
-
-        cmd 'reconnect'
-        cmd 'define'
-        cmd 'translate'
-        cmd 'news'
-        cmd 'imp'
-        cmd 'info'
-        cmd 'myip'
-        cmd 'chan'
-        cmd 'flip'
-
-        confetti.callHooks 'commands:misc'
-
-        cmd 'html'
-        cmd 'eval'
-
-        confetti.callHooks 'commands:dev'
-
-        border yes
+            .cmds('reconnect define translate news imp info myip chan flip').hooks('misc')
+            .cmds('html eval').hooks('dev')
+            .render()
 
     confetti.alias 'commandlist', 'commands'

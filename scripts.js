@@ -417,7 +417,7 @@ confetti.cacheFile = 'confetti.json';
     if (color == null) {
       color = 'black';
     }
-    return html("<timestamp/><b style='color: " + color + ";'>" + title + ":</b> " + msg, chan);
+    return html("<timestamp/><b style='color:" + color + "'>" + title + ":</b> " + msg, chan);
   };
   notification = function(msg, title, allowActive, force) {
     if (title == null) {
@@ -446,7 +446,7 @@ confetti.cacheFile = 'confetti.json';
     if (chan == null) {
       chan = Client.currentChannel();
     }
-    return html("<font color='" + (confetti.cache.get('botcolor')) + "'><timestamp/><b>" + (confetti.cache.get('botname')) + ":</b></font> " + msg, chan);
+    return html("<font color=" + (confetti.cache.get('botcolor')) + "><timestamp/><b>" + (confetti.cache.get('botname')) + ":</b></font> " + msg, chan);
   };
   return confetti.msg = {
     notify: notify,
@@ -462,7 +462,7 @@ confetti.cacheFile = 'confetti.json';
 })();
 
 (function() {
-  var aliases, commands, hooks;
+  var aliases, commands, hooks, reverseAliases;
   hooks = {};
   confetti._hooks = hooks;
   confetti.hook = function(name, func) {
@@ -489,6 +489,7 @@ confetti.cacheFile = 'confetti.json';
   };
   commands = {};
   aliases = {};
+  reverseAliases = {};
   confetti.command = function(name, help, handler) {
     var complete, desc, usage;
     usage = "";
@@ -512,7 +513,14 @@ confetti.cacheFile = 'confetti.json';
     };
   };
   confetti.alias = function(alias, command) {
-    return aliases[alias] = command;
+    aliases[alias] = command;
+    if (reverseAliases[command] == null) {
+      reverseAliases[command] = [];
+    }
+    return reverseAliases[command].push(alias);
+  };
+  confetti.aliasesOf = function(command) {
+    return reverseAliases[command];
   };
   confetti.execCommand = function(command, data, message, chan) {
     if (aliases.hasOwnProperty(command)) {
@@ -1076,113 +1084,77 @@ confetti.cacheFile = 'confetti.json';
 })();
 
 (function() {
-  var border, cmd, header;
-  cmd = function(name, chan) {
-    var command, complete, indicator, parts;
-    if (chan == null) {
-      chan = Client.currentChannel();
+  var CommandList;
+  CommandList = (function() {
+    function CommandList(name) {
+      var commandindicator;
+      this.name = name;
+      commandindicator = confetti.cache.get('commandindicator');
+      this.template = ["<table width=25%><tr><td><center><font size=5><b>" + this.name + "</b></font></center></td></tr></table>", "", "<b style='color:teal'>To use any of these commands, prefix them with '" + commandindicator + "' like so:</b> <u>" + commandindicator + "commands</u>", ""];
     }
-    command = confetti.commands[name];
-    if (command) {
-      parts = command.info.complete.split('@');
-      indicator = confetti.cache.get('commandindicator');
-      complete = "<a href='po:" + parts[0] + "/" + indicator + parts[1] + "' style='text-decoration: none; color: green;'>" + indicator + command.info.usage + "</a>";
-      return confetti.msg.html("&bull; " + complete + ": " + command.info.desc, chan);
-    }
-  };
-  header = function(msg, size, chan) {
-    if (size == null) {
-      size = 5;
-    }
-    if (chan == null) {
-      chan = Client.currentChannel();
-    }
-    return confetti.msg.html("<br><font size='" + size + "'><b>" + msg + "</b></font><br>", chan);
-  };
-  border = function(timestamp, chan) {
-    var channel;
-    if (timestamp == null) {
-      timestamp = false;
-    }
-    if (chan == null) {
-      chan = Client.currentChannel();
-    }
-    confetti.msg.html("" + (timestamp ? '<br><timestamp/><br>' : '<br>') + "<font color='skyblue'><b>≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈≈</b></font>" + (timestamp ? '<br>' : ''), chan);
-    if (timestamp) {
-      return channel = null;
-    }
-  };
-  confetti.commandList = {
-    cmd: cmd,
-    header: header,
-    border: border
-  };
-  confetti.command('configcommands', ['Shows various commands that change your settings.', 'send@configcommands'], function(_, chan) {
-    border();
-    header('Configuration Commands');
-    cmd('botname');
-    cmd('botcolor');
-    cmd('encool');
-    cmd('notifications');
-    cmd('commandindicator');
-    cmd('autoreconnect');
-    confetti.callHooks('commands:config');
-    confetti.msg.html("", chan);
-    cmd('defaults');
-    return border(true);
+
+    CommandList.prototype.cmd = function(name) {
+      var aliases, aliasstr, cmdname, command, parts;
+      command = confetti.commands[name];
+      if (command) {
+        parts = command.info.complete.split('@');
+        aliases = confetti.aliasesOf(name);
+        aliasstr = '';
+        if (aliases) {
+          aliasstr = " (Alias" + (aliases.length === 1 ? '' : 'es') + ": <i>" + (aliases.join(', ')) + "</i>)";
+        }
+        cmdname = "<a href='po:" + parts[0] + "/-" + parts[1] + "' style='text-decoration:none;color:teal'>" + command.info.usage + "</a>";
+        this.template.push("\u00bb " + cmdname + " - " + command.info.desc + aliasstr);
+      }
+      return this;
+    };
+
+    CommandList.prototype.cmds = function(names) {
+      var name, _i, _len;
+      if (typeof names === 'string') {
+        names = names.split(' ');
+      }
+      for (_i = 0, _len = names.length; _i < _len; _i++) {
+        name = names[_i];
+        this.cmd(name);
+      }
+      return this;
+    };
+
+    CommandList.prototype.group = function(name) {
+      this.whiteline();
+      this.template.push("<font size=4><b>" + name + "</b></font>");
+      this.whiteline();
+      return this;
+    };
+
+    CommandList.prototype.whiteline = function() {
+      this.template.push("");
+      return this;
+    };
+
+    CommandList.prototype.hooks = function(name) {
+      confetti.callHooks("commands:" + name, this);
+      return this;
+    };
+
+    CommandList.prototype.render = function(chan) {
+      if (chan == null) {
+        chan = Client.currentChannel();
+      }
+      this.whiteline();
+      return confetti.msg.html(this.template.join("<br>"), chan);
+    };
+
+    return CommandList;
+
+  })();
+  confetti.CommandList = CommandList;
+  confetti.command('configcommands', ['Shows various commands that change your settings.', 'send@configcommands'], function() {
+    return new CommandList("Configuration Commands").cmds('botname botcolor encool notifications commandindicator autoreconnect').hooks('config').whiteline().cmd('defaults').render();
   });
-  confetti.command('commands', ['Shows this command list.', 'send@commands'], function(_, chan) {
-    border();
-    header('Commands');
-    header('Command Lists', 4);
-    cmd('commands');
-    cmd('configcommands');
-    cmd('scriptcommands');
-    cmd('plugincommands');
-    confetti.callHooks('commands:list');
-    header('Friends', 4);
-    cmd('friend');
-    cmd('unfriend');
-    cmd('friends');
-    cmd('friendnotifications');
-    confetti.callHooks('commands:friends');
-    header('Blocking', 4);
-    cmd('block');
-    cmd('unblock');
-    cmd('blocked');
-    confetti.callHooks('commands:block');
-    header('Tracking', 4);
-    cmd('track');
-    cmd('untrack');
-    cmd('tracked');
-    cmd('trackingresolve');
-    confetti.callHooks('commands:track');
-    header('Flashwords', 4);
-    cmd('flashword');
-    cmd('removeflashword');
-    cmd('flashwords');
-    cmd('flashes');
-    confetti.callHooks('commands:flashwords');
-    header('Player Symbols', 4);
-    cmd('authsymbols');
-    cmd('authsymbol');
-    confetti.callHooks('commands:playersymbols');
-    confetti.callHooks('commands:categories');
-    confetti.msg.html("", chan);
-    cmd('reconnect');
-    cmd('define');
-    cmd('translate');
-    cmd('news');
-    cmd('imp');
-    cmd('info');
-    cmd('myip');
-    cmd('chan');
-    cmd('flip');
-    confetti.callHooks('commands:misc');
-    cmd('html');
-    cmd('eval');
-    confetti.callHooks('commands:dev');
-    return border(true);
+  confetti.command('commands', ['Shows this command list.', 'send@commands'], function() {
+    return new CommandList("Commands").group("Command Lists").cmds('commands configcommands scriptcommands plugincommands').hooks('list').group("Friends").cmds('friend unfriend friends friendnotifications').hooks('friends').group("Blocking").cmds('block unblock blocked').hooks('block').group("Tracking").cmds('track untrack tracked trackingresolve').hooks('track').group("Flashwords").cmds('flashword removeflashword flashwords flashes').hooks('flashwords').group("Player Symbols").cmds('authsymbols authsymbol').hooks('playersymbols').hooks('categories').whiteline().cmds('reconnect define translate news imp info myip chan flip').hooks('misc').cmds('html eval').hooks('dev').render();
   });
   return confetti.alias('commandlist', 'commands');
 })();
@@ -1410,16 +1382,7 @@ confetti.cacheFile = 'confetti.json';
   };
   confetti.updatePlugins = updatePlugins;
   confetti.command('plugincommands', ['Shows various commands related to plugins.', 'send@plugincommands'], function() {
-    var border, cmd, header, _ref;
-    _ref = confetti.commandList, header = _ref.header, border = _ref.border, cmd = _ref.cmd;
-    border(false);
-    header('Plugin Commands', 5);
-    cmd('plugins');
-    cmd('addplugin');
-    cmd('removeplugin');
-    cmd('updateplugins');
-    confetti.callHooks('commands:plugins');
-    return border(true);
+    return new confetti.CommandList("Plugin Commands").cmds('plugins addplugin removeplugin updateplugins').hooks('plugins');
   });
   confetti.command('plugins', ["Displays a list of enabled and available plugins.", 'send@plugins'], function(_, chan) {
     var count, html, plugin, plugins, _i, _len;
@@ -1436,6 +1399,7 @@ confetti.cacheFile = 'confetti.json';
           html += "<br>";
         }
       }
+      html += "<br>";
       confetti.msg.html(html, chan);
     }
     return sys.webCall(confetti.pluginsUrl + 'listing.json', function(resp) {
@@ -1650,17 +1614,8 @@ confetti.cacheFile = 'confetti.json';
   confetti.hook('initCache', function() {
     return confetti.cache.store('autoupdate', true, confetti.cache.once).store('lastupdatetime', sys.time(), confetti.cache.once);
   });
-  confetti.command('scriptcommands', ['Shows various commands related to the script.', 'send@scriptcommands'], function() {
-    var border, cmd, header, _ref;
-    _ref = confetti.commandList, header = _ref.header, border = _ref.border, cmd = _ref.cmd;
-    border(false);
-    header('Script Commands', 5);
-    cmd('updatescript');
-    cmd('autoupdate');
-    cmd('changelog');
-    cmd('version');
-    confetti.callHooks('commands:script');
-    return border(true);
+  confetti.command('scriptcommands', ['Shows various commands related to Confetti.', 'send@scriptcommands'], function() {
+    return new confetti.CommandList("Script Commands").cmds('updatescript autoupdate changelog version').hooks('script');
   });
   confetti.command('updatescript', ['Updates the script to the latest available version.', 'send@updatescript'], function() {
     if (sys.isSafeScripts()) {
@@ -1733,11 +1688,9 @@ confetti.cacheFile = 'confetti.json';
     confetti.cache.store('commandindicator', data).save();
     return confetti.msg.bot("Your command indicator is now " + data + "!");
   });
-  return confetti.command('defaults', ['Resets all settings back to their defaults. There might be some plugins that do not support this.', 'setmsg@defaults'], function(data) {
-    var commandindicator;
+  return confetti.command('defaults', ['Sets all settings back to their defaults. There may be some plugins that do not support this.', 'setmsg@defaults'], function(data) {
     if (data.toLowerCase() !== 'sure') {
-      commandindicator = confetti.cache.get('commandindicator');
-      return confetti.msg.bot("<a href='po:send/-defaults sure' style='text-decoration: none; color: black;'>Are you sure that you want to reset your settings? There is no going back. Click this message to confirm (or type <small>" + commandindicator + "defaults sure</small>).</a>");
+      return confetti.msg.bot("<a href='po:send/-defaults sure' style='text-decoration: none; color: black;'>Are you sure that you want to reset your settings? There is no going back. Click this message to confirm (or type <small>" + (confetti.cache.get('commandindicator')) + "defaults sure</small>).</a>");
     }
     confetti.cache.wipe();
     confetti.initCache();

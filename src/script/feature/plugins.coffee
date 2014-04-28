@@ -51,18 +51,8 @@ do ->
 
     confetti.updatePlugins = updatePlugins
     confetti.command 'plugincommands', ['Shows various commands related to plugins.', 'send@plugincommands'], ->
-        {header, border, cmd} = confetti.commandList
-        border no
-
-        header 'Plugin Commands', 5
-        cmd 'plugins'
-        cmd 'addplugin'
-        cmd 'removeplugin'
-        cmd 'updateplugins'
-
-        confetti.callHooks 'commands:plugins'
-
-        border yes
+        new confetti.CommandList("Plugin Commands")
+            .cmds('plugins addplugin removeplugin updateplugins').hooks('plugins')
 
     # TODO: Possibility for local plugins
     confetti.command 'plugins', ["Displays a list of enabled and available plugins.", 'send@plugins'], (_, chan) ->
@@ -80,6 +70,7 @@ do ->
                 if count % 4 is 0
                     html += "<br>"
 
+            html += "<br>"
             confetti.msg.html html, chan
 
         sys.webCall confetti.pluginsUrl + 'listing.json', (resp) ->

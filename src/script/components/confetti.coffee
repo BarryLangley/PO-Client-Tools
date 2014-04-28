@@ -19,6 +19,7 @@ do ->
     # Commands
     commands = {}
     aliases  = {}
+    reverseAliases = {}
 
     confetti.command = (name, help, handler) ->
         usage    = ""
@@ -35,7 +36,10 @@ do ->
 
     confetti.alias = (alias, command) ->
         aliases[alias] = command
+        reverseAliases[command] ?= []
+        reverseAliases[command].push(alias)
 
+    confetti.aliasesOf = (command) -> reverseAliases[command]
     confetti.execCommand = (command, data, message, chan) ->
         # Use the alias if available
         if aliases.hasOwnProperty(command)
