@@ -2053,7 +2053,7 @@ confettiScript = {
       confetti.ignoreNextChanMessage = true;
       Client.printChannelMessage(finishedMessage, chan, true);
       if (flashes && playerMessage.indexOf('<ping/>') !== -1) {
-        return confetti.msg.notification(confetti.util.stripHtml(playerMessage), "Ping in #" + (Client.channelName(chan)), false, true);
+        return confetti.msg.notification(confetti.util.stripHtml("" + from + ": " + playerMessage), "Ping in #" + (Client.channelName(chan)), false, true);
       }
     }
   }
