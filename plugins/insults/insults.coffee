@@ -35,7 +35,7 @@ do ->
     insultList = []
 
     updateInsults = (cb) ->
-        sys.webCall 'https://raw.githubusercontent.com/TheUnknownOne/Insults/master/src/insults.txt', (req) ->
+        sys.webCall 'http://theunknownone.github.io/Insults/src/insults.txt', (req) ->
             try
                 insults = req.split '\n'
                 if insults[insults.length - 1] is ''
@@ -85,7 +85,7 @@ do ->
         target = confetti.player.name(data).trim()
         msg = getInsult(target)
 
-        confetti.msg.html "<a href='po:setmsg/#{msg}'><b>#{msg}</b></a> <small>(click to copy to line edit)</small>", chan
+        confetti.msg.html "<a href='po:setmsg/#{confetti.util.stripquotes(msg)}'><b>#{msg}</b></a> <small>(click to copy to line edit)</small>", chan
 
     confetti.updateInsults = updateInsults
 

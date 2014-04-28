@@ -40,7 +40,7 @@
   insultsLoaded = false;
   insultList = [];
   updateInsults = function(cb) {
-    return sys.webCall('https://raw.githubusercontent.com/TheUnknownOne/Insults/master/src/insults.txt', function(req) {
+    return sys.webCall('http://theunknownone.github.io/Insults/src/insults.txt', function(req) {
       var ex, insult, insults;
       try {
         insults = req.split('\n');
@@ -103,7 +103,7 @@
     }
     target = confetti.player.name(data).trim();
     msg = getInsult(target);
-    return confetti.msg.html("<a href='po:setmsg/" + msg + "'><b>" + msg + "</b></a> <small>(click to copy to line edit)</small>", chan);
+    return confetti.msg.html("<a href='po:setmsg/" + (confetti.util.stripquotes(msg)) + "'><b>" + msg + "</b></a> <small>(click to copy to line edit)</small>", chan);
   };
   confetti.updateInsults = updateInsults;
   confetti.command('insult', ['insult [name]', 'Insults the given target for the greater good of mankind.', 'setmsg@insult [name]'], insult);
