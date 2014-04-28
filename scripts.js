@@ -1342,7 +1342,7 @@ confetti.cacheFile = 'confetti.json';
     }
     plugins = confetti.cache.get('plugins');
     return sys.webCall(confetti.pluginsUrl + 'listing.json', function(resp) {
-      var ex, json, pid, plug, plugin, toUpdate, _i, _j, _len, _len1, _results;
+      var ex, json, plug, plugin, toUpdate, _i, _j, _len, _len1, _results;
       try {
         json = JSON.parse(resp);
       } catch (_error) {
@@ -1366,16 +1366,16 @@ confetti.cacheFile = 'confetti.json';
         _results = [];
         for (_j = 0, _len1 = toUpdate.length; _j < _len1; _j++) {
           plugin = toUpdate[_j];
-          plug = plugin[1];
-          pid = plug.id;
           _results.push(sys.webCall(confetti.pluginsUrl + ("" + pid + "/" + pid + ".js"), (function(plugin) {
             return function(resp) {
-              var index;
+              var index, pid;
               if (!resp) {
                 if (verbose) {
                   return confetti.msg.bot("Couldn't load plugin source for plugin " + pid + " -- check your internet connection.", chan);
                 }
               }
+              plug = plugin[1];
+              pid = plug.id;
               confetti.io.writeLocal("plugin-" + pid + ".js", resp);
               index = plugins.indexOf(plugin[0]);
               plugins[index] = plug;

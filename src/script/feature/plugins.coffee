@@ -29,14 +29,14 @@ do ->
 
             if toUpdate.length
                 for plugin in toUpdate
-                    plug = plugin[1]
-                    pid = plug.id
                     sys.webCall confetti.pluginsUrl + "#{pid}/#{pid}.js", do (plugin) ->
                         return (resp) ->
                             unless resp
                                 if verbose
                                     return confetti.msg.bot "Couldn't load plugin source for plugin #{pid} -- check your internet connection.", chan
 
+                            plug = plugin[1]
+                            pid = plug.id
                             confetti.io.writeLocal "plugin-#{pid}.js", resp
 
                             index = plugins.indexOf(plugin[0])
