@@ -63,7 +63,9 @@
     });
   });
   return confetti.hook('commands:misc', function() {
-    confetti.commandList.cmd('usagetiers');
-    return confetti.commandList.cmd('usagestats');
+    var cmd;
+    cmd = confetti.commandList.cmd;
+    cmd('usagetiers');
+    return cmd('usagestats');
   });
 })();

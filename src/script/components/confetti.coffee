@@ -44,7 +44,7 @@ do ->
         if commands.hasOwnProperty(command)
             commands[command].handler(data, chan, message)
         else
-            confetti.msg.bot "The command '#{command}' doesn't exist, silly!"
+            confetti.msg.bot "The command '#{command}' doesn't exist!"
 
     confetti.commands = commands
     confetti.aliases  = aliases

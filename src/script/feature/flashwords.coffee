@@ -1,4 +1,6 @@
 do ->
+    classhilight = "<span class='name-hilight'>$1</span><ping/>"
+
     flashwordCategory = (word) ->
         parts = word.split('/')
         if parts.length < 3
@@ -38,7 +40,7 @@ do ->
         flashwords.push data
         confetti.cache.store('flashwords', flashwords).save()
 
-        confetti.msg.bot "#{sys.htmlEscape(data)} will now ping you when said!"
+        confetti.msg.bot "<b>#{sys.htmlEscape(data)}</b> will now ping you when said!"
 
     confetti.alias 'stalkword', 'flashword'
     confetti.alias 'addstalkword', 'flashword'
@@ -55,7 +57,7 @@ do ->
         flashwords.splice index, 1
         confetti.cache.store('flashwords', flashwords).save()
 
-        confetti.msg.bot "#{sys.htmlEscape(data)} will no longer ping you!"
+        confetti.msg.bot "<b>#{sys.htmlEscape(data)}</b> will no longer ping you!"
 
     confetti.command 'flashes', ["Toggles whether if name flashes and flash words should be enabled.", 'send@flashes'], ->
         confetti.cache.store('flashes', !confetti.cache.read('flashes')).save()
@@ -79,9 +81,9 @@ do ->
             for flashword in flashwords
                 cat = flashwordCategory(flashword)
                 if cat.type is 'word'
-                    flashMessage = flashMessage.replace(new RegExp("\\b(#{confetti.util.escapeRegex(cat.word)})\\b(?![^\\s<]*>)", "i"), "<span class='name-hilight'>$1</span><ping/>")
+                    flashMessage = flashMessage.replace(new RegExp("\\b(#{confetti.util.escapeRegex(cat.word)})\\b(?![^\\s<]*>)", "i"), classhilight)
                 else
-                    flashMessage = flashMessage.replace(new RegExp(cat.regex, cat.flags), "<span class='name-hilight'>$1</span><ping/>")
+                    flashMessage = flashMessage.replace(new RegExp(cat.regex, cat.flags), classhilight)
 
             if flashMessage isnt playerMessage
                 playerMessage = flashMessage

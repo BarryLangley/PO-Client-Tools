@@ -15,9 +15,6 @@ do ->
 
         Network.sendPM id, msg
 
-    printm = (msg) ->
-        print msg
-
     html = (msg, chan) ->
         if typeof chan is 'number' and chan isnt -1
             Client.printChannelMessage msg, chan, yes
@@ -45,7 +42,6 @@ do ->
     confetti.msg = {
         notify
         pm
-        print: printm
         html
         bold
         notification

@@ -15,7 +15,7 @@ do ->
 
         for auth, parts of authsymbols
             [start, end] = parts
-            authlvls[auth] = "#{confetti.msg.bullet} Auth <b>#{auth}</b>: #{sys.htmlEscape(start)}<b>Name</b>#{sys.htmlEscape(end)}"
+            authlvls[auth] = "#{confetti.msg.bullet} Auth <b>#{confetti.player.authToName(auth)}</b> (#{auth}): #{sys.htmlEscape(start)}<b>Name</b>#{sys.htmlEscape(end)}"
 
         authlvls = (authlvl for authlvl in authlvls when authlvl isnt "")
         confetti.msg.html authlvls.join("<br>") + "<br>", chan
@@ -39,21 +39,22 @@ do ->
         else if authl > 4
             authl = 4
 
+        authn = confetti.player.authToName(authl)
         if !start? and !end?
             if authsymbols.hasOwnProperty(authl)
                 delete authsymbols[authl]
                 confetti.cache.store('authsymbols', authsymbols).save()
 
-                return confetti.msg.bot "Auth symbol for auth level #{authl} removed!"
+                return confetti.msg.bot "Auth symbol for auth #{authn} (#{authl}) removed!"
             else
-                return confetti.msg.bot "There is no auth symbol for auth level #{authl}. Give a start and an end for the auth level."
+                return confetti.msg.bot "There is no auth symbol for auth #{authn} (#{authl}). Give a start and an end for the auth level."
 
         start ?= ''
         end ?= ''
         authsymbols[authl] = [start, end]
         confetti.cache.store('authsymbols', authsymbols).save()
 
-        confetti.msg.bot "Players whose auth level is #{authl} will now be formatted like so: #{start}<b>Name</b>#{end}"
+        confetti.msg.bot "Players whose auth is #{authn} (#{authl}) will now be formatted like so: #{start}<b>Name</b>#{end}"
 
     confetti.hook 'initCache', ->
         confetti.cache.store('authsymbols', {}, confetti.cache.once)

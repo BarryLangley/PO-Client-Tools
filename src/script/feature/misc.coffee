@@ -10,14 +10,15 @@ do ->
 
     confetti.command 'evalp', 'eval'
 
+    # TODO: Name verification
     confetti.command 'imp', ['imp [name]', "Changes your name to [name]. If the name is deemed invalid, you will be kicked, so be careful!", 'setmsg@imp name'], (data) ->
         if not data
             return confetti.msg.bot "Specify a name!"
         else if data.length > 20
             return confetti.msg.bot "That name is too long or too short (max 20 characters)!"
 
-        confetti.msg.bot "You are now known as #{data}!"
         Client.changeName data
+        confetti.msg.bot "You are now known as #{data}!"
 
     confetti.alias 'changename', 'imp'
 
@@ -90,9 +91,9 @@ do ->
         auth = Client.auth id
         color = Client.color id
 
-        confetti.msg.html "<timestamp/> #{name} #{confetti.player.status(id)} <small>#{id}</small>"
-        confetti.msg.html "#{confetti.msg.bullet} <b>Auth</b>: #{confetti.player.authToName(auth)} [#{auth}]"
-        confetti.msg.html "#{confetti.msg.bullet} <b>Color</b>: <b style='color: #{color};'>#{color}</b>"
+        confetti.msg.html "<timestamp/>#{name} #{confetti.player.status(id)} <small>#{id}</small>"
+        confetti.msg.html "#{confetti.msg.bullet} <b>Auth</b>: #{confetti.player.authToName(auth)} (#{auth})"
+        confetti.msg.html "#{confetti.msg.bullet} <b>Color</b>: <b style='color:#{color}'>#{color}</b>"
 
         if Client.player?
             avatar = Client.player(id).avatar
@@ -103,7 +104,6 @@ do ->
     confetti.command 'myip', ['Shows your IP address.', 'send@myip'], ->
         sys.webCall 'http://bot.whatismyipaddress.com/', (resp) ->
             unless resp
-                confetti.msg.bot "Couldn't obtain your IP address - check your internet connection."
-                return
+                return confetti.msg.bot "Couldn't obtain your IP address - check your internet connection."
 
             confetti.msg.bot "Your IP address is <b>#{resp}</b>."

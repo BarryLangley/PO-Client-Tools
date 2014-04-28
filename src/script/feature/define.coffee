@@ -25,6 +25,6 @@ do ->
 
             for example in examples
                 if example.trim()
-                    confetti.msg.html "&nbsp;&nbsp;&nbsp;&nbsp;<b>→</b> #{sys.htmlEscape(example)}", chan
+                    confetti.msg.html "&nbsp;&nbsp;&nbsp;&nbsp;<b>&bull;</b> #{sys.htmlEscape(example)}", chan
 
             return null

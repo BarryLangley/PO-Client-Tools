@@ -131,5 +131,7 @@ do ->
             confetti.msg.html html, chan
 
     confetti.hook 'commands:misc', ->
-        confetti.commandList.cmd 'usagetiers'
-        confetti.commandList.cmd 'usagestats'
+        cmd = confetti.commandList.cmd
+
+        cmd 'usagetiers'
+        cmd 'usagestats'

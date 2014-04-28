@@ -117,12 +117,10 @@ do ->
 
         if !(data in encoolTypes)
             confetti.msg.bot "That doesn't look right to me!"
-            confetti.msg.bot "Use one of the following types: #{encoolTypes.join(', ')}"
-            return
+            return confetti.msg.bot "Use one of the following types: #{encoolTypes.join(', ')}"
 
         if confetti.cache.read('encool') is data
-            confetti.msg.bot "Your encool type is already #{data}!"
-            return
+            return confetti.msg.bot "Your encool type is already #{data}!"
 
         confetti.cache.store('encool', data).save()
         confetti.msg.bot "Your encool type is now #{data}!"

@@ -30,29 +30,19 @@ do ->
                 return
 
             if differentVersion(confetti.version, json)
-                updateScript(json)
+                updateScript()
 
-    versionFormat = (version) ->
-        version.release + '.' + version.major + '.' + version.minor
+    versionFormat = (version) -> version.release + '.' + version.major + '.' + version.minor
+    differentVersion = (ov, nv) -> versionFormat(ov) isnt versionFormat(nv)
 
-    differentVersion = (ov, nv) ->
-        versionFormat(ov) isnt versionFormat(nv)
-
-    updateScript = (newVersion) ->
-        oldVersion = {release: confetti.version.release, major: confetti.version.major, minor: confetti.version.minor}
+    updateScript = ->
         sys.webCall confetti.scriptUrl + 'scripts.js', (file) ->
             unless file
                 return confetti.msg.bot "Couldn't load script, check your internet connection."
 
             confetti.io.write sys.scriptsFolder + 'scripts.js', file
-            confetti.io.reloadScript yes, oldVersion
-            if newVersion
-                if differentVersion(newVersion, oldVersion)
-                    confetti.msg.bot "Script updated to version #{versionFormat(newVersion)}!"
-                else
-                    confetti.msg.bot "Script updated!"
-            else
-                confetti.msg.bot "Script updated!"
+            confetti.io.reloadScript yes
+            confetti.msg.bot "Script updated!"
 
     # Check in 15 seconds (in case the player often relogs, it will never have a chance to update), and every 10m afterwards.
     # This timer is pretty painless, so it could be less.

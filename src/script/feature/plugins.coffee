@@ -31,10 +31,11 @@ do ->
                 for plugin in toUpdate
                     plug = plugin[1]
                     pid = plug.id
-                    sys.webCall "#{confetti.pluginsUrl}#{pid}/#{pid}.js", do (plugin) ->
+                    sys.webCall confetti.pluginsUrl + "#{pid}/#{pid}.js", do (plugin) ->
                         return (resp) ->
                             unless resp
-                                return confetti.msg.bot "Couldn't load plugin source for plugin #{pid} -- check your internet connection.", chan
+                                if verbose
+                                    return confetti.msg.bot "Couldn't load plugin source for plugin #{pid} -- check your internet connection.", chan
 
                             confetti.io.writeLocal "plugin-#{pid}.js", resp
 
@@ -49,19 +50,19 @@ do ->
                     confetti.msg.bot "All plugins up to date.", chan
 
     confetti.updatePlugins = updatePlugins
-    confetti.command 'plugincommands', ['Shows various commands related to plugins.', 'send@plugincommands'], (_, chan) ->
+    confetti.command 'plugincommands', ['Shows various commands related to plugins.', 'send@plugincommands'], ->
         {header, border, cmd} = confetti.commandList
-        border no, chan
+        border no
 
-        header 'Plugin Commands', 5, chan
-        cmd 'plugins', chan
-        confetti.commandList.cmd 'addplugin', chan
-        confetti.commandList.cmd 'removeplugin', chan
-        confetti.commandList.cmd 'updateplugins', chan
+        header 'Plugin Commands', 5
+        cmd 'plugins'
+        cmd 'addplugin'
+        cmd 'removeplugin'
+        cmd 'updateplugins'
 
         confetti.callHooks 'commands:plugins'
 
-        confetti.commandList.border yes, chan
+        border yes
 
     # TODO: Possibility for local plugins
     confetti.command 'plugins', ["Displays a list of enabled and available plugins.", 'send@plugins'], (_, chan) ->
@@ -70,11 +71,13 @@ do ->
             confetti.msg.bold "Loaded Plugins <small>[#{plugins.length}]</small>", '', chan
 
             html = ""
-            for plugin, index in plugins
+            count = 0
+            for plugin in plugins
+                count += 1
                 # Since '-' is always the command indicator, use it so the command remains clickable even if the user changes their command indicator (inside the send/setmsg protocol).
-                html += "#{confetti.msg.bullet} <b>#{plugin.name}</b> (#{plugin.id}) v#{plugin.version} <small>[<a href='po:send/-removeplugin #{plugin.name}' style='text-decoration: none; color: black;'>remove</a>]</small>"
+                html += "#{confetti.msg.bullet} <b>#{plugin.name}</b> (#{plugin.id}) v#{plugin.version} <small>[<a href='po:send/-removeplugin #{plugin.id}' style='text-decoration: none; color: black;'>remove</a>]</small>"
 
-                if index isnt 0 and index % 4 is 0
+                if count % 4 is 0
                     html += "<br>"
 
             confetti.msg.html html, chan
@@ -85,22 +88,24 @@ do ->
             catch ex
                 return confetti.msg.bot "Couldn't load available plugins listing -- check your internet connection.", chan
 
-            unless json.length
+            len = json.length
+            unless len
                 return confetti.msg.bot "No plugins are available.", chan
 
-            confetti.msg.bold "Available Plugins", '', chan
+            confetti.msg.bold "Available Plugins <small>[#{len}]</small>", '', chan
 
             html = ""
             for plugin in json
                 addremove = ""
+                pid = plugin.id
 
                 # Since '-' is always the command indicator, use it so the command remains clickable even if the user changes their command indicator (inside the send/setmsg protocol).
-                unless hasPlugin(plugin.id, plugins)
-                    addremove = "<small>[<a href='po:send/-addplugin #{plugin.name}' style='text-decoration: none; color: black;'>add</a>]</small>"
+                unless hasPlugin(pid, plugins)
+                    addremove = "<small>[<a href='po:send/-addplugin #{pid}' style='text-decoration:none;color:black'>add</a>]</small>"
                 else
-                    addremove = "<small>[<a href='po:send/-removeplugin #{plugin.name}' style='text-decoration: none; color: black;'>remove</a>]</small>"
+                    addremove = "<small>[<a href='po:send/-removeplugin #{pid}' style='text-decoration:none;color:black'>remove</a>]</small>"
 
-                html += "#{confetti.msg.bullet} <b>#{plugin.name}</b> (#{plugin.id}) v#{plugin.version} #{addremove}<br>"
+                html += "#{confetti.msg.bullet} <b>#{plugin.name}</b> (#{pid}) v#{plugin.version} #{addremove}<br>"
 
             confetti.msg.html html, chan
 
@@ -128,7 +133,7 @@ do ->
                 return confetti.msg.bot "That plugin is not available! Use the 'plugins' command to see a list of available plugins.", chan
 
             pid = plugin.id
-            sys.webCall "#{confetti.pluginsUrl}#{pid}/#{pid}.js", (file) ->
+            sys.webCall confetti.pluginsUrl + "#{pid}/#{pid}.js", (file) ->
                 if not file
                     return confetti.msg.bot "Couldn't load plugin source -- check your internet connection.", chan
 
@@ -137,17 +142,17 @@ do ->
                 plugins.push plugin
                 confetti.cache.store('plugins', plugins).save()
 
-                confetti.msg.bot "Plugin #{plugin.name} added!", chan
                 confetti.initPlugins pid
+                confetti.msg.bot "Plugin <b>#{plugin.name}</b> added!", chan
 
     confetti.command 'removeplugin', ['removeplugin [plugin]', "Removes a plugin.", 'setmsg@removeplugin plugin'], (data) ->
         name = data
         data = data.toLowerCase()
         plugins = confetti.cache.get 'plugins'
-        plugin  = findPlugin(data, plugins)
+        plugin = findPlugin(data, plugins)
 
         if plugin is null
-            return confetti.msg.bot "#{name} isn't an enabled plugin!"
+            return confetti.msg.bot "#{name} isn't an enabled plugin! Try to use its plugin id (in the plugins list, this is the name in brackets)."
 
         plugins.splice plugins.indexOf(plugin), 1
         confetti.cache.store('plugins', plugins).save()
@@ -155,7 +160,7 @@ do ->
         confetti.io.deleteLocal "plugin-#{plugin.id}.js"
         confetti.io.reloadScript()
 
-        confetti.msg.bot "Plugin #{plugin.name} removed."
+        confetti.msg.bot "Plugin <b>#{plugin.name}</b> removed."
 
     confetti.command 'updateplugins', ['Updates your plugins to the latest version.', 'send@updateplugins'], (_, chan) ->
         if sys.isSafeScripts()
