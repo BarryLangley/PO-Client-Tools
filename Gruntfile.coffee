@@ -1,26 +1,14 @@
 module.exports = (grunt) ->
-    grunt.loadNpmTasks 'grunt-contrib-concat'
+    #grunt.loadNpmTasks 'grunt-contrib-concat'
     grunt.loadNpmTasks 'grunt-contrib-coffee'
 
     grunt.registerTask 'build-client', 'Builds the client script source.', (data) ->
-        grunt.log.ok 'The following modules will be built:', clientFiles.join(', ').replace(/.js/gi, '')
         grunt.task.run 'coffee:client'
 
     grunt.registerTask 'build-plugins', 'Builds the client script plugins.', (data) ->
-        grunt.log.ok 'Building plugin: Insults'
-        grunt.task.run 'coffee:insult-plugin'
-
-        grunt.log.ok 'Building plugin: Pokédex'
         grunt.task.run 'coffee:pokedex-plugin'
-
-        grunt.log.ok 'Building plugin: AoC Taunts'
-        grunt.task.run 'coffee:aoctaunts-plugin'
-
-        grunt.log.ok 'Building plugin: Emoji'
-        grunt.task.run 'coffee:emoji-plugin'
-
-        grunt.log.ok 'Building plugin: Pokémon Usage Statistics'
-        grunt.task.run 'coffee:pusestats-plugin'
+        for plugin in plugins
+            grunt.task.run "coffee:#{plugin}-plugin"
 
     grunt.registerTask 'default', ['build-client']
 
@@ -42,14 +30,13 @@ module.exports = (grunt) ->
     ]
 
     clientFiles = ("src/script/#{file}.coffee" for file in clientFiles)
+    plugins = ['insults', 'aoctaunts', 'emoji', 'pusestats']
 
     gruntConfig =
         pkg: grunt.file.readJSON 'package.json'
-        # grunt-contrib-concat
-        concat:
-            options:
-                separator: ''
-        # grunt-contrib-coffee
+        #concat:
+        #    options:
+        #        separator: ''
         coffee:
             client:
                 options:
@@ -87,5 +74,14 @@ module.exports = (grunt) ->
                     join: yes
                 files:
                     'plugins/pusestats/pusestats.js': 'plugins/pusestats/pusestats.coffee'
+
+    for plugin in plugins
+        config =
+            options:
+                bare: yes
+                join: yes
+            files: {}
+        config.files["plugins/#{plugin}/#{plugin}.js"] = "plugins/#{plugin}/#{plugin}.coffee"
+        gruntConfig.coffee["#{plugin}-plugin"] = config
 
     grunt.initConfig gruntConfig
