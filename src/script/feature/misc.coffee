@@ -75,7 +75,19 @@ do ->
     confetti.alias 'channel', 'chan'
     confetti.alias 'goto', 'chan'
 
-    confetti.command 'info', ['info [name]', "Shows info for a given user. If you are a moderator, also opens a control panel for the player.", 'setmsg@info name'], (data, chan) ->
+    confetti.command 'pm', ['pm [name]', 'Opens a PM session with [name].', 'setmsg@pm name'], (data) ->
+        unless data
+            return confetti.msg.bot "Specify a name!"
+
+        id = Client.id(data)
+        if id is -1
+            return confetti.msg.bot "#{sys.htmlEscape(data)} is not online right now."
+        else if id is Client.ownId()
+            return confetti.msg.bot "You can't PM yourself!"
+
+        Client.startPM(id)
+
+    confetti.command 'info', ['info [name]', "Shows some info (like id, color, auth level) for a given user. If you are a moderator, also opens a control panel for the player.", 'setmsg@info name'], (data, chan) ->
         id = Client.id data
 
         if Client.ownAuth() > 0

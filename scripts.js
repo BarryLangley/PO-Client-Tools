@@ -1154,7 +1154,7 @@ confetti.cacheFile = 'confetti.json';
     return new CommandList("Configuration Commands").cmds('botname botcolor encool notifications commandindicator autoreconnect').hooks('config').whiteline().cmd('defaults').render();
   });
   confetti.command('commands', ['Shows this command list.', 'send@commands'], function() {
-    return new CommandList("Commands").group("Command Lists").cmds('commands configcommands scriptcommands plugincommands').hooks('list').group("Friends").cmds('friend unfriend friends friendnotifications').hooks('friends').group("Blocking").cmds('block unblock blocked').hooks('block').group("Tracking").cmds('track untrack tracked trackingresolve').hooks('track').group("Flashwords").cmds('flashword removeflashword flashwords flashes').hooks('flashwords').group("Player Symbols").cmds('authsymbols authsymbol').hooks('playersymbols').hooks('categories').whiteline().cmds('reconnect define translate news imp info myip chan flip').hooks('misc').cmds('html eval').hooks('dev').render();
+    return new CommandList("Commands").group("Command Lists").cmds('commands configcommands scriptcommands plugincommands').hooks('list').group("Friends").cmds('friend unfriend friends friendnotifications').hooks('friends').group("Blocking").cmds('block unblock blocked').hooks('block').group("Tracking").cmds('track untrack tracked trackingresolve').hooks('track').group("Flashwords").cmds('flashword removeflashword flashwords flashes').hooks('flashwords').group("Player Symbols").cmds('authsymbols authsymbol').hooks('playersymbols').hooks('categories').whiteline().cmds('reconnect define translate news imp info chan pm flip myip').hooks('misc').cmds('html eval').hooks('dev').render();
   });
   return confetti.alias('commandlist', 'commands');
 })();
@@ -1228,7 +1228,20 @@ confetti.cacheFile = 'confetti.json';
   confetti.alias('joinchan', 'chan');
   confetti.alias('channel', 'chan');
   confetti.alias('goto', 'chan');
-  confetti.command('info', ['info [name]', "Shows info for a given user. If you are a moderator, also opens a control panel for the player.", 'setmsg@info name'], function(data, chan) {
+  confetti.command('pm', ['pm [name]', 'Opens a PM session with [name].', 'setmsg@pm name'], function(data) {
+    var id;
+    if (!data) {
+      return confetti.msg.bot("Specify a name!");
+    }
+    id = Client.id(data);
+    if (id === -1) {
+      return confetti.msg.bot("" + (sys.htmlEscape(data)) + " is not online right now.");
+    } else if (id === Client.ownId()) {
+      return confetti.msg.bot("You can't PM yourself!");
+    }
+    return Client.startPM(id);
+  });
+  confetti.command('info', ['info [name]', "Shows some info (like id, color, auth level) for a given user. If you are a moderator, also opens a control panel for the player.", 'setmsg@info name'], function(data, chan) {
     var auth, avatar, color, id, name;
     id = Client.id(data);
     if (Client.ownAuth() > 0) {

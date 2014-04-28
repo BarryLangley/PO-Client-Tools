@@ -69,7 +69,7 @@ do ->
             .hooks('categories')
             .whiteline()
 
-            .cmds('reconnect define translate news imp info myip chan flip').hooks('misc')
+            .cmds('reconnect define translate news imp info chan pm flip myip').hooks('misc')
             .cmds('html eval').hooks('dev')
             .render()
 
