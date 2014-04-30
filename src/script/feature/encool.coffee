@@ -13,6 +13,47 @@ do ->
     for chr, index in halfwidthChars
         fullwidthConvert[chr] = fullwidthChars[index]
 
+    natoTable =
+        a: "Alpha"
+        b: "Bravo"
+        c: "Charlie"
+        d: "Delta"
+        e: "Echo"
+        f: "Foxtrot"
+        g: "Golf"
+        h: "Hotel"
+        i: "India"
+        j: "Juliet"
+        k: "Kilo"
+        l: "Lima"
+        m: "Mike"
+        n: "November"
+        o: "Oscar"
+        p: "Papa"
+        q: "Quebec"
+        r: "Romeo"
+        s: "Sierra"
+        t: "Tango"
+        u: "Uniform"
+        v: "Victor"
+        w: "Whiskey"
+        x: "Xray"
+        y: "Yankee"
+        z: "Zulu"
+        0: "Zero"
+        1: "One"
+        2: "Two"
+        3: "Three"
+        4: "Four"
+        5: "Five"
+        6: "Six"
+        7: "Seven"
+        8: "Eight"
+        9: "Niner"
+
+    for chr, val of natoTable
+        natoTable[chr.toUpperCase()] = val
+
     smallcapsify = (msg) ->
         str = []
         for letter, index in msg
@@ -23,6 +64,18 @@ do ->
         str = []
         for letter, index in msg
             str[index] = fullwidthConvert[letter] or letter
+        return str.join ''
+
+    natoify = (msg) ->
+        msg = msg.replace(/\b(the|a(n)?|is|are)\b/gi, "")
+        str = []
+        for letter, index in msg
+            ntl = natoTable[letter]
+            if ntl
+                str.push(ntl)
+                if natoTable[msg[index + 1]]
+                    str.push("-")
+            else str.push(letter)
         return str.join ''
 
     l33tify = (msg) ->
@@ -83,6 +136,7 @@ do ->
         spaces: (msg) -> msg.split('').join(' ')
         smallcaps: (msg) -> smallcapsify msg
         fullwidth: (msg) -> fullwidthify msg
+        nato: (msg) -> natoify msg
         leet: (msg) -> l33tify msg
         l33t: (msg) -> l33tify msg
         reverse: (msg) -> msg.split('').reverse().join('')
@@ -91,7 +145,9 @@ do ->
         encoolHandlers[type or 'none'](msg)
 
     confetti.encool = encool
-    confetti.encool.register = (type, handler) -> encoolHandlers[type] = handler
+    confetti.encool.register = (type, handler) ->
+        encoolHandlers[type] = handler
+        encoolTypes = Object.keys(encoolHandlers)
 
     confetti.hook 'initCache', ->
         confetti.cache.store('encool', 'none', confetti.cache.once)

@@ -783,7 +783,7 @@ confetti.cacheFile = 'confetti.json';
 })();
 
 (function() {
-  var chr, encool, encoolHandlers, encoolTypes, fullwidthChars, fullwidthConvert, fullwidthify, halfwidthChars, index, l33tify, normalLetters, smallcapsConvert, smallcapsLetters, smallcapsify, _i, _j, _len, _len1;
+  var chr, encool, encoolHandlers, encoolTypes, fullwidthChars, fullwidthConvert, fullwidthify, halfwidthChars, index, l33tify, natoTable, natoify, normalLetters, smallcapsConvert, smallcapsLetters, smallcapsify, val, _i, _j, _len, _len1;
   normalLetters = 'qwertyuiopasdfghjklzxcvbnm'.split('');
   smallcapsLetters = 'ǫᴡᴇʀᴛʏᴜɪᴏᴘᴀsᴅғɢʜᴊᴋʟᴢxᴄᴠʙɴᴍ'.split('');
   smallcapsConvert = {};
@@ -797,6 +797,48 @@ confetti.cacheFile = 'confetti.json';
   for (index = _j = 0, _len1 = halfwidthChars.length; _j < _len1; index = ++_j) {
     chr = halfwidthChars[index];
     fullwidthConvert[chr] = fullwidthChars[index];
+  }
+  natoTable = {
+    a: "Alpha",
+    b: "Bravo",
+    c: "Charlie",
+    d: "Delta",
+    e: "Echo",
+    f: "Foxtrot",
+    g: "Golf",
+    h: "Hotel",
+    i: "India",
+    j: "Juliet",
+    k: "Kilo",
+    l: "Lima",
+    m: "Mike",
+    n: "November",
+    o: "Oscar",
+    p: "Papa",
+    q: "Quebec",
+    r: "Romeo",
+    s: "Sierra",
+    t: "Tango",
+    u: "Uniform",
+    v: "Victor",
+    w: "Whiskey",
+    x: "Xray",
+    y: "Yankee",
+    z: "Zulu",
+    0: "Zero",
+    1: "One",
+    2: "Two",
+    3: "Three",
+    4: "Four",
+    5: "Five",
+    6: "Six",
+    7: "Seven",
+    8: "Eight",
+    9: "Niner"
+  };
+  for (chr in natoTable) {
+    val = natoTable[chr];
+    natoTable[chr.toUpperCase()] = val;
   }
   smallcapsify = function(msg) {
     var letter, str, _k, _len2;
@@ -816,6 +858,24 @@ confetti.cacheFile = 'confetti.json';
     }
     return str.join('');
   };
+  natoify = function(msg) {
+    var letter, ntl, str, _k, _len2;
+    msg = msg.replace(/\b(the|a(n)?|is|are)\b/gi, "");
+    str = [];
+    for (index = _k = 0, _len2 = msg.length; _k < _len2; index = ++_k) {
+      letter = msg[index];
+      ntl = natoTable[letter];
+      if (ntl) {
+        str.push(ntl);
+        if (natoTable[msg[index + 1]]) {
+          str.push("-");
+        }
+      } else {
+        str.push(letter);
+      }
+    }
+    return str.join('');
+  };
   l33tify = function(msg) {
     return msg.replace(/\b(hacker|coder|programmer)(s|z)?\b/gi, 'haxor$2').replace(/\b(hack)(ed|s|z)?\b/gi, 'haxor$2').replace(/\b(thank you)\b/gi, 'TY').replace(/\b(luv|love|wuv|like)(s|z)?\b/gi, 'wub$2').replace(/\b(software)(s|z)?\b/gi, 'wares').replace(/\b((is|are|am) +(cool|wicked|awesome|great))\b/gi, 'rocks').replace(/\b((is|are|am) +(\w+) +(cool|wicked|awesome|great))\b/gi, '$3 rocks').replace(/\b(very|extremely)\b/gi, 'totally').replace(/\b(because)\b/gi, 'coz').replace(/\b(due to)\b/gi, 'coz of').replace(/\b(is|am)\b/gi, 'be').replace(/\b(are)\b/gi, 'is').replace(/\b(rock)(s|z)?\b/gi, 'roxor$2').replace(/\b(porn(o(graph(y|ic))?)?)\b/gi, 'pron').replace(/\b(lamer|dork|jerk|moron|idiot)\b/gi, 'loser').replace(/\b(an loser)\b/gi, 'a loser').replace(/\b(what('s)?)\b/gi, 'wot').replace(/\b(that)\b/gi, 'dat').replace(/\b(this)\b/gi, 'dis').replace(/\b(hooray|yippee|yay|yeah)\b/gi, 'woot').replace(/\b(win|own)(s|z)?\b/gi, 'pwn$2').replace(/\b(won|owned)\b/gi, 'pwnt').replace(/\b(suck)(ed|s|z)?\b/gi, 'suxor$2').replace(/\b(was|were|had been)/gi, 'wuz').replace(/\b(elite)/gi, 'leet').replace(/\byou\b/gi, 'joo').replace(/\b(man|dude|guy|boy)(s|z)?\b/gi, 'dood$2').replace(/\b(men)\b/gi, 'doods').replace(/\bstarbucks?\b/gi, 'bizzo').replace(/\b(the)\b/gi, 'teh').replace(/(ing)\b/gi, 'in\'').replace(/\b(stoked|happy|excited|thrilled|stimulated)\b/gi, 'geeked').replace(/\b(unhappy|depressed|miserable|sorry)\b/gi, 'bummed out').replace(/\b(and|an)\b/gi, 'n').replace(/\b(your|hey|hello|hi)\b/gi, 'yo').replace(/\b(might)\b/gi, 'gonna').replace(/\blater\b/gi, 'l8r').replace(/\bare\b/gi, 'R').replace(/\bbe\b/gi, 'b').replace(/\bto\b/gi, '2').replace(/\ba\b/gi, '@').replace(/(\S)l/g, '$1L').replace(/(\S)l/g, '$1L').replace(/a/gi, '4').replace(/\bfor\b/gi, '4').replace(/e/gi, '3').replace(/i/gi, '1').replace(/o/gi, '0').replace(/s\b/gi, 'z');
   };
@@ -831,6 +891,9 @@ confetti.cacheFile = 'confetti.json';
     },
     fullwidth: function(msg) {
       return fullwidthify(msg);
+    },
+    nato: function(msg) {
+      return natoify(msg);
     },
     leet: function(msg) {
       return l33tify(msg);
@@ -850,7 +913,9 @@ confetti.cacheFile = 'confetti.json';
   };
   confetti.encool = encool;
   confetti.encool.register = function(type, handler) {
-    return encoolHandlers[type] = handler;
+    var encoolTypes;
+    encoolHandlers[type] = handler;
+    return encoolTypes = Object.keys(encoolHandlers);
   };
   confetti.hook('initCache', function() {
     return confetti.cache.store('encool', 'none', confetti.cache.once);
