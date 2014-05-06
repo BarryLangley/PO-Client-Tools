@@ -69,7 +69,7 @@ do ->
         return str
 
     stripquotes = (str) ->
-        str.replace(/'/g, "\'")
+        str.replace(/'/g, "\\'")
 
     isAlpha = (chr) ->
         chr = chr.toLowerCase()

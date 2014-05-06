@@ -125,7 +125,7 @@ confetti.cacheFile = 'confetti.json';
     return str;
   };
   stripquotes = function(str) {
-    return str.replace(/'/g, "\'");
+    return str.replace(/'/g, "\\'");
   };
   isAlpha = function(chr) {
     chr = chr.toLowerCase();
