@@ -57,9 +57,8 @@ do ->
 
     # Used for a recursive call (lazy loading).
     insult = (data, chan) ->
-        if data.length is 0
-            confetti.msg.bot "Specify a target!"
-            return
+        unless data
+            return confetti.msg.bot "Specify a target!"
 
         # If insults aren't loaded, load the list async
         unless insultsLoaded
@@ -71,6 +70,22 @@ do ->
         msg = getInsult(target)
 
         confetti.msg.notify msg, chan
+
+    insultpm = (data) ->
+        id = Client.id(data)
+        if !data or id is -1
+            return confetti.msg.bot "Specify a target!"
+
+        # If insults aren't loaded, load the list async
+        unless insultsLoaded
+            updateInsults ->
+                insultpm(data)
+            return
+
+        target = confetti.player.name(data).trim()
+        msg = getInsult(target)
+
+        confetti.msg.pm id, msg
 
     insultp = (data, chan) ->
         unless data
@@ -85,12 +100,13 @@ do ->
         target = confetti.player.name(data).trim()
         msg = getInsult(target)
 
-        confetti.msg.html "<a href='po:setmsg/#{confetti.util.stripquotes(msg)}'><b>#{msg}</b></a> <small>(click to copy to line edit)</small>", chan
+        confetti.msg.html '<a href="po:setmsg/#{msg}"><b>#{msg}</b></a> <small>(click to copy to line edit)</small>', chan
 
     confetti.updateInsults = updateInsults
 
     confetti.command 'insult', ['insult [name]', 'Insults the given target for the greater good of mankind.', 'setmsg@insult [name]'], insult
-    confetti.command 'insultp', ['insultp [name]', 'Like insult, but prints the insult instead of sending it.', 'setmsg@insultp [name]'], insultp
+    confetti.command 'insultp', ['insultp [name]', 'Like insult, but prints the insult with a clickable copy link instead of sending it.', 'setmsg@insultp [name]'], insultp
+    confetti.command 'insultpm', ['insultp [name]', 'Like insult, but pms it to someone. You will not see the insult.', 'setmsg@insultpm [name]'], insultp
     confetti.command 'intellisult', ['intellisult [name]', 'Insults the given target for the greater good of mankind, with intelligence.', 'setmsg@intellisult [name]'], (data, chan) ->
         unless data
             return confetti.msg.bot "Specify a target!"
@@ -111,7 +127,7 @@ do ->
 
     confetti.command 'insultcommands', ['Shows various commands related to insults.', 'send@insultcommands'], ->
         new confetti.CommandList("Insult Commands")
-            .cmds('insult insultp intellisult updateinsults longinsults').hooks('insult')
+            .cmds('insult insultp insultpm intellisult updateinsults longinsults').hooks('insult')
             .render()
 
     confetti.hook 'commands:list', (template) ->

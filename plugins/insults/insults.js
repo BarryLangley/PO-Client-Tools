@@ -1,5 +1,5 @@
 (function() {
-  var getInsult, insult, insultList, insultp, insultsLoaded, intellisult, updateInsults;
+  var getInsult, insult, insultList, insultp, insultpm, insultsLoaded, intellisult, updateInsults;
   intellisult = function(name) {
     var a, b, c, d, e, f, insult, random;
     if (name == null) {
@@ -76,9 +76,8 @@
   };
   insult = function(data, chan) {
     var msg, target;
-    if (data.length === 0) {
-      confetti.msg.bot("Specify a target!");
-      return;
+    if (!data) {
+      return confetti.msg.bot("Specify a target!");
     }
     if (!insultsLoaded) {
       updateInsults(function() {
@@ -89,6 +88,22 @@
     target = confetti.player.name(data).trim();
     msg = getInsult(target);
     return confetti.msg.notify(msg, chan);
+  };
+  insultpm = function(data) {
+    var id, msg, target;
+    id = Client.id(data);
+    if (!data || id === -1) {
+      return confetti.msg.bot("Specify a target!");
+    }
+    if (!insultsLoaded) {
+      updateInsults(function() {
+        return insultpm(data);
+      });
+      return;
+    }
+    target = confetti.player.name(data).trim();
+    msg = getInsult(target);
+    return confetti.msg.pm(id, msg);
   };
   insultp = function(data, chan) {
     var msg, target;
@@ -103,11 +118,12 @@
     }
     target = confetti.player.name(data).trim();
     msg = getInsult(target);
-    return confetti.msg.html("<a href='po:setmsg/" + (confetti.util.stripquotes(msg)) + "'><b>" + msg + "</b></a> <small>(click to copy to line edit)</small>", chan);
+    return confetti.msg.html('<a href="po:setmsg/#{msg}"><b>#{msg}</b></a> <small>(click to copy to line edit)</small>', chan);
   };
   confetti.updateInsults = updateInsults;
   confetti.command('insult', ['insult [name]', 'Insults the given target for the greater good of mankind.', 'setmsg@insult [name]'], insult);
-  confetti.command('insultp', ['insultp [name]', 'Like insult, but prints the insult instead of sending it.', 'setmsg@insultp [name]'], insultp);
+  confetti.command('insultp', ['insultp [name]', 'Like insult, but prints the insult with a clickable copy link instead of sending it.', 'setmsg@insultp [name]'], insultp);
+  confetti.command('insultpm', ['insultp [name]', 'Like insult, but pms it to someone. You will not see the insult.', 'setmsg@insultpm [name]'], insultp);
   confetti.command('intellisult', ['intellisult [name]', 'Insults the given target for the greater good of mankind, with intelligence.', 'setmsg@intellisult [name]'], function(data, chan) {
     if (!data) {
       return confetti.msg.bot("Specify a target!");
@@ -128,7 +144,7 @@
     return confetti.cache.store('longinsults', false, confetti.cache.once);
   });
   confetti.command('insultcommands', ['Shows various commands related to insults.', 'send@insultcommands'], function() {
-    return new confetti.CommandList("Insult Commands").cmds('insult insultp intellisult updateinsults longinsults').hooks('insult').render();
+    return new confetti.CommandList("Insult Commands").cmds('insult insultp insultpm intellisult updateinsults longinsults').hooks('insult').render();
   });
   return confetti.hook('commands:list', function(template) {
     return template.cmd('insultcommands');
