@@ -53,15 +53,9 @@ do ->
     confetti.changelog = changelog
     confetti.autoUpdate = autoUpdate
     confetti.updateScript = updateScript
-    confetti.hook 'initCache', ->
-        confetti.cache
-            .store('autoupdate', yes, confetti.cache.once)
-            .store('lastupdatetime', sys.time(), confetti.cache.once)
 
-    confetti.command 'scriptcommands', ['Shows various commands related to Confetti.', 'send@scriptcommands'], ->
-        new confetti.CommandList("Script Commands")
-            .cmds('updatescript autoupdate changelog version').hooks('script')
-            .render()
+    confetti.command 'scriptcommands', ['Shows commands related to Confetti (the script).', 'send@scriptcommands'], ->
+        confetti.cmdlist("Confetti", 'updatescript autoupdate changelog version', 'script')
 
     confetti.command 'updatescript', ['Updates the script to the latest available version.', 'send@updatescript'], ->
         if sys.isSafeScripts()
@@ -85,3 +79,8 @@ do ->
     confetti.command 'changelog', ["Shows a changelog containing the major changes in each version.", 'send@changelog'], ->
         for ver, msg of changelog
             confetti.msg.bot "#{ver}: #{msg}"
+
+    confetti.hook 'initCache', ->
+        confetti.cache
+            .store('autoupdate', yes, confetti.cache.once)
+            .store('lastupdatetime', sys.time(), confetti.cache.once)

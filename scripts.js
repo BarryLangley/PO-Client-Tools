@@ -581,6 +581,83 @@ confetti.cacheFile = 'confetti.json';
 })();
 
 (function() {
+  var CommandList;
+  CommandList = (function() {
+    function CommandList(name) {
+      var commandindicator;
+      this.name = name;
+      commandindicator = confetti.cache.get('commandindicator');
+      this.template = ["<table width=25%><tr><td><center><font size=5><b>" + this.name + "</b></font></center></td></tr></table>", "", "<b style='color:teal'>To use any of these commands, prefix them with '" + commandindicator + "' like so:</b> <u>" + commandindicator + "commands</u>", ""];
+    }
+
+    CommandList.prototype.cmd = function(name) {
+      var aliases, aliasstr, cmdname, command, parts;
+      command = confetti.commands[name];
+      if (command) {
+        parts = command.info.complete.split('@');
+        aliases = confetti.aliasesOf(name);
+        aliasstr = '';
+        if (aliases) {
+          aliasstr = " (Alias" + (aliases.length === 1 ? '' : 'es') + ": <i>" + (aliases.join(', ')) + "</i>)";
+        }
+        cmdname = "<a href='po:" + parts[0] + "/-" + parts[1] + "' style='text-decoration:none;color:teal'>" + command.info.usage + "</a>";
+        this.template.push("\u00bb " + cmdname + " - " + command.info.desc + aliasstr);
+      }
+      return this;
+    };
+
+    CommandList.prototype.cmds = function(names) {
+      var name, _i, _len;
+      if (typeof names === 'string') {
+        names = names.split(' ');
+      }
+      for (_i = 0, _len = names.length; _i < _len; _i++) {
+        name = names[_i];
+        this.cmd(name);
+      }
+      return this;
+    };
+
+    CommandList.prototype.group = function(name) {
+      this.whiteline();
+      this.template.push("<font size=4><b>" + name + "</b></font>");
+      this.whiteline();
+      return this;
+    };
+
+    CommandList.prototype.whiteline = function() {
+      this.template.push("");
+      return this;
+    };
+
+    CommandList.prototype.hooks = function(name) {
+      confetti.callHooks("commands:" + name, this);
+      return this;
+    };
+
+    CommandList.prototype.render = function(chan) {
+      if (chan == null) {
+        chan = Client.currentChannel();
+      }
+      this.whiteline();
+      return confetti.msg.html(this.template.join("<br>"), chan);
+    };
+
+    return CommandList;
+
+  })();
+  confetti.CommandList = CommandList;
+  return confetti.cmdlist = function(name, cmds, hooks) {
+    var list;
+    list = new CommandList(name).cmds(cmds);
+    if (hooks) {
+      list.hooks(hooks);
+    }
+    return list.render();
+  };
+})();
+
+(function() {
   confetti.command('authsymbols', ["Shows the auth symbols you have set.", 'send@authsymbols'], function(_, chan) {
     var auth, authlvl, authlvls, authsymbols, end, html, numSymbols, parts, start;
     authsymbols = confetti.cache.get('authsymbols');
@@ -672,6 +749,9 @@ confetti.cacheFile = 'confetti.json';
 })();
 
 (function() {
+  confetti.command('blockcommands', ['Shows commands related to blocking other players.', 'send@blockcommands'], function() {
+    return confetti.cmdlist("Blocking", 'block unblock blocked', 'block');
+  });
   confetti.command('blocked', ["Displays a list of blocked players.", 'send@blocked'], function(_, chan) {
     var blocked, blocklist, count, html, _i, _len;
     blocklist = confetti.util.sortOnlineOffline(confetti.cache.get('blocked'));
@@ -953,6 +1033,9 @@ confetti.cacheFile = 'confetti.json';
 (function() {
   var classhilight, flashwordCategory;
   classhilight = "<span class='name-hilight'>$1</span><ping/>";
+  confetti.command('flashcommands', ['Shows commands related to flashes and flashwords.', 'send@flashcommands'], function() {
+    return confetti.cmdlist("Flashes", 'flashword removeflashword flashwords flashes', 'flash');
+  });
   flashwordCategory = function(word) {
     var flags, parts, regex;
     parts = word.split('/');
@@ -1053,8 +1136,9 @@ confetti.cacheFile = 'confetti.json';
 })();
 
 (function() {
-  var bullet;
-  bullet = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&bull;";
+  confetti.command('friendcommands', ['Shows commands related to friends.', 'send@friendcommands'], function() {
+    return confetti.cmdlist("Friends", 'friend unfriend friends friendnotifications', 'friends');
+  });
   confetti.command('friends', ["Displays your friends list.", 'send@friends'], function(_, chan) {
     var count, friend, friends, html, _i, _len;
     friends = confetti.util.sortOnlineOffline(confetti.cache.get('friends'));
@@ -1149,77 +1233,11 @@ confetti.cacheFile = 'confetti.json';
 })();
 
 (function() {
-  var CommandList;
-  CommandList = (function() {
-    function CommandList(name) {
-      var commandindicator;
-      this.name = name;
-      commandindicator = confetti.cache.get('commandindicator');
-      this.template = ["<table width=25%><tr><td><center><font size=5><b>" + this.name + "</b></font></center></td></tr></table>", "", "<b style='color:teal'>To use any of these commands, prefix them with '" + commandindicator + "' like so:</b> <u>" + commandindicator + "commands</u>", ""];
-    }
-
-    CommandList.prototype.cmd = function(name) {
-      var aliases, aliasstr, cmdname, command, parts;
-      command = confetti.commands[name];
-      if (command) {
-        parts = command.info.complete.split('@');
-        aliases = confetti.aliasesOf(name);
-        aliasstr = '';
-        if (aliases) {
-          aliasstr = " (Alias" + (aliases.length === 1 ? '' : 'es') + ": <i>" + (aliases.join(', ')) + "</i>)";
-        }
-        cmdname = "<a href='po:" + parts[0] + "/-" + parts[1] + "' style='text-decoration:none;color:teal'>" + command.info.usage + "</a>";
-        this.template.push("\u00bb " + cmdname + " - " + command.info.desc + aliasstr);
-      }
-      return this;
-    };
-
-    CommandList.prototype.cmds = function(names) {
-      var name, _i, _len;
-      if (typeof names === 'string') {
-        names = names.split(' ');
-      }
-      for (_i = 0, _len = names.length; _i < _len; _i++) {
-        name = names[_i];
-        this.cmd(name);
-      }
-      return this;
-    };
-
-    CommandList.prototype.group = function(name) {
-      this.whiteline();
-      this.template.push("<font size=4><b>" + name + "</b></font>");
-      this.whiteline();
-      return this;
-    };
-
-    CommandList.prototype.whiteline = function() {
-      this.template.push("");
-      return this;
-    };
-
-    CommandList.prototype.hooks = function(name) {
-      confetti.callHooks("commands:" + name, this);
-      return this;
-    };
-
-    CommandList.prototype.render = function(chan) {
-      if (chan == null) {
-        chan = Client.currentChannel();
-      }
-      this.whiteline();
-      return confetti.msg.html(this.template.join("<br>"), chan);
-    };
-
-    return CommandList;
-
-  })();
-  confetti.CommandList = CommandList;
   confetti.command('configcommands', ['Shows various commands that change your settings.', 'send@configcommands'], function() {
-    return new CommandList("Configuration Commands").cmds('botname botcolor encool notifications commandindicator autoreconnect').hooks('config').whiteline().cmd('defaults').render();
+    return new confetti.CommandList("Configuration Commands").cmds('botname botcolor encool notifications commandindicator autoreconnect').hooks('config').whiteline().cmd('defaults').render();
   });
   confetti.command('commands', ['Shows this command list.', 'send@commands'], function() {
-    return new CommandList("Commands").group("Command Lists").cmds('commands configcommands scriptcommands plugincommands').hooks('list').group("Friends").cmds('friend unfriend friends friendnotifications').hooks('friends').group("Blocking").cmds('block unblock blocked').hooks('block').group("Tracking").cmds('track untrack tracked trackingresolve').hooks('track').group("Flashwords").cmds('flashword removeflashword flashwords flashes').hooks('flashwords').group("Player Symbols").cmds('authsymbols authsymbol').hooks('playersymbols').hooks('categories').whiteline().cmds('reconnect define translate news imp info chan pm flip myip').hooks('misc').cmds('html eval').hooks('dev').render();
+    return new confetti.CommandList("Commands").group("Command Lists").cmds('commands scriptcommands plugincommands friendcommands blockcommands trackcommands flashcommands configcommands').hooks('list').group("Player Symbols").cmds('authsymbols authsymbol').hooks('playersymbols').hooks('categories').whiteline().cmds('reconnect define translate news imp info chan pm flip myip').hooks('misc').cmds('html eval').hooks('dev').render();
   });
   return confetti.alias('commandlist', 'commands');
 })();
@@ -1459,23 +1477,18 @@ confetti.cacheFile = 'confetti.json';
     });
   };
   confetti.updatePlugins = updatePlugins;
-  confetti.command('plugincommands', ['Shows various commands related to plugins.', 'send@plugincommands'], function() {
-    return new confetti.CommandList("Plugin Commands").cmds('plugins addplugin removeplugin updateplugins').hooks('plugins').render();
+  confetti.command('plugincommands', ['Shows commands related to plugins.', 'send@plugincommands'], function() {
+    return confetti.cmdlist("Plugins", 'plugins addplugin removeplugin updateplugins', 'plugins');
   });
   confetti.command('plugins', ["Displays a list of enabled and available plugins.", 'send@plugins'], function(_, chan) {
-    var count, html, plugin, plugins, _i, _len;
+    var html, plugin, plugins, _i, _len;
     plugins = confetti.cache.get('plugins');
     if (plugins.length > 0) {
       confetti.msg.bold("Loaded Plugins <small>[" + plugins.length + "]</small>", '', chan);
       html = "";
-      count = 0;
       for (_i = 0, _len = plugins.length; _i < _len; _i++) {
         plugin = plugins[_i];
-        count += 1;
-        html += "" + confetti.msg.bullet + " <b>" + plugin.name + "</b> (" + plugin.id + ") v" + plugin.version + " <small>[<a href='po:send/-removeplugin " + plugin.id + "' style='text-decoration: none; color: black;'>remove</a>]</small>";
-        if (count % 4 === 0) {
-          html += "<br>";
-        }
+        html += "" + confetti.msg.bullet + " <b>" + plugin.name + "</b> (" + plugin.id + ") v" + plugin.version + " <small>[<a href='po:send/-removeplugin " + plugin.id + "' style='text-decoration:none;color:black'>remove</a>]</small><br>";
       }
       html += "<br>";
       confetti.msg.html(html, chan);
@@ -1690,11 +1703,8 @@ confetti.cacheFile = 'confetti.json';
   confetti.changelog = changelog;
   confetti.autoUpdate = autoUpdate;
   confetti.updateScript = updateScript;
-  confetti.hook('initCache', function() {
-    return confetti.cache.store('autoupdate', true, confetti.cache.once).store('lastupdatetime', sys.time(), confetti.cache.once);
-  });
-  confetti.command('scriptcommands', ['Shows various commands related to Confetti.', 'send@scriptcommands'], function() {
-    return new confetti.CommandList("Script Commands").cmds('updatescript autoupdate changelog version').hooks('script').render();
+  confetti.command('scriptcommands', ['Shows commands related to Confetti (the script).', 'send@scriptcommands'], function() {
+    return confetti.cmdlist("Confetti", 'updatescript autoupdate changelog version', 'script');
   });
   confetti.command('updatescript', ['Updates the script to the latest available version.', 'send@updatescript'], function() {
     if (sys.isSafeScripts()) {
@@ -1716,7 +1726,7 @@ confetti.cacheFile = 'confetti.json';
       return confetti.msg.bot("What's new: " + changelog[vers]);
     }
   });
-  return confetti.command('changelog', ["Shows a changelog containing the major changes in each version.", 'send@changelog'], function() {
+  confetti.command('changelog', ["Shows a changelog containing the major changes in each version.", 'send@changelog'], function() {
     var msg, ver, _results;
     _results = [];
     for (ver in changelog) {
@@ -1724,6 +1734,9 @@ confetti.cacheFile = 'confetti.json';
       _results.push(confetti.msg.bot("" + ver + ": " + msg));
     }
     return _results;
+  });
+  return confetti.hook('initCache', function() {
+    return confetti.cache.store('autoupdate', true, confetti.cache.once).store('lastupdatetime', sys.time(), confetti.cache.once);
   });
 })();
 
@@ -1779,6 +1792,9 @@ confetti.cacheFile = 'confetti.json';
 })();
 
 (function() {
+  confetti.command('trackcommands', ['Shows commands related to tracking players (such as their aliases).', 'send@trackcommands'], function() {
+    return confetti.cmdlist("Tracking", 'track untrack tracked trackingresolve', 'track');
+  });
   confetti.command('tracked', ["Displays a list of tracked players.", 'send@tracked'], function(_, chan) {
     var alt, alts, html, name, names, numTracked, tracked, _i, _len;
     tracked = confetti.cache.get('tracked');

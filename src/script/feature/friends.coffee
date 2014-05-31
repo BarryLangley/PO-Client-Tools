@@ -1,5 +1,7 @@
 do ->
-    bullet = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&bull;"
+    confetti.command 'friendcommands', ['Shows commands related to friends.', 'send@friendcommands'], ->
+        confetti.cmdlist("Friends", 'friend unfriend friends friendnotifications', 'friends')
+
     confetti.command 'friends', ["Displays your friends list.", 'send@friends'], (_, chan) ->
         friends = confetti.util.sortOnlineOffline(confetti.cache.get('friends'))
 

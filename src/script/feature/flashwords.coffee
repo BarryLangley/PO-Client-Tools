@@ -1,6 +1,9 @@
 do ->
     classhilight = "<span class='name-hilight'>$1</span><ping/>"
 
+    confetti.command 'flashcommands', ['Shows commands related to flashes and flashwords.', 'send@flashcommands'], ->
+        confetti.cmdlist("Flashes", 'flashword removeflashword flashwords flashes', 'flash')
+
     flashwordCategory = (word) ->
         parts = word.split('/')
         if parts.length < 3

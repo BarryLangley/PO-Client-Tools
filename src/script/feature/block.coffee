@@ -1,4 +1,7 @@
 do ->
+    confetti.command 'blockcommands', ['Shows commands related to blocking other players.', 'send@blockcommands'], ->
+        confetti.cmdlist("Blocking", 'block unblock blocked', 'block')
+
     confetti.command 'blocked', ["Displays a list of blocked players.", 'send@blocked'], (_, chan) ->
         blocklist = confetti.util.sortOnlineOffline(confetti.cache.get('blocked'))
 

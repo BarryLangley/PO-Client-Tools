@@ -1,4 +1,5 @@
 do ->
+    # Commands
     confetti.command 'authsymbols', ["Shows the auth symbols you have set.", 'send@authsymbols'], (_, chan) ->
         authsymbols = confetti.cache.get 'authsymbols'
         numSymbols = Object.keys(authsymbols).length
@@ -8,9 +9,9 @@ do ->
 
         confetti.msg.bold "Auth symbols <small>[#{numSymbols}]</small>", '', chan
 
-        html = ""
+        html  = ""
         start = ""
-        end = ""
+        end   = ""
         authlvls = ["", "", "", "", ""]
 
         for auth, parts of authsymbols
@@ -56,6 +57,7 @@ do ->
 
         confetti.msg.bot "Players whose auth is #{authn} (#{authl}) will now be formatted like so: #{start}<b>Name</b>#{end}"
 
+    # Hooks
     confetti.hook 'initCache', ->
         confetti.cache.store('authsymbols', {}, confetti.cache.once)
 

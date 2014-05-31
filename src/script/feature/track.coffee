@@ -1,4 +1,9 @@
 do ->
+    # Command lists
+    confetti.command 'trackcommands', ['Shows commands related to tracking players (such as their aliases).', 'send@trackcommands'], ->
+        confetti.cmdlist("Tracking", 'track untrack tracked trackingresolve', 'track')
+
+    # Commands
     confetti.command 'tracked', ["Displays a list of tracked players.", 'send@tracked'], (_, chan) ->
         tracked = confetti.cache.get 'tracked'
         numTracked = Object.keys(tracked).length

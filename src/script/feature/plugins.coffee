@@ -50,10 +50,8 @@ do ->
                     confetti.msg.bot "All plugins up to date.", chan
 
     confetti.updatePlugins = updatePlugins
-    confetti.command 'plugincommands', ['Shows various commands related to plugins.', 'send@plugincommands'], ->
-        new confetti.CommandList("Plugin Commands")
-            .cmds('plugins addplugin removeplugin updateplugins').hooks('plugins')
-            .render()
+    confetti.command 'plugincommands', ['Shows commands related to plugins.', 'send@plugincommands'], ->
+        confetti.cmdlist("Plugins", 'plugins addplugin removeplugin updateplugins', 'plugins')
 
     # TODO: Possibility for local plugins
     confetti.command 'plugins', ["Displays a list of enabled and available plugins.", 'send@plugins'], (_, chan) ->
@@ -62,14 +60,9 @@ do ->
             confetti.msg.bold "Loaded Plugins <small>[#{plugins.length}]</small>", '', chan
 
             html = ""
-            count = 0
             for plugin in plugins
-                count += 1
                 # Since '-' is always the command indicator, use it so the command remains clickable even if the user changes their command indicator (inside the send/setmsg protocol).
-                html += "#{confetti.msg.bullet} <b>#{plugin.name}</b> (#{plugin.id}) v#{plugin.version} <small>[<a href='po:send/-removeplugin #{plugin.id}' style='text-decoration: none; color: black;'>remove</a>]</small>"
-
-                if count % 4 is 0
-                    html += "<br>"
+                html += "#{confetti.msg.bullet} <b>#{plugin.name}</b> (#{plugin.id}) v#{plugin.version} <small>[<a href='po:send/-removeplugin #{plugin.id}' style='text-decoration:none;color:black'>remove</a>]</small><br>"
 
             html += "<br>"
             confetti.msg.html html, chan
