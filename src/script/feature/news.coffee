@@ -1,4 +1,5 @@
 do ->
+    newsurl = 'https://ajax.googleapis.com/ajax/services/search/news?v=1.0&rsz=6&hl='
     confetti.command 'news', ['news [language code?]:[topic?]', "Fetches the latest news, either the headlines or on a specific topic, from Google News, in an optional <a href='<a href='http://en.wikipedia.org/wiki/List_of_ISO_639-1_codes#Partial_ISO_639_table'>[language]</a>.", 'send@news'], (data, chan) ->
         data = data.split(':')
         lang = data[0].toLowerCase().trim()
@@ -10,15 +11,7 @@ do ->
         if query
             topic = "&q=#{encodeURIComponent(query.toLowerCase())}"
 
-        sys.webCall "https://ajax.googleapis.com/ajax/services/search/news?v=1.0&rsz=6&hl=#{encodeURIComponent(lang)}#{topic}", (response) ->
-            unless response
-                return confetti.msg.bot "Couldn't load news - your internet might be down.", chan
-
-            try
-                json = JSON.parse response
-            catch ex
-                return confetti.msg.bot "Couldn't load news - your internet might be down.", chan
-
+        confetti.io.getRemoteJson "#{newsurl}#{encodeURIComponent(lang)}#{topic}", ["A connection error occured while loading news.", chan], (json) ->
             stories = json.responseData.results
             res = []
 

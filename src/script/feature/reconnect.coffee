@@ -39,10 +39,7 @@ do ->
 
         forced = no
 
-    confetti.hook 'initCache', ->
-        confetti.cache.store('autoreconnect', yes, confetti.cache.once)
-
-    confetti.command 'reconnect', ['Forces a reconnect to the server.', 'send@reconnect'], ->
+    confetti.command 'reconnect', "Forces a reconnect to the server.", ->
         confetti.msg.bot "Reconnecting to the server..."
 
         attempts = 0
@@ -50,6 +47,8 @@ do ->
         stopReconnecting = no
         Client.reconnect()
 
-    confetti.command 'autoreconnect', ["Toggles whether if you should automatically reconnect to the server when detected you've disconnected.", 'send@autoreconnect'], ->
+    confetti.command 'autoreconnect', "Toggles whether if you should automatically reconnect to the server when detected you've disconnected.", ->
         confetti.cache.store('autoreconnect', !confetti.cache.read('autoreconnect')).save()
         confetti.msg.bot "Auto reconnect is now #{if confetti.cache.read('autoreconnect') then 'on' else 'off'}."
+
+    confetti.initFields {autoreconnect: yes}

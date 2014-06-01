@@ -1,8 +1,5 @@
 do ->
-    confetti.command 'blockcommands', ['Shows commands related to blocking other players.', 'send@blockcommands'], ->
-        confetti.cmdlist("Blocking", 'block unblock blocked', 'block')
-
-    confetti.command 'blocked', ["Displays a list of blocked players.", 'send@blocked'], (_, chan) ->
+    confetti.command 'blocked', "Displays a list of blocked players.", (_, chan) ->
         blocklist = confetti.util.sortOnlineOffline(confetti.cache.get('blocked'))
 
         if blocklist.length is 0
@@ -20,7 +17,7 @@ do ->
 
         confetti.msg.html html, chan
 
-    confetti.command 'block', ['block [name]', "Blocks a user by automatically ignoring them.", 'setmsg@block name'], (data) ->
+    confetti.command 'block', {help: "Blocks a user by automatically ignoring them when they log in.", args: ["name"]}, (data) ->
         len = data.length
 
         if not data
@@ -46,7 +43,7 @@ do ->
 
         confetti.msg.bot "#{name} is now blocked!"
 
-    confetti.command 'unblock', ['unblock [name]', "Unblocks a user.", 'setmsg@unblock name'], (data) ->
+    confetti.command 'unblock', {help: "Unblocks a user.", args: ["name"]}, (data) ->
         data = data.toLowerCase()
         name = confetti.player.name data
         blocked = confetti.cache.get 'blocked'
@@ -62,9 +59,7 @@ do ->
 
         confetti.msg.bot "You are no longer blocking #{name}!"
 
-    confetti.hook 'initCache', ->
-        confetti.cache.store('blocked', [], confetti.cache.once)
-
+    confetti.initFields {blocked: []}
     confetti.hook 'onPlayerReceived', (id) ->
         name    = Client.name(id).toLowerCase()
         blocked = confetti.cache.get('blocked')

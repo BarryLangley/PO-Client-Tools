@@ -1,8 +1,5 @@
 do ->
-    confetti.command 'friendcommands', ['Shows commands related to friends.', 'send@friendcommands'], ->
-        confetti.cmdlist("Friends", 'friend unfriend friends friendnotifications', 'friends')
-
-    confetti.command 'friends', ["Displays your friends list.", 'send@friends'], (_, chan) ->
+    confetti.command 'friends', "Displays your friends list.", (_, chan) ->
         friends = confetti.util.sortOnlineOffline(confetti.cache.get('friends'))
 
         if friends.length is 0
@@ -21,7 +18,7 @@ do ->
 
         confetti.msg.html html, chan
 
-    confetti.command 'friend', ['friend [name]', "Adds [name] to your friend list.", 'setmsg@friend name'], (data) ->
+    confetti.command 'friend', {help: "Adds [name] to your friend list.", args: ["name"]}, (data) ->
         name = confetti.player.name data
         data = data.toLowerCase()
         friends = confetti.cache.get 'friends'
@@ -40,7 +37,7 @@ do ->
 
         confetti.msg.bot "#{name} is now on your friends list!"
 
-    confetti.command 'unfriend', ['unfriend [name]', "Removes [name] from your friend list.", 'setmsg@unfriend name'], (data) ->
+    confetti.command 'unfriend', {help: "Removes [name] from your friend list.", args: ["name"]}, (data) ->
         data = data.toLowerCase()
         name = confetti.player.name data
         friends = confetti.cache.get 'friends'
@@ -53,15 +50,11 @@ do ->
 
         confetti.msg.bot "You removed #{name} from your friends list!"
 
-    confetti.command 'friendnotifications', ["Toggles whether if notifications specific to friends (logins, logouts) should be shown.", 'send@friendnotifications'], ->
+    confetti.command 'friendnotifications', "Toggles whether if notifications specific to friends (logins, logouts) should be shown.", ->
         confetti.cache.store('friendnotifications', !confetti.cache.read('friendnotifications')).save()
         confetti.msg.bot "Friend notifications are now #{if confetti.cache.read('friendnotifications') then 'on' else 'off'}."
 
-    confetti.hook 'initCache', ->
-        confetti.cache
-            .store('friends', [], confetti.cache.once)
-            .store('friendnotifications', yes, confetti.cache.once)
-
+    confetti.initFields {friends: [], friendnotifications: yes}
     confetti.hook 'onPlayerReceived', (id) ->
         # In the first few seconds of connection, often a long list of players is sent.
         # If one friend is in this list, their "arrival" is notified.

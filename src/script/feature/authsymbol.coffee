@@ -1,6 +1,6 @@
 do ->
     # Commands
-    confetti.command 'authsymbols', ["Shows the auth symbols you have set.", 'send@authsymbols'], (_, chan) ->
+    confetti.command 'authsymbols', "Shows the auth symbols you have set.", (_, chan) ->
         authsymbols = confetti.cache.get 'authsymbols'
         numSymbols = Object.keys(authsymbols).length
 
@@ -21,8 +21,7 @@ do ->
         authlvls = (authlvl for authlvl in authlvls when authlvl isnt "")
         confetti.msg.html authlvls.join("<br>") + "<br>", chan
 
-    confetti.alias 'authsymbollist', 'authsymbols'
-    confetti.alias 'authsymbolist', 'authsymbols'
+    confetti.alias 'authsymbollist, authsymbolist', 'authsymbols'
 
     confetti.command 'authsymbol', ['authsymbol [auth]:[start]:[end?]', "Changes the auth symbol of [auth] (0 - User, 1 - Moderator, 2 - Administrator, 3 - Owner, or 4 - \"Invisible\") to [start]. [end?] is optional and will be inserted after the name (useful for HTML). If neither [start] nor [end?] is given, the auth symbol for [auth] is reset (if you want an empty auth symbol for auth level [auth], do <code>authsymbol:</code>).", 'setmsg@authsymbol auth:start'], (data) ->
         parts = data.split ':'
@@ -58,8 +57,7 @@ do ->
         confetti.msg.bot "Players whose auth is #{authn} (#{authl}) will now be formatted like so: #{start}<b>Name</b>#{end}"
 
     # Hooks
-    confetti.hook 'initCache', ->
-        confetti.cache.store('authsymbols', {}, confetti.cache.once)
+    confetti.initFields {authsymbols: {}}
 
     confetti.hook 'manipulateChanPlayerMessage', (from, fromId, message, playerMessage, [color, auth, authSymbol], chan, html, dirty) ->
         authsymbols = confetti.cache.get 'authsymbols'

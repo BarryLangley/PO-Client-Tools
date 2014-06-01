@@ -1,10 +1,10 @@
 do ->
     # Settings stuff
-    confetti.command 'notifications', ["Toggles whether if notifications should be shown (tray messages).", 'send@notifications'], ->
+    confetti.command 'notifications', "Toggles whether if notifications should be shown (tray messages).", ->
         confetti.cache.store('notifications', !confetti.cache.read('notifications')).save()
         confetti.msg.bot "Notifications are now #{if confetti.cache.read('notifications') then 'on' else 'off'}."
 
-    confetti.command 'botname', ['botname [name]', "Changes the bot's name to [name].", 'setmsg@botname name'], (data) ->
+    confetti.command 'botname', {help: "Changes the bot's name to [name].", args: ["name"]}, (data) ->
         if data.length > 25
             return confetti.msg.bot "Uhh, that's too long, I think!"
 
@@ -14,7 +14,7 @@ do ->
         confetti.cache.store('botname', data).save()
         confetti.msg.bot "I'm now called #{data}!"
 
-    confetti.command 'botcolor', ['botcolor [color]', "Changes the bot's color to [color].", 'setmsg@botcolor color'], (data) ->
+    confetti.command 'botcolor', {help: "Changes the bot's color to [color].", args: ["color"]}, (data) ->
         data = data.toLowerCase()
 
         unless sys.validColor(data)
@@ -26,7 +26,7 @@ do ->
         confetti.cache.store('botcolor', data).save()
         confetti.msg.bot "My color is now #{data}!"
 
-    confetti.command 'commandindicator', ['commandindicator [char]', "Changes your command indicator (to indicate usage of commands) to [char]. <b>-</b> will remain usable, in case you ever forget.", 'setmsg@commandindicator char'], (data) ->
+    confetti.command 'commandindicator', {help: "Changes your command indicator (to indicate usage of commands) to [symbol]. <b>-</b> will remain usable, in case you ever forget.", args: ["symbol"]}, (data) ->
         data = data.toLowerCase()
 
         if data.length isnt 1
@@ -42,7 +42,7 @@ do ->
         confetti.msg.bot "Your command indicator is now #{data}!"
 
     # Use setmsg here as this command can be dangerous.
-    confetti.command 'defaults', ['Sets all settings back to their defaults. There may be some plugins that do not support this.', 'setmsg@defaults'], (data) ->
+    confetti.command 'defaults', "Sets all settings back to their defaults. There may be some plugins which do not support this action, in which case they might break.", (data) ->
         if data.toLowerCase() isnt 'sure'
             # Since '-' is always the command indicator, use it so the command remains clickable even if the user changes their command indicator (inside the send/setmsg protocol).
             return confetti.msg.bot "<a href='po:send/-defaults sure' style='text-decoration: none; color: black;'>Are you sure that you want to reset your settings? There is no going back. Click this message to confirm (or type <small>#{confetti.cache.get('commandindicator')}defaults sure</small>).</a>"

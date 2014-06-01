@@ -27,6 +27,37 @@ do ->
             confetti.silentReload = !verbose
             sys.unsetAllTimers()
             sys.changeScript file
+    getRemoteFile = (url, errback, callback) ->
+        sys.webCall url, (resp) ->
+            if resp is ""
+                if Array.isArray(errback)
+                    [errmsg, chan] = errback
+                    unless errmsg
+                        return
+
+                    return confetti.bot.msg(errmsg, chan)
+                else if typeof errback is 'function'
+                    return errback()
+                else return
+
+            callback(resp)
+
+    getRemoteJson = (url, errback, callback) ->
+        sys.webCall url, (resp) ->
+            try
+                json = JSON.parse(resp)
+            catch ex
+                if Array.isArray(errback)
+                    [errmsg, chan] = errback
+                    unless errmsg
+                        return
+
+                    return confetti.bot.msg(errmsg, chan)
+                else if typeof errback is 'function'
+                    return errback()
+                else return
+
+            callback(json, resp)
 
     confetti.io = {
         read
@@ -38,4 +69,6 @@ do ->
         writeLocalJson: writeLocal # Write serializes objects automatically.
         deleteLocal
         reloadScript
+        getRemoteFile
+        getRemoteJson
     }

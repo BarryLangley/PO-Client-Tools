@@ -1,9 +1,6 @@
 do ->
     classhilight = "<span class='name-hilight'>$1</span><ping/>"
 
-    confetti.command 'flashcommands', ['Shows commands related to flashes and flashwords.', 'send@flashcommands'], ->
-        confetti.cmdlist("Flashes", 'flashword removeflashword flashwords flashes', 'flash')
-
     flashwordCategory = (word) ->
         parts = word.split('/')
         if parts.length < 3
@@ -14,7 +11,7 @@ do ->
 
         return {type: 'regex', regex, flags}
 
-    confetti.command 'flashwords', ["Shows your flash words (sequences of characters that ping you when said).", 'send@flashwords'], (_, chan) ->
+    confetti.command 'flashwords', "Shows your flash words (sequences of characters that ping you when said).", (_, chan) ->
         flashwords = confetti.cache.get 'flashwords'
         numWords = flashwords.length
 
@@ -31,7 +28,7 @@ do ->
 
     confetti.alias 'flashwordlist', 'flashwords'
 
-    confetti.command 'flashword', ['flashword [word]', "Adds [word] to your flash word list. [word] may also be a <a href='http://www.regexr.com/' title='Regexr'>regular expression</a>, prefix it with <b>/</b> like so: /(word)/i. The first capture group will be the flashword.", 'setmsg@flashword word'], (data) ->
+    confetti.command 'flashword', {help: "Adds [word] to your flash word list. [word] may also be a <a href='http://www.regexr.com/' title='Regexr'>regular expression</a>, prefix it with <b>/</b> like so: /(word)/i. The first capture group will be the flashword.", args: ["word"]}, (data) ->
         flashwords = confetti.cache.get 'flashwords'
         unless data
             return confetti.msg.bot "Specify the flashword!"
@@ -45,10 +42,9 @@ do ->
 
         confetti.msg.bot "<b>#{sys.htmlEscape(data)}</b> will now ping you when said!"
 
-    confetti.alias 'stalkword', 'flashword'
-    confetti.alias 'addstalkword', 'flashword'
+    confetti.alias 'addflashword, stalkword, addstalkword', 'flashword'
 
-    confetti.command 'removeflashword', ['removeflashword [flashword]', "Removes [flashword] from your flashword list.", 'setmsg@removeflashword flashword'], (data) ->
+    confetti.command 'removeflashword', {help: "Removes [flashword] from your flashword list.", args: ["flashword"]}, (data) ->
         flashwords = confetti.cache.get 'flashwords'
         unless data
             return confetti.msg.bot "Specify the flash word!"
@@ -62,20 +58,13 @@ do ->
 
         confetti.msg.bot "<b>#{sys.htmlEscape(data)}</b> will no longer ping you!"
 
-    confetti.command 'flashes', ["Toggles whether if name flashes and flash words should be enabled.", 'send@flashes'], ->
+    confetti.command 'flashes', "Toggles whether if name flashes and flash words should be enabled.", ->
         confetti.cache.store('flashes', !confetti.cache.read('flashes')).save()
         confetti.msg.bot "Flashes are now #{if confetti.cache.read('flashes') then 'on' else 'off'}."
 
-    confetti.alias 'rmflashword', 'removeflashword'
-    confetti.alias 'unflashword', 'removeflashword'
-    confetti.alias 'removestalkword', 'removeflashword'
-    confetti.alias 'rmstalkword', 'removeflashword'
-    confetti.alias 'unstalkword', 'removeflashword'
+    confetti.alias 'rmflashword, unflashword, removestalkword, rmstalkword, unstalkword', 'removeflashword'
 
-    confetti.hook 'initCache', ->
-        confetti.cache
-            .store('flashwords', [], confetti.cache.once)
-
+    confetti.initFields {flashwords: []}
     confetti.hook 'manipulateChanPlayerMessage', (from, fromId, message, playerMessage, [color, auth, authSymbol], chan, html, dirty) ->
         if confetti.cache.get('flashes') is on
             flashwords = confetti.cache.get('flashwords')

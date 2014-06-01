@@ -25,5 +25,4 @@ do ->
 
             confetti.msg.bot "'#{message}' is '#{json[0][0][0]}' in '#{to.toUpperCase()}'.", chan
 
-    confetti.alias 'trans', 'translate'
-    confetti.alias 'tr', 'translate'
+    confetti.alias 'trans, tr', 'translate'

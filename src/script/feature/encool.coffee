@@ -149,16 +149,7 @@ do ->
         encoolHandlers[type] = handler
         encoolTypes = Object.keys(encoolHandlers)
 
-    confetti.hook 'initCache', ->
-        confetti.cache.store('encool', 'none', confetti.cache.once)
-
-    confetti.hook 'manipulateOwnMessage', (message, chan, dirty) ->
-        mess = message
-        if mess[0] isnt '/'
-            mess = encool(message)
-            dirty = yes
-
-        [mess, chan, dirty]
+    encoolTypes = Object.keys(encoolHandlers)
 
     # Override
     confetti.msg.notify = (msg, chan) ->
@@ -167,8 +158,7 @@ do ->
 
         Network.sendChanMessage chan, encool(msg)
 
-    encoolTypes = Object.keys(encoolHandlers)
-    confetti.command 'encool', ['encool [type]', "Changes your encool type to (#{encoolTypes.join(', ')}).", 'setmsg@encool type'], (data) ->
+    confetti.command 'encool', {help: "Changes your encool type to (#{encoolTypes.join(', ')}).", args: ["type"]}, (data) ->
         data = data.toLowerCase()
 
         if !(data in encoolTypes)
@@ -180,3 +170,12 @@ do ->
 
         confetti.cache.store('encool', data).save()
         confetti.msg.bot "Your encool type is now #{data}!"
+
+    confetti.initFields {encool: 'none'}
+    confetti.hook 'manipulateOwnMessage', (message, chan, dirty) ->
+        mess = message
+        if mess[0] isnt '/'
+            mess = encool(message)
+            dirty = yes
+
+        [mess, chan, dirty]

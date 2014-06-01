@@ -156,7 +156,7 @@ confetti.cacheFile = 'confetti.json';
 })();
 
 (function() {
-  var deleteLocal, read, readJson, readLocal, readLocalJson, reloadScript, write, writeLocal;
+  var deleteLocal, getRemoteFile, getRemoteJson, read, readJson, readLocal, readLocalJson, reloadScript, write, writeLocal;
   read = function(file) {
     if (sys.isSafeScripts()) {
       return "";
@@ -200,6 +200,47 @@ confetti.cacheFile = 'confetti.json';
       return sys.changeScript(file);
     }
   };
+  getRemoteFile = function(url, errback, callback) {
+    return sys.webCall(url, function(resp) {
+      var chan, errmsg;
+      if (resp === "") {
+        if (Array.isArray(errback)) {
+          errmsg = errback[0], chan = errback[1];
+          if (!errmsg) {
+            return;
+          }
+          return confetti.bot.msg(errmsg, chan);
+        } else if (typeof errback === 'function') {
+          return errback();
+        } else {
+          return;
+        }
+      }
+      return callback(resp);
+    });
+  };
+  getRemoteJson = function(url, errback, callback) {
+    return sys.webCall(url, function(resp) {
+      var chan, errmsg, ex, json;
+      try {
+        json = JSON.parse(resp);
+      } catch (_error) {
+        ex = _error;
+        if (Array.isArray(errback)) {
+          errmsg = errback[0], chan = errback[1];
+          if (!errmsg) {
+            return;
+          }
+          return confetti.bot.msg(errmsg, chan);
+        } else if (typeof errback === 'function') {
+          return errback();
+        } else {
+          return;
+        }
+      }
+      return callback(json, resp);
+    });
+  };
   return confetti.io = {
     read: read,
     readJson: readJson,
@@ -209,7 +250,9 @@ confetti.cacheFile = 'confetti.json';
     writeLocal: writeLocal,
     writeLocalJson: writeLocal,
     deleteLocal: deleteLocal,
-    reloadScript: reloadScript
+    reloadScript: reloadScript,
+    getRemoteFile: getRemoteFile,
+    getRemoteJson: getRemoteJson
   };
 })();
 
@@ -462,7 +505,7 @@ confetti.cacheFile = 'confetti.json';
 })();
 
 (function() {
-  var aliases, commands, hooks, reverseAliases;
+  var hooks;
   hooks = {};
   confetti._hooks = hooks;
   confetti.hook = function(name, func) {
@@ -487,53 +530,6 @@ confetti.cacheFile = 'confetti.json';
     }
     return args;
   };
-  commands = {};
-  aliases = {};
-  reverseAliases = {};
-  confetti.command = function(name, help, handler) {
-    var complete, desc, usage;
-    usage = "";
-    desc = "";
-    complete = "";
-    if (help.length === 2) {
-      usage = name;
-      desc = help[0], complete = help[1];
-    } else {
-      usage = help[0], desc = help[1], complete = help[2];
-    }
-    return commands[name] = {
-      name: name,
-      help: help,
-      handler: handler,
-      info: {
-        usage: usage,
-        desc: desc,
-        complete: complete
-      }
-    };
-  };
-  confetti.alias = function(alias, command) {
-    aliases[alias] = command;
-    if (reverseAliases[command] == null) {
-      reverseAliases[command] = [];
-    }
-    return reverseAliases[command].push(alias);
-  };
-  confetti.aliasesOf = function(command) {
-    return reverseAliases[command];
-  };
-  confetti.execCommand = function(command, data, message, chan) {
-    if (aliases.hasOwnProperty(command)) {
-      command = aliases[command];
-    }
-    if (commands.hasOwnProperty(command)) {
-      return commands[command].handler(data, chan, message);
-    } else {
-      return confetti.msg.bot("The command '" + command + "' doesn't exist!");
-    }
-  };
-  confetti.commands = commands;
-  confetti.aliases = aliases;
   confetti.initCache = function() {
     var once;
     confetti.cache = new confetti.Cache;
@@ -541,6 +537,17 @@ confetti.cacheFile = 'confetti.json';
     confetti.cache.store('botname', '±Confetti', once).store('botcolor', '#07b581', once).store('notifications', true, once).store('commandindicator', '-', once).store('lastuse', 0, once).store('plugins', [], once).store('tracked', {}, once).store('trackingresolve', true, once).store('flashes', true, once);
     confetti.callHooks('initCache');
     return confetti.cache.save();
+  };
+  confetti.initFields = function(fields) {
+    return confetti.hook('initCache', function() {
+      var field, value, _results;
+      _results = [];
+      for (field in fields) {
+        value = fields[field];
+        _results.push(confetti.cache.store(field, value, confetti.cache.once));
+      }
+      return _results;
+    });
   };
   return confetti.initPlugins = function(id) {
     var ex, pid, plugin, plugins, src, success, _i, _len;
@@ -581,7 +588,96 @@ confetti.cacheFile = 'confetti.json';
 })();
 
 (function() {
-  var CommandList;
+  var CommandList, aliases, commands, reverseAliases;
+  commands = {};
+  aliases = {};
+  reverseAliases = {};
+  confetti.command = function(name, help, handler) {
+    var complete, desc, usage, _ref, _ref1;
+    usage = "";
+    desc = "";
+    complete = "";
+    if (typeof help === 'string') {
+      _ref = confetti.cmdhelp(name, help), usage = _ref[0], desc = _ref[1], complete = _ref[2];
+    } else if (typeof help === 'object' && !Array.isArray(help)) {
+      _ref1 = confetti.cmdhelp(name, help.desc || help.help, help.args, help.mode), usage = _ref1[0], desc = _ref1[1], complete = _ref1[2];
+    } else if (help.length === 2) {
+      usage = name;
+      desc = help[0], complete = help[1];
+    } else {
+      usage = help[0], desc = help[1], complete = help[2];
+    }
+    return commands[name] = {
+      name: name,
+      help: help,
+      handler: handler,
+      info: {
+        usage: usage,
+        desc: desc,
+        complete: complete
+      }
+    };
+  };
+  confetti.cmdhelp = function(name, desc, args, mode) {
+    var arg, argl, arglist, help, _i, _len;
+    if (args == null) {
+      args = [];
+    }
+    if (mode == null) {
+      mode = confetti.Send;
+    }
+    help = [];
+    if (args.length) {
+      mode = confetti.SetMsg;
+    }
+    switch (mode) {
+      case confetti.Send:
+        help = [name, desc, "send@" + name];
+        break;
+      case confetti.SetMsg:
+        argl = Array.isArray(args) ? args : args.split(' ');
+        arglist = [];
+        for (_i = 0, _len = argl.length; _i < _len; _i++) {
+          arg = argl[_i];
+          arglist.push("[" + arg + "]");
+        }
+        help = ["" + name + " " + (arglist.join(':')), desc, "setmsg@" + name + " " + (argl.join(':'))];
+    }
+    return help;
+  };
+  confetti.Send = 0;
+  confetti.SetMsg = 1;
+  confetti.alias = function(caliases, command) {
+    var alias, _i, _len, _results;
+    if (!Array.isArray(caliases)) {
+      caliases = caliases.split(', ');
+    }
+    if (reverseAliases[command] == null) {
+      reverseAliases[command] = [];
+    }
+    _results = [];
+    for (_i = 0, _len = caliases.length; _i < _len; _i++) {
+      alias = caliases[_i];
+      aliases[alias] = command;
+      _results.push(reverseAliases[command].push(alias));
+    }
+    return _results;
+  };
+  confetti.aliasesOf = function(command) {
+    return reverseAliases[command];
+  };
+  confetti.execCommand = function(command, data, message, chan) {
+    if (aliases.hasOwnProperty(command)) {
+      command = aliases[command];
+    }
+    if (commands.hasOwnProperty(command)) {
+      return commands[command].handler(data, chan, message);
+    } else {
+      return confetti.msg.bot("The command '" + command + "' doesn't exist!");
+    }
+  };
+  confetti.commands = commands;
+  confetti.aliases = aliases;
   CommandList = (function() {
     function CommandList(name) {
       var commandindicator;
@@ -591,14 +687,14 @@ confetti.cacheFile = 'confetti.json';
     }
 
     CommandList.prototype.cmd = function(name) {
-      var aliases, aliasstr, cmdname, command, parts;
+      var aliasstr, caliases, cmdname, command, parts;
       command = confetti.commands[name];
       if (command) {
         parts = command.info.complete.split('@');
-        aliases = confetti.aliasesOf(name);
+        caliases = confetti.aliasesOf(name);
         aliasstr = '';
-        if (aliases) {
-          aliasstr = " (Alias" + (aliases.length === 1 ? '' : 'es') + ": <i>" + (aliases.join(', ')) + "</i>)";
+        if (caliases) {
+          aliasstr = " (Alias" + (caliases.length === 1 ? '' : 'es') + ": <i>" + (caliases.join(', ')) + "</i>)";
         }
         cmdname = "<a href='po:" + parts[0] + "/-" + parts[1] + "' style='text-decoration:none;color:teal'>" + command.info.usage + "</a>";
         this.template.push("\u00bb " + cmdname + " - " + command.info.desc + aliasstr);
@@ -658,7 +754,7 @@ confetti.cacheFile = 'confetti.json';
 })();
 
 (function() {
-  confetti.command('authsymbols', ["Shows the auth symbols you have set.", 'send@authsymbols'], function(_, chan) {
+  confetti.command('authsymbols', "Shows the auth symbols you have set.", function(_, chan) {
     var auth, authlvl, authlvls, authsymbols, end, html, numSymbols, parts, start;
     authsymbols = confetti.cache.get('authsymbols');
     numSymbols = Object.keys(authsymbols).length;
@@ -688,8 +784,7 @@ confetti.cacheFile = 'confetti.json';
     })();
     return confetti.msg.html(authlvls.join("<br>") + "<br>", chan);
   });
-  confetti.alias('authsymbollist', 'authsymbols');
-  confetti.alias('authsymbolist', 'authsymbols');
+  confetti.alias('authsymbollist, authsymbolist', 'authsymbols');
   confetti.command('authsymbol', ['authsymbol [auth]:[start]:[end?]', "Changes the auth symbol of [auth] (0 - User, 1 - Moderator, 2 - Administrator, 3 - Owner, or 4 - \"Invisible\") to [start]. [end?] is optional and will be inserted after the name (useful for HTML). If neither [start] nor [end?] is given, the auth symbol for [auth] is reset (if you want an empty auth symbol for auth level [auth], do <code>authsymbol:</code>).", 'setmsg@authsymbol auth:start'], function(data) {
     var authl, authn, authsymbols, end, parts, start;
     parts = data.split(':');
@@ -729,8 +824,8 @@ confetti.cacheFile = 'confetti.json';
     confetti.cache.store('authsymbols', authsymbols).save();
     return confetti.msg.bot("Players whose auth is " + authn + " (" + authl + ") will now be formatted like so: " + start + "<b>Name</b>" + end);
   });
-  confetti.hook('initCache', function() {
-    return confetti.cache.store('authsymbols', {}, confetti.cache.once);
+  confetti.initFields({
+    authsymbols: {}
   });
   return confetti.hook('manipulateChanPlayerMessage', function(from, fromId, message, playerMessage, _arg, chan, html, dirty) {
     var auth, authSymbol, authsymbols, color, symbol;
@@ -749,10 +844,7 @@ confetti.cacheFile = 'confetti.json';
 })();
 
 (function() {
-  confetti.command('blockcommands', ['Shows commands related to blocking other players.', 'send@blockcommands'], function() {
-    return confetti.cmdlist("Blocking", 'block unblock blocked', 'block');
-  });
-  confetti.command('blocked', ["Displays a list of blocked players.", 'send@blocked'], function(_, chan) {
+  confetti.command('blocked', "Displays a list of blocked players.", function(_, chan) {
     var blocked, blocklist, count, html, _i, _len;
     blocklist = confetti.util.sortOnlineOffline(confetti.cache.get('blocked'));
     if (blocklist.length === 0) {
@@ -771,7 +863,10 @@ confetti.cacheFile = 'confetti.json';
     }
     return confetti.msg.html(html, chan);
   });
-  confetti.command('block', ['block [name]', "Blocks a user by automatically ignoring them.", 'setmsg@block name'], function(data) {
+  confetti.command('block', {
+    help: "Blocks a user by automatically ignoring them when they log in.",
+    args: ["name"]
+  }, function(data) {
     var blocked, id, len, name;
     len = data.length;
     if (!data) {
@@ -796,7 +891,10 @@ confetti.cacheFile = 'confetti.json';
     }
     return confetti.msg.bot("" + name + " is now blocked!");
   });
-  confetti.command('unblock', ['unblock [name]', "Unblocks a user.", 'setmsg@unblock name'], function(data) {
+  confetti.command('unblock', {
+    help: "Unblocks a user.",
+    args: ["name"]
+  }, function(data) {
     var blocked, id, name;
     data = data.toLowerCase();
     name = confetti.player.name(data);
@@ -812,8 +910,8 @@ confetti.cacheFile = 'confetti.json';
     }
     return confetti.msg.bot("You are no longer blocking " + name + "!");
   });
-  confetti.hook('initCache', function() {
-    return confetti.cache.store('blocked', [], confetti.cache.once);
+  confetti.initFields({
+    blocked: []
   });
   return confetti.hook('onPlayerReceived', function(id) {
     var blocked, name;
@@ -826,7 +924,10 @@ confetti.cacheFile = 'confetti.json';
 })();
 
 (function() {
-  return confetti.command('define', ['define [term]', 'Attempts to find a definition for the given term.', 'setmsg@define term'], function(data, chan) {
+  return confetti.command('define', {
+    help: "Attempts to find a definition for the given term.",
+    args: ["term"]
+  }, function(data, chan) {
     if (!data) {
       return confetti.msg.bot("You need to give me a term!");
     }
@@ -997,26 +1098,17 @@ confetti.cacheFile = 'confetti.json';
     encoolHandlers[type] = handler;
     return encoolTypes = Object.keys(encoolHandlers);
   };
-  confetti.hook('initCache', function() {
-    return confetti.cache.store('encool', 'none', confetti.cache.once);
-  });
-  confetti.hook('manipulateOwnMessage', function(message, chan, dirty) {
-    var mess;
-    mess = message;
-    if (mess[0] !== '/') {
-      mess = encool(message);
-      dirty = true;
-    }
-    return [mess, chan, dirty];
-  });
+  encoolTypes = Object.keys(encoolHandlers);
   confetti.msg.notify = function(msg, chan) {
     if (typeof chan !== 'number' || !Client.hasChannel(chan)) {
       return;
     }
     return Network.sendChanMessage(chan, encool(msg));
   };
-  encoolTypes = Object.keys(encoolHandlers);
-  return confetti.command('encool', ['encool [type]', "Changes your encool type to (" + (encoolTypes.join(', ')) + ").", 'setmsg@encool type'], function(data) {
+  confetti.command('encool', {
+    help: "Changes your encool type to (" + (encoolTypes.join(', ')) + ").",
+    args: ["type"]
+  }, function(data) {
     data = data.toLowerCase();
     if (!(__indexOf.call(encoolTypes, data) >= 0)) {
       confetti.msg.bot("That doesn't look right to me!");
@@ -1028,14 +1120,23 @@ confetti.cacheFile = 'confetti.json';
     confetti.cache.store('encool', data).save();
     return confetti.msg.bot("Your encool type is now " + data + "!");
   });
+  confetti.initFields({
+    encool: 'none'
+  });
+  return confetti.hook('manipulateOwnMessage', function(message, chan, dirty) {
+    var mess;
+    mess = message;
+    if (mess[0] !== '/') {
+      mess = encool(message);
+      dirty = true;
+    }
+    return [mess, chan, dirty];
+  });
 })();
 
 (function() {
   var classhilight, flashwordCategory;
   classhilight = "<span class='name-hilight'>$1</span><ping/>";
-  confetti.command('flashcommands', ['Shows commands related to flashes and flashwords.', 'send@flashcommands'], function() {
-    return confetti.cmdlist("Flashes", 'flashword removeflashword flashwords flashes', 'flash');
-  });
   flashwordCategory = function(word) {
     var flags, parts, regex;
     parts = word.split('/');
@@ -1053,7 +1154,7 @@ confetti.cacheFile = 'confetti.json';
       flags: flags
     };
   };
-  confetti.command('flashwords', ["Shows your flash words (sequences of characters that ping you when said).", 'send@flashwords'], function(_, chan) {
+  confetti.command('flashwords', "Shows your flash words (sequences of characters that ping you when said).", function(_, chan) {
     var flashwords, html, index, numWords, word, _i, _len;
     flashwords = confetti.cache.get('flashwords');
     numWords = flashwords.length;
@@ -1069,7 +1170,10 @@ confetti.cacheFile = 'confetti.json';
     return confetti.msg.html(html, chan);
   });
   confetti.alias('flashwordlist', 'flashwords');
-  confetti.command('flashword', ['flashword [word]', "Adds [word] to your flash word list. [word] may also be a <a href='http://www.regexr.com/' title='Regexr'>regular expression</a>, prefix it with <b>/</b> like so: /(word)/i. The first capture group will be the flashword.", 'setmsg@flashword word'], function(data) {
+  confetti.command('flashword', {
+    help: "Adds [word] to your flash word list. [word] may also be a <a href='http://www.regexr.com/' title='Regexr'>regular expression</a>, prefix it with <b>/</b> like so: /(word)/i. The first capture group will be the flashword.",
+    args: ["word"]
+  }, function(data) {
     var flashwords, index;
     flashwords = confetti.cache.get('flashwords');
     if (!data) {
@@ -1083,9 +1187,11 @@ confetti.cacheFile = 'confetti.json';
     confetti.cache.store('flashwords', flashwords).save();
     return confetti.msg.bot("<b>" + (sys.htmlEscape(data)) + "</b> will now ping you when said!");
   });
-  confetti.alias('stalkword', 'flashword');
-  confetti.alias('addstalkword', 'flashword');
-  confetti.command('removeflashword', ['removeflashword [flashword]', "Removes [flashword] from your flashword list.", 'setmsg@removeflashword flashword'], function(data) {
+  confetti.alias('addflashword, stalkword, addstalkword', 'flashword');
+  confetti.command('removeflashword', {
+    help: "Removes [flashword] from your flashword list.",
+    args: ["flashword"]
+  }, function(data) {
     var flashwords, index;
     flashwords = confetti.cache.get('flashwords');
     if (!data) {
@@ -1099,17 +1205,13 @@ confetti.cacheFile = 'confetti.json';
     confetti.cache.store('flashwords', flashwords).save();
     return confetti.msg.bot("<b>" + (sys.htmlEscape(data)) + "</b> will no longer ping you!");
   });
-  confetti.command('flashes', ["Toggles whether if name flashes and flash words should be enabled.", 'send@flashes'], function() {
+  confetti.command('flashes', "Toggles whether if name flashes and flash words should be enabled.", function() {
     confetti.cache.store('flashes', !confetti.cache.read('flashes')).save();
     return confetti.msg.bot("Flashes are now " + (confetti.cache.read('flashes') ? 'on' : 'off') + ".");
   });
-  confetti.alias('rmflashword', 'removeflashword');
-  confetti.alias('unflashword', 'removeflashword');
-  confetti.alias('removestalkword', 'removeflashword');
-  confetti.alias('rmstalkword', 'removeflashword');
-  confetti.alias('unstalkword', 'removeflashword');
-  confetti.hook('initCache', function() {
-    return confetti.cache.store('flashwords', [], confetti.cache.once);
+  confetti.alias('rmflashword, unflashword, removestalkword, rmstalkword, unstalkword', 'removeflashword');
+  confetti.initFields({
+    flashwords: []
   });
   return confetti.hook('manipulateChanPlayerMessage', function(from, fromId, message, playerMessage, _arg, chan, html, dirty) {
     var auth, authSymbol, cat, color, flashMessage, flashword, flashwords, _i, _len;
@@ -1136,10 +1238,7 @@ confetti.cacheFile = 'confetti.json';
 })();
 
 (function() {
-  confetti.command('friendcommands', ['Shows commands related to friends.', 'send@friendcommands'], function() {
-    return confetti.cmdlist("Friends", 'friend unfriend friends friendnotifications', 'friends');
-  });
-  confetti.command('friends', ["Displays your friends list.", 'send@friends'], function(_, chan) {
+  confetti.command('friends', "Displays your friends list.", function(_, chan) {
     var count, friend, friends, html, _i, _len;
     friends = confetti.util.sortOnlineOffline(confetti.cache.get('friends'));
     if (friends.length === 0) {
@@ -1158,7 +1257,10 @@ confetti.cacheFile = 'confetti.json';
     }
     return confetti.msg.html(html, chan);
   });
-  confetti.command('friend', ['friend [name]', "Adds [name] to your friend list.", 'setmsg@friend name'], function(data) {
+  confetti.command('friend', {
+    help: "Adds [name] to your friend list.",
+    args: ["name"]
+  }, function(data) {
     var friends, name;
     name = confetti.player.name(data);
     data = data.toLowerCase();
@@ -1176,7 +1278,10 @@ confetti.cacheFile = 'confetti.json';
     confetti.cache.store('friends', friends).save();
     return confetti.msg.bot("" + name + " is now on your friends list!");
   });
-  confetti.command('unfriend', ['unfriend [name]', "Removes [name] from your friend list.", 'setmsg@unfriend name'], function(data) {
+  confetti.command('unfriend', {
+    help: "Removes [name] from your friend list.",
+    args: ["name"]
+  }, function(data) {
     var friends, name;
     data = data.toLowerCase();
     name = confetti.player.name(data);
@@ -1188,12 +1293,13 @@ confetti.cacheFile = 'confetti.json';
     confetti.cache.store('friends', friends).save();
     return confetti.msg.bot("You removed " + name + " from your friends list!");
   });
-  confetti.command('friendnotifications', ["Toggles whether if notifications specific to friends (logins, logouts) should be shown.", 'send@friendnotifications'], function() {
+  confetti.command('friendnotifications', "Toggles whether if notifications specific to friends (logins, logouts) should be shown.", function() {
     confetti.cache.store('friendnotifications', !confetti.cache.read('friendnotifications')).save();
     return confetti.msg.bot("Friend notifications are now " + (confetti.cache.read('friendnotifications') ? 'on' : 'off') + ".");
   });
-  confetti.hook('initCache', function() {
-    return confetti.cache.store('friends', [], confetti.cache.once).store('friendnotifications', true, confetti.cache.once);
+  confetti.initFields({
+    friends: [],
+    friendnotifications: true
   });
   confetti.hook('onPlayerReceived', function(id) {
     var friends, name, tracked, trackedName;
@@ -1233,17 +1339,38 @@ confetti.cacheFile = 'confetti.json';
 })();
 
 (function() {
-  confetti.command('configcommands', ['Shows various commands that change your settings.', 'send@configcommands'], function() {
-    return new confetti.CommandList("Configuration Commands").cmds('botname botcolor encool notifications commandindicator autoreconnect').hooks('config').whiteline().cmd('defaults').render();
-  });
-  confetti.command('commands', ['Shows this command list.', 'send@commands'], function() {
+  confetti.command('commands', "Shows this command list.", function() {
     return new confetti.CommandList("Commands").group("Command Lists").cmds('commands scriptcommands plugincommands friendcommands blockcommands trackcommands flashcommands configcommands').hooks('list').group("Player Symbols").cmds('authsymbols authsymbol').hooks('playersymbols').hooks('categories').whiteline().cmds('reconnect define translate news imp info chan pm flip myip').hooks('misc').cmds('html eval').hooks('dev').render();
   });
-  return confetti.alias('commandlist', 'commands');
+  confetti.alias('commandlist', 'commands');
+  confetti.command('configcommands', "Shows various commands that change your settings.", function() {
+    return new confetti.CommandList("Configuration").cmds('botname botcolor encool notifications commandindicator autoreconnect').hooks('config').whiteline().cmd('defaults').render();
+  });
+  confetti.command('blockcommands', "Shows commands related to blocking other players.", function() {
+    return confetti.cmdlist("Blocking", 'block unblock blocked', 'block');
+  });
+  confetti.command('plugincommands', "Shows commands related to plugins.", function() {
+    return confetti.cmdlist("Plugins", 'plugins addplugin removeplugin updateplugins', 'plugins');
+  });
+  confetti.command('scriptcommands', "Shows commands related to Confetti (the script).", function() {
+    return confetti.cmdlist("Confetti", 'updatescript autoupdate changelog version', 'script');
+  });
+  confetti.command('trackcommands', "Shows commands related to tracking players (such as their aliases).", function() {
+    return confetti.cmdlist("Tracking", 'track untrack tracked trackingresolve', 'track');
+  });
+  confetti.command('flashcommands', "Shows commands related to flashes and flashwords.", function() {
+    return confetti.cmdlist("Flashes", 'flashword removeflashword flashwords flashes', 'flash');
+  });
+  return confetti.command('friendcommands', "Shows commands related to friends.", function() {
+    return confetti.cmdlist("Friends", 'friend unfriend friends friendnotifications', 'friends');
+  });
 })();
 
 (function() {
-  confetti.command('eval', ['eval [code]', "Evaluates a JavaScript Program.", 'setmsg@eval code'], function(data, chan) {
+  confetti.command('eval', {
+    help: "Evaluates a JavaScript Program.",
+    args: ["code"]
+  }, function(data, chan) {
     var ex, res;
     try {
       res = eval(data);
@@ -1257,7 +1384,10 @@ confetti.cacheFile = 'confetti.json';
     }
   });
   confetti.command('evalp', 'eval');
-  confetti.command('imp', ['imp [name]', "Changes your name to [name]. If the name is deemed invalid, you will be kicked, so be careful!", 'setmsg@imp name'], function(data) {
+  confetti.command('imp', {
+    help: "Changes your name to [name]. If the name is deemed invalid, you will be kicked, so be careful!",
+    args: ["name"]
+  }, function(data) {
     if (!data) {
       return confetti.msg.bot("Specify a name!");
     } else if (data.length > 20) {
@@ -1267,14 +1397,20 @@ confetti.cacheFile = 'confetti.json';
     return confetti.msg.bot("You are now known as " + data + "!");
   });
   confetti.alias('changename', 'imp');
-  confetti.command('flip', ["Flips a coin in virtual life.", 'send@flip'], function() {
+  confetti.command('flip', "Flips a coin in virtual life.", function() {
     return confetti.msg.bot("The coin landed " + (Math.random() > 0.5 ? 'heads' : 'tails') + "!");
   });
   confetti.alias('coin', 'flip');
-  confetti.command('html', ['html [code]', "Displays some HTML [code] (for testing purposes).", 'setmsg@html code'], function(data, chan) {
+  confetti.command('html', {
+    help: "Displays some HTML [code] (for testing purposes).",
+    args: ["code"]
+  }, function(data, chan) {
     return confetti.msg.html(data, chan);
   });
-  confetti.command('chan', ['chan [name]', "Joins, jumps to, or creates a channel.", 'setmsg@chan name'], function(data) {
+  confetti.command('chan', {
+    help: "Joins, jumps to, or creates a channel.",
+    args: ["name"]
+  }, function(data) {
     var channelNames, cid, cname, exists, name;
     name = data;
     data = data.toLowerCase();
@@ -1308,10 +1444,11 @@ confetti.cacheFile = 'confetti.json';
       }, 500, false);
     }
   });
-  confetti.alias('joinchan', 'chan');
-  confetti.alias('channel', 'chan');
-  confetti.alias('goto', 'chan');
-  confetti.command('pm', ['pm [name]', 'Opens a PM session with [name].', 'setmsg@pm name'], function(data) {
+  confetti.alias('joinchan, channel, goto', 'chan');
+  confetti.command('pm', {
+    help: "Opens a PM session with [name].",
+    args: ["name"]
+  }, function(data) {
     var id;
     if (!data) {
       return confetti.msg.bot("Specify a name!");
@@ -1324,7 +1461,10 @@ confetti.cacheFile = 'confetti.json';
     }
     return Client.startPM(id);
   });
-  confetti.command('info', ['info [name]', "Shows some info (like id, color, auth level) for a given user. If you are a moderator, also opens a control panel for the player.", 'setmsg@info name'], function(data, chan) {
+  confetti.command('info', {
+    help: "Shows some info (like id, color, auth level) for a given user. If you are a moderator, this will also open a control panel for the player.",
+    args: ["name"]
+  }, function(data, chan) {
     var auth, avatar, color, id, name;
     id = Client.id(data);
     if (Client.ownAuth() > 0) {
@@ -1347,7 +1487,7 @@ confetti.cacheFile = 'confetti.json';
     }
   });
   confetti.alias('userinfo', 'info');
-  return confetti.command('myip', ['Shows your IP address.', 'send@myip'], function() {
+  return confetti.command('myip', "Shows your IP address.", function() {
     return sys.webCall('http://bot.whatismyipaddress.com/', function(resp) {
       if (!resp) {
         return confetti.msg.bot("Couldn't obtain your IP address - check your internet connection.");
@@ -1358,6 +1498,8 @@ confetti.cacheFile = 'confetti.json';
 })();
 
 (function() {
+  var newsurl;
+  newsurl = 'https://ajax.googleapis.com/ajax/services/search/news?v=1.0&rsz=6&hl=';
   return confetti.command('news', ['news [language code?]:[topic?]', "Fetches the latest news, either the headlines or on a specific topic, from Google News, in an optional <a href='<a href='http://en.wikipedia.org/wiki/List_of_ISO_639-1_codes#Partial_ISO_639_table'>[language]</a>.", 'send@news'], function(data, chan) {
     var lang, query, topic;
     data = data.split(':');
@@ -1370,17 +1512,8 @@ confetti.cacheFile = 'confetti.json';
     if (query) {
       topic = "&q=" + (encodeURIComponent(query.toLowerCase()));
     }
-    return sys.webCall("https://ajax.googleapis.com/ajax/services/search/news?v=1.0&rsz=6&hl=" + (encodeURIComponent(lang)) + topic, function(response) {
-      var ex, json, mess, res, stories, story, _i, _j, _len, _len1;
-      if (!response) {
-        return confetti.msg.bot("Couldn't load news - your internet might be down.", chan);
-      }
-      try {
-        json = JSON.parse(response);
-      } catch (_error) {
-        ex = _error;
-        return confetti.msg.bot("Couldn't load news - your internet might be down.", chan);
-      }
+    return confetti.io.getRemoteJson("" + newsurl + (encodeURIComponent(lang)) + topic, ["A connection error occured while loading news.", chan], function(json) {
+      var mess, res, stories, story, _i, _j, _len, _len1;
       stories = json.responseData.results;
       res = [];
       for (_i = 0, _len = stories.length; _i < _len; _i++) {
@@ -1400,7 +1533,7 @@ confetti.cacheFile = 'confetti.json';
 })();
 
 (function() {
-  var findPlugin, hasPlugin, updatePlugins;
+  var findPlugin, getListing, getPluginFile, hasPlugin, updatePlugins;
   findPlugin = function(id, plugins) {
     var plugin, _i, _len;
     if (plugins == null) {
@@ -1418,45 +1551,41 @@ confetti.cacheFile = 'confetti.json';
   hasPlugin = function(id, plugins) {
     return findPlugin(id, plugins) !== null;
   };
+  getListing = function(chan, callback, verbose) {
+    if (verbose == null) {
+      verbose = true;
+    }
+    return confetti.io.getRemoteJson("" + confetti.pluginsUrl + "listing.json", [(verbose ? "A connection error occured whilst loading the plugin listing." : ""), chan], callback);
+  };
+  getPluginFile = function(pid, chan, callback, verbose) {
+    if (verbose == null) {
+      verbose = true;
+    }
+    return confetti.io.getRemoteFile("" + confetti.pluginsUrl + pid + "/" + pid + ".js", [(verbose ? "A connection error occured whilst loading the plugin source file of the plugin " + pid + "." : ""), chan], callback);
+  };
   updatePlugins = function(verbose, chan) {
     var plugins;
     if (verbose == null) {
       verbose = false;
     }
     plugins = confetti.cache.get('plugins');
-    return sys.webCall(confetti.pluginsUrl + 'listing.json', function(resp) {
-      var ex, json, plug, plugin, toUpdate, _i, _j, _len, _len1, _results;
-      try {
-        json = JSON.parse(resp);
-      } catch (_error) {
-        ex = _error;
-        if (verbose) {
-          confetti.msg.bot("Couldn't load plugin listing -- check your internet connection.", chan);
-        }
-        return;
-      }
+    return getListing(chan, function(json) {
+      var plug, plugin, toUpdate, _i, _j, _len, _len1, _results;
       toUpdate = [];
       for (_i = 0, _len = plugins.length; _i < _len; _i++) {
         plugin = plugins[_i];
         plug = findPlugin(plugin.id, json);
-        if (plug) {
-          if (plugin.version !== plug.version) {
-            toUpdate.push([plugin, plug]);
-          }
+        if (plug && plugin.version !== plug.version) {
+          toUpdate.push([plugin, plug]);
         }
       }
       if (toUpdate.length) {
         _results = [];
         for (_j = 0, _len1 = toUpdate.length; _j < _len1; _j++) {
           plugin = toUpdate[_j];
-          _results.push(sys.webCall(confetti.pluginsUrl + ("" + pid + "/" + pid + ".js"), (function(plugin) {
+          _results.push(getPluginFile(plugin.id, chan, (function(plugin) {
             return function(resp) {
               var index, pid;
-              if (!resp) {
-                if (verbose) {
-                  return confetti.msg.bot("Couldn't load plugin source for plugin " + pid + " -- check your internet connection.", chan);
-                }
-              }
               plug = plugin[1];
               pid = plug.id;
               confetti.io.writeLocal("plugin-" + pid + ".js", resp);
@@ -1466,21 +1595,16 @@ confetti.cacheFile = 'confetti.json';
               confetti.msg.bot("Plugin " + plug.name + " updated to version " + plug.version + "!", chan);
               return confetti.initPlugins(pid);
             };
-          })(plugin)));
+          })(plugin), verbose));
         }
         return _results;
-      } else {
-        if (verbose) {
-          return confetti.msg.bot("All plugins up to date.", chan);
-        }
+      } else if (verbose) {
+        return confetti.msg.bot("All plugins up to date.", chan);
       }
-    });
+    }, verbose);
   };
   confetti.updatePlugins = updatePlugins;
-  confetti.command('plugincommands', ['Shows commands related to plugins.', 'send@plugincommands'], function() {
-    return confetti.cmdlist("Plugins", 'plugins addplugin removeplugin updateplugins', 'plugins');
-  });
-  confetti.command('plugins', ["Displays a list of enabled and available plugins.", 'send@plugins'], function(_, chan) {
+  confetti.command('plugins', "Displays a list of enabled and available plugins.", function(_, chan) {
     var html, plugin, plugins, _i, _len;
     plugins = confetti.cache.get('plugins');
     if (plugins.length > 0) {
@@ -1493,14 +1617,8 @@ confetti.cacheFile = 'confetti.json';
       html += "<br>";
       confetti.msg.html(html, chan);
     }
-    return sys.webCall(confetti.pluginsUrl + 'listing.json', function(resp) {
-      var addremove, ex, json, len, pid, _j, _len1;
-      try {
-        json = JSON.parse(resp);
-      } catch (_error) {
-        ex = _error;
-        return confetti.msg.bot("Couldn't load available plugins listing -- check your internet connection.", chan);
-      }
+    return getListing(chan, function(json) {
+      var addremove, len, pid, _j, _len1;
       len = json.length;
       if (!len) {
         return confetti.msg.bot("No plugins are available.", chan);
@@ -1521,7 +1639,10 @@ confetti.cacheFile = 'confetti.json';
       return confetti.msg.html(html, chan);
     });
   });
-  confetti.command('addplugin', ['addplugin [plugin]', "Adds a plugin.", 'setmsg@addplugin name'], function(data, chan) {
+  confetti.command('addplugin', {
+    help: "Adds a plugin. The plugin's ID must be used (inside brackets).",
+    args: ["id"]
+  }, function(data, chan) {
     var name, plugins;
     plugins = confetti.cache.get('plugins');
     name = data;
@@ -1531,14 +1652,8 @@ confetti.cacheFile = 'confetti.json';
     } else if (hasPlugin(data, plugins)) {
       return confetti.msg.bot("" + name + " is already enabled as a plugin!");
     }
-    return sys.webCall(confetti.pluginsUrl + 'listing.json', function(resp) {
-      var ex, json, pid, plugin;
-      try {
-        json = JSON.parse(resp);
-      } catch (_error) {
-        ex = _error;
-        return confetti.msg.bot("Couldn't load available plugins listing -- check your internet connection.", chan);
-      }
+    return getListing(chan, function(json) {
+      var pid, plugin;
       if (json.length === 0) {
         return confetti.msg.bot("No plugins are available.", chan);
       }
@@ -1547,10 +1662,7 @@ confetti.cacheFile = 'confetti.json';
         return confetti.msg.bot("That plugin is not available! Use the 'plugins' command to see a list of available plugins.", chan);
       }
       pid = plugin.id;
-      return sys.webCall(confetti.pluginsUrl + ("" + pid + "/" + pid + ".js"), function(file) {
-        if (!file) {
-          return confetti.msg.bot("Couldn't load plugin source -- check your internet connection.", chan);
-        }
+      return getPluginFile(pid, chan, function(file) {
         confetti.io.writeLocal("plugin-" + pid + ".js", file);
         plugins.push(plugin);
         confetti.cache.store('plugins', plugins).save();
@@ -1559,7 +1671,10 @@ confetti.cacheFile = 'confetti.json';
       });
     });
   });
-  confetti.command('removeplugin', ['removeplugin [plugin]', "Removes a plugin.", 'setmsg@removeplugin plugin'], function(data) {
+  confetti.command('removeplugin', {
+    help: "Removes a plugin. The plugin's ID must be used (inside brackets).",
+    args: ["plugin"]
+  }, function(data) {
     var name, plugin, plugins;
     name = data;
     data = data.toLowerCase();
@@ -1574,7 +1689,7 @@ confetti.cacheFile = 'confetti.json';
     confetti.io.reloadScript();
     return confetti.msg.bot("Plugin <b>" + plugin.name + "</b> removed.");
   });
-  return confetti.command('updateplugins', ['Updates your plugins to the latest version.', 'send@updateplugins'], function(_, chan) {
+  return confetti.command('updateplugins', "Updates your plugins to their latest versions.", function(_, chan) {
     if (sys.isSafeScripts()) {
       return confetti.msg.bot("Please disable Safe Scripts before using this command.");
     }
@@ -1623,19 +1738,19 @@ confetti.cacheFile = 'confetti.json';
     }
     return forced = false;
   });
-  confetti.hook('initCache', function() {
-    return confetti.cache.store('autoreconnect', true, confetti.cache.once);
-  });
-  confetti.command('reconnect', ['Forces a reconnect to the server.', 'send@reconnect'], function() {
+  confetti.command('reconnect', "Forces a reconnect to the server.", function() {
     confetti.msg.bot("Reconnecting to the server...");
     attempts = 0;
     forced = true;
     stopReconnecting = false;
     return Client.reconnect();
   });
-  return confetti.command('autoreconnect', ["Toggles whether if you should automatically reconnect to the server when detected you've disconnected.", 'send@autoreconnect'], function() {
+  confetti.command('autoreconnect', "Toggles whether if you should automatically reconnect to the server when detected you've disconnected.", function() {
     confetti.cache.store('autoreconnect', !confetti.cache.read('autoreconnect')).save();
     return confetti.msg.bot("Auto reconnect is now " + (confetti.cache.read('autoreconnect') ? 'on' : 'off') + ".");
+  });
+  return confetti.initFields({
+    autoreconnect: true
   });
 })();
 
@@ -1667,16 +1782,9 @@ confetti.cacheFile = 'confetti.json';
     if ((confetti.cache.get('lastupdatetime') + (6 * 60 * 60)) > now) {
       return;
     }
+    confetti.cache.store('lastupdatetime', now).save();
     confetti.updatePlugins();
-    return sys.webCall("" + confetti.scriptUrl + "script/version.json", function(resp) {
-      var ex, json;
-      confetti.cache.store('lastupdatetime', now).save();
-      try {
-        json = JSON.parse(resp);
-      } catch (_error) {
-        ex = _error;
-        return;
-      }
+    return confetti.io.getRemoteJson("" + confetti.scriptUrl + "script/version.json", "", function(json) {
       if (differentVersion(confetti.version, json)) {
         return updateScript();
       }
@@ -1689,10 +1797,7 @@ confetti.cacheFile = 'confetti.json';
     return versionFormat(ov) !== versionFormat(nv);
   };
   updateScript = function() {
-    return sys.webCall(confetti.scriptUrl + 'scripts.js', function(file) {
-      if (!file) {
-        return confetti.msg.bot("Couldn't load script, check your internet connection.");
-      }
+    return confetti.io.getRemoteFile("" + confetti.scriptUrl + "scripts.js", ["Couldn't load script, check your internet connection"], function(file) {
       confetti.io.write(sys.scriptsFolder + 'scripts.js', file);
       confetti.io.reloadScript(true);
       return confetti.msg.bot("Script updated!");
@@ -1703,10 +1808,7 @@ confetti.cacheFile = 'confetti.json';
   confetti.changelog = changelog;
   confetti.autoUpdate = autoUpdate;
   confetti.updateScript = updateScript;
-  confetti.command('scriptcommands', ['Shows commands related to Confetti (the script).', 'send@scriptcommands'], function() {
-    return confetti.cmdlist("Confetti", 'updatescript autoupdate changelog version', 'script');
-  });
-  confetti.command('updatescript', ['Updates the script to the latest available version.', 'send@updatescript'], function() {
+  confetti.command('updatescript', "Updates the script to the latest available version.", function() {
     if (sys.isSafeScripts()) {
       return confetti.msg.bot("Please disable Safe Scripts before using this command.");
     }
@@ -1714,11 +1816,11 @@ confetti.cacheFile = 'confetti.json';
     return updateScript();
   });
   confetti.alias('updatescripts', 'updatescript');
-  confetti.command('autoupdate', ["Toggles whether if the script should automatically look for updates (every 6 hours).", 'send@autoupdate'], function() {
+  confetti.command('autoupdate', "Toggles whether if the script should automatically look for updates (every 6 hours).", function() {
     confetti.cache.store('autoupdate', !confetti.cache.read('autoupdate')).save();
     return confetti.msg.bot("Automatic updates are now " + (confetti.cache.read('autoupdate') ? 'enabled' : 'disabled') + ".");
   });
-  confetti.command('version', ["Shows the script's version.", 'send@version'], function() {
+  confetti.command('version', "Shows the script's version.", function() {
     var vers;
     vers = versionFormat(confetti.version);
     confetti.msg.bot("Your copy of Confetti is currently on version " + vers + ".");
@@ -1726,7 +1828,7 @@ confetti.cacheFile = 'confetti.json';
       return confetti.msg.bot("What's new: " + changelog[vers]);
     }
   });
-  confetti.command('changelog', ["Shows a changelog containing the major changes in each version.", 'send@changelog'], function() {
+  confetti.command('changelog', "Shows a changelog containing the major changes in each version.", function() {
     var msg, ver, _results;
     _results = [];
     for (ver in changelog) {
@@ -1735,17 +1837,21 @@ confetti.cacheFile = 'confetti.json';
     }
     return _results;
   });
-  return confetti.hook('initCache', function() {
-    return confetti.cache.store('autoupdate', true, confetti.cache.once).store('lastupdatetime', sys.time(), confetti.cache.once);
+  return confetti.initFields({
+    autoupdate: true,
+    lastupdatetime: sys.time()
   });
 })();
 
 (function() {
-  confetti.command('notifications', ["Toggles whether if notifications should be shown (tray messages).", 'send@notifications'], function() {
+  confetti.command('notifications', "Toggles whether if notifications should be shown (tray messages).", function() {
     confetti.cache.store('notifications', !confetti.cache.read('notifications')).save();
     return confetti.msg.bot("Notifications are now " + (confetti.cache.read('notifications') ? 'on' : 'off') + ".");
   });
-  confetti.command('botname', ['botname [name]', "Changes the bot's name to [name].", 'setmsg@botname name'], function(data) {
+  confetti.command('botname', {
+    help: "Changes the bot's name to [name].",
+    args: ["name"]
+  }, function(data) {
     if (data.length > 25) {
       return confetti.msg.bot("Uhh, that's too long, I think!");
     }
@@ -1755,7 +1861,10 @@ confetti.cacheFile = 'confetti.json';
     confetti.cache.store('botname', data).save();
     return confetti.msg.bot("I'm now called " + data + "!");
   });
-  confetti.command('botcolor', ['botcolor [color]', "Changes the bot's color to [color].", 'setmsg@botcolor color'], function(data) {
+  confetti.command('botcolor', {
+    help: "Changes the bot's color to [color].",
+    args: ["color"]
+  }, function(data) {
     data = data.toLowerCase();
     if (!sys.validColor(data)) {
       return confetti.msg.bot("That doesn't look like a valid color to me!");
@@ -1766,7 +1875,10 @@ confetti.cacheFile = 'confetti.json';
     confetti.cache.store('botcolor', data).save();
     return confetti.msg.bot("My color is now " + data + "!");
   });
-  confetti.command('commandindicator', ['commandindicator [char]', "Changes your command indicator (to indicate usage of commands) to [char]. <b>-</b> will remain usable, in case you ever forget.", 'setmsg@commandindicator char'], function(data) {
+  confetti.command('commandindicator', {
+    help: "Changes your command indicator (to indicate usage of commands) to [symbol]. <b>-</b> will remain usable, in case you ever forget.",
+    args: ["symbol"]
+  }, function(data) {
     data = data.toLowerCase();
     if (data.length !== 1) {
       return confetti.msg.bot("Your command indicator has to be one character, nothing more, nothing less!");
@@ -1780,7 +1892,7 @@ confetti.cacheFile = 'confetti.json';
     confetti.cache.store('commandindicator', data).save();
     return confetti.msg.bot("Your command indicator is now " + data + "!");
   });
-  return confetti.command('defaults', ['Sets all settings back to their defaults. There may be some plugins that do not support this.', 'setmsg@defaults'], function(data) {
+  return confetti.command('defaults', "Sets all settings back to their defaults. There may be some plugins which do not support this action, in which case they might break.", function(data) {
     if (data.toLowerCase() !== 'sure') {
       return confetti.msg.bot("<a href='po:send/-defaults sure' style='text-decoration: none; color: black;'>Are you sure that you want to reset your settings? There is no going back. Click this message to confirm (or type <small>" + (confetti.cache.get('commandindicator')) + "defaults sure</small>).</a>");
     }
@@ -1792,10 +1904,7 @@ confetti.cacheFile = 'confetti.json';
 })();
 
 (function() {
-  confetti.command('trackcommands', ['Shows commands related to tracking players (such as their aliases).', 'send@trackcommands'], function() {
-    return confetti.cmdlist("Tracking", 'track untrack tracked trackingresolve', 'track');
-  });
-  confetti.command('tracked', ["Displays a list of tracked players.", 'send@tracked'], function(_, chan) {
+  confetti.command('tracked', "Displays a list of tracked players.", function(_, chan) {
     var alt, alts, html, name, names, numTracked, tracked, _i, _len;
     tracked = confetti.cache.get('tracked');
     numTracked = Object.keys(tracked).length;
@@ -1823,9 +1932,11 @@ confetti.cacheFile = 'confetti.json';
     }
     return confetti.msg.html(html, chan);
   });
-  confetti.alias('tracking', 'tracked');
-  confetti.alias('trackinglist', 'tracked');
-  confetti.command('track', ['track [alt]:[name]', "Adds [alt] as an alt of [name] to your tracking list.", 'setmsg@track alt:name'], function(data) {
+  confetti.alias('tracking, trackinglist', 'tracked');
+  confetti.command('track', {
+    help: "Adds [alias] as an alias of [name] to your tracking list.",
+    args: ["alias", "name"]
+  }, function(data) {
     var alt, altName, name, parts, tracked;
     parts = data.split(':');
     if (parts[1] == null) {
@@ -1846,7 +1957,10 @@ confetti.cacheFile = 'confetti.json';
     confetti.cache.store('tracked', tracked).save();
     return confetti.msg.bot("" + altName + " is now on your tracking list as an alt of " + (confetti.player.name(name, false)) + "!");
   });
-  confetti.command('untrack', ['untrack [alt]', "Removes [alt] from your tracking list.", 'setmsg@untrack alt'], function(data) {
+  confetti.command('untrack', {
+    help: "Removes [alias] from your tracking list.",
+    args: ["alias"]
+  }, function(data) {
     var name, tracked;
     data = data.toLowerCase();
     name = confetti.player.name(data, false);
@@ -1858,7 +1972,7 @@ confetti.cacheFile = 'confetti.json';
     confetti.cache.store('tracked', tracked).save();
     return confetti.msg.bot("You removed " + name + " from your tracking list!");
   });
-  confetti.command('trackingresolve', ["Toggles whether if tracked names should resolve to their real name (in lists &c.). Does not affect chat name resolution.", 'send@trackingresolve'], function() {
+  confetti.command('trackingresolve', "Toggles whether if tracked names should resolve to their real name (in lists &c.). Does not affect chat name resolution.", function() {
     confetti.cache.store('trackingresolve', !confetti.cache.read('trackingresolve')).save();
     return confetti.msg.bot("Tracking name resolve is now " + (confetti.cache.read('trackingresolve') ? 'on' : 'off') + ".");
   });
@@ -1905,8 +2019,7 @@ confetti.cacheFile = 'confetti.json';
       return confetti.msg.bot("'" + message + "' is '" + json[0][0][0] + "' in '" + (to.toUpperCase()) + "'.", chan);
     });
   });
-  confetti.alias('trans', 'translate');
-  return confetti.alias('tr', 'translate');
+  return confetti.alias('trans, tr', 'translate');
 })();
 
 if (confetti.initialized && !confetti.silentReload) {

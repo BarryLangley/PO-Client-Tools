@@ -9,32 +9,26 @@ do ->
         return null
     hasPlugin = (id, plugins) -> findPlugin(id, plugins) isnt null
 
+    getListing = (chan, callback, verbose=yes) ->
+        confetti.io.getRemoteJson "#{confetti.pluginsUrl}listing.json", [(if verbose then "A connection error occured whilst loading the plugin listing." else ""), chan], callback
+
+    getPluginFile = (pid, chan, callback, verbose=yes) ->
+        confetti.io.getRemoteFile "#{confetti.pluginsUrl}#{pid}/#{pid}.js", [(if verbose then "A connection error occured whilst loading the plugin source file of the plugin #{pid}." else ""), chan], callback
+
     updatePlugins = (verbose = no, chan) ->
         plugins = confetti.cache.get('plugins')
-        sys.webCall confetti.pluginsUrl + 'listing.json', (resp) ->
-            try
-                json = JSON.parse resp
-            catch ex
-                if verbose
-                    confetti.msg.bot "Couldn't load plugin listing -- check your internet connection.", chan
-                return
-
+        getListing chan, (json) ->
             toUpdate = []
 
             for plugin in plugins
                 plug = findPlugin(plugin.id, json)
-                if plug
-                    if plugin.version isnt plug.version
-                        toUpdate.push [plugin, plug]
+                if plug and plugin.version isnt plug.version
+                    toUpdate.push [plugin, plug]
 
             if toUpdate.length
                 for plugin in toUpdate
-                    sys.webCall confetti.pluginsUrl + "#{pid}/#{pid}.js", do (plugin) ->
+                    getPluginFile plugin.id, chan, do (plugin) ->
                         return (resp) ->
-                            unless resp
-                                if verbose
-                                    return confetti.msg.bot "Couldn't load plugin source for plugin #{pid} -- check your internet connection.", chan
-
                             plug = plugin[1]
                             pid = plug.id
                             confetti.io.writeLocal "plugin-#{pid}.js", resp
@@ -45,16 +39,15 @@ do ->
 
                             confetti.msg.bot "Plugin #{plug.name} updated to version #{plug.version}!", chan
                             confetti.initPlugins pid
-            else
-                if verbose
-                    confetti.msg.bot "All plugins up to date.", chan
+                    , verbose
+            else if verbose
+                confetti.msg.bot "All plugins up to date.", chan
+        , verbose
 
     confetti.updatePlugins = updatePlugins
-    confetti.command 'plugincommands', ['Shows commands related to plugins.', 'send@plugincommands'], ->
-        confetti.cmdlist("Plugins", 'plugins addplugin removeplugin updateplugins', 'plugins')
 
     # TODO: Possibility for local plugins
-    confetti.command 'plugins', ["Displays a list of enabled and available plugins.", 'send@plugins'], (_, chan) ->
+    confetti.command 'plugins', "Displays a list of enabled and available plugins.", (_, chan) ->
         plugins = confetti.cache.get 'plugins'
         if plugins.length > 0
             confetti.msg.bold "Loaded Plugins <small>[#{plugins.length}]</small>", '', chan
@@ -67,12 +60,7 @@ do ->
             html += "<br>"
             confetti.msg.html html, chan
 
-        sys.webCall confetti.pluginsUrl + 'listing.json', (resp) ->
-            try
-                json = JSON.parse resp
-            catch ex
-                return confetti.msg.bot "Couldn't load available plugins listing -- check your internet connection.", chan
-
+        getListing chan, (json) ->
             len = json.length
             unless len
                 return confetti.msg.bot "No plugins are available.", chan
@@ -94,7 +82,7 @@ do ->
 
             confetti.msg.html html, chan
 
-    confetti.command 'addplugin', ['addplugin [plugin]', "Adds a plugin.", 'setmsg@addplugin name'], (data, chan) ->
+    confetti.command 'addplugin', {help: "Adds a plugin. The plugin's ID must be used (inside brackets).", args: ["id"]}, (data, chan) ->
         plugins = confetti.cache.get 'plugins'
         name = data
         data = data.toLowerCase()
@@ -104,12 +92,7 @@ do ->
         else if hasPlugin(data, plugins)
             return confetti.msg.bot "#{name} is already enabled as a plugin!"
 
-        sys.webCall confetti.pluginsUrl + 'listing.json', (resp) ->
-            try
-                json = JSON.parse resp
-            catch ex
-                return confetti.msg.bot "Couldn't load available plugins listing -- check your internet connection.", chan
-
+        getListing chan, (json) ->
             if json.length is 0
                 return confetti.msg.bot "No plugins are available.", chan
 
@@ -118,10 +101,7 @@ do ->
                 return confetti.msg.bot "That plugin is not available! Use the 'plugins' command to see a list of available plugins.", chan
 
             pid = plugin.id
-            sys.webCall confetti.pluginsUrl + "#{pid}/#{pid}.js", (file) ->
-                if not file
-                    return confetti.msg.bot "Couldn't load plugin source -- check your internet connection.", chan
-
+            getPluginFile pid, chan, (file) ->
                 confetti.io.writeLocal "plugin-#{pid}.js", file
 
                 plugins.push plugin
@@ -130,7 +110,7 @@ do ->
                 confetti.initPlugins pid
                 confetti.msg.bot "Plugin <b>#{plugin.name}</b> added!", chan
 
-    confetti.command 'removeplugin', ['removeplugin [plugin]', "Removes a plugin.", 'setmsg@removeplugin plugin'], (data) ->
+    confetti.command 'removeplugin', {help: "Removes a plugin. The plugin's ID must be used (inside brackets).", args: ["plugin"]}, (data) ->
         name = data
         data = data.toLowerCase()
         plugins = confetti.cache.get 'plugins'
@@ -147,7 +127,7 @@ do ->
 
         confetti.msg.bot "Plugin <b>#{plugin.name}</b> removed."
 
-    confetti.command 'updateplugins', ['Updates your plugins to the latest version.', 'send@updateplugins'], (_, chan) ->
+    confetti.command 'updateplugins', "Updates your plugins to their latest versions.", (_, chan) ->
         if sys.isSafeScripts()
             return confetti.msg.bot "Please disable Safe Scripts before using this command."
 

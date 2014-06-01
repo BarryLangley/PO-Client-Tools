@@ -22,14 +22,10 @@ do ->
         if (confetti.cache.get('lastupdatetime') + (6 * 60 * 60)) > now
             return
 
-        confetti.updatePlugins()
-        sys.webCall "#{confetti.scriptUrl}script/version.json", (resp) ->
-            confetti.cache.store('lastupdatetime', now).save()
-            try
-                json = JSON.parse resp
-            catch ex
-                return
+        confetti.cache.store('lastupdatetime', now).save()
 
+        confetti.updatePlugins()
+        confetti.io.getRemoteJson "#{confetti.scriptUrl}script/version.json", "", (json) ->
             if differentVersion(confetti.version, json)
                 updateScript()
 
@@ -37,10 +33,7 @@ do ->
     differentVersion = (ov, nv) -> versionFormat(ov) isnt versionFormat(nv)
 
     updateScript = ->
-        sys.webCall confetti.scriptUrl + 'scripts.js', (file) ->
-            unless file
-                return confetti.msg.bot "Couldn't load script, check your internet connection."
-
+        confetti.io.getRemoteFile "#{confetti.scriptUrl}scripts.js", ["Couldn't load script, check your internet connection"], (file) ->
             confetti.io.write sys.scriptsFolder + 'scripts.js', file
             confetti.io.reloadScript yes
             confetti.msg.bot "Script updated!"
@@ -54,10 +47,7 @@ do ->
     confetti.autoUpdate = autoUpdate
     confetti.updateScript = updateScript
 
-    confetti.command 'scriptcommands', ['Shows commands related to Confetti (the script).', 'send@scriptcommands'], ->
-        confetti.cmdlist("Confetti", 'updatescript autoupdate changelog version', 'script')
-
-    confetti.command 'updatescript', ['Updates the script to the latest available version.', 'send@updatescript'], ->
+    confetti.command 'updatescript', "Updates the script to the latest available version.", ->
         if sys.isSafeScripts()
             return confetti.msg.bot "Please disable Safe Scripts before using this command."
 
@@ -66,21 +56,18 @@ do ->
 
     confetti.alias 'updatescripts', 'updatescript'
 
-    confetti.command 'autoupdate', ["Toggles whether if the script should automatically look for updates (every 6 hours).", 'send@autoupdate'], ->
+    confetti.command 'autoupdate', "Toggles whether if the script should automatically look for updates (every 6 hours).", ->
         confetti.cache.store('autoupdate', !confetti.cache.read('autoupdate')).save()
         confetti.msg.bot "Automatic updates are now #{if confetti.cache.read('autoupdate') then 'enabled' else 'disabled'}."
 
-    confetti.command 'version', ["Shows the script's version.", 'send@version'], ->
+    confetti.command 'version', "Shows the script's version.", ->
         vers = versionFormat(confetti.version)
         confetti.msg.bot "Your copy of Confetti is currently on version #{vers}."
         if changelog[vers]
             confetti.msg.bot "What's new: #{changelog[vers]}"
 
-    confetti.command 'changelog', ["Shows a changelog containing the major changes in each version.", 'send@changelog'], ->
+    confetti.command 'changelog', "Shows a changelog containing the major changes in each version.", ->
         for ver, msg of changelog
             confetti.msg.bot "#{ver}: #{msg}"
 
-    confetti.hook 'initCache', ->
-        confetti.cache
-            .store('autoupdate', yes, confetti.cache.once)
-            .store('lastupdatetime', sys.time(), confetti.cache.once)
+    confetti.initFields {autoupdate: yes, lastupdatetime: sys.time()}

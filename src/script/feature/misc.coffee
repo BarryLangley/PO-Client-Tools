@@ -1,6 +1,6 @@
 do ->
     # Other bits
-    confetti.command 'eval', ['eval [code]', "Evaluates a JavaScript Program.", 'setmsg@eval code'], (data, chan) ->
+    confetti.command 'eval', {help: "Evaluates a JavaScript Program.", args: ["code"]}, (data, chan) ->
         try
             res = eval(data)
             confetti.msg.bold "Eval returned", sys.htmlEscape(res), chan
@@ -11,7 +11,7 @@ do ->
     confetti.command 'evalp', 'eval'
 
     # TODO: Name verification
-    confetti.command 'imp', ['imp [name]', "Changes your name to [name]. If the name is deemed invalid, you will be kicked, so be careful!", 'setmsg@imp name'], (data) ->
+    confetti.command 'imp', {help: "Changes your name to [name]. If the name is deemed invalid, you will be kicked, so be careful!", args: ["name"]}, (data) ->
         if not data
             return confetti.msg.bot "Specify a name!"
         else if data.length > 20
@@ -22,15 +22,15 @@ do ->
 
     confetti.alias 'changename', 'imp'
 
-    confetti.command 'flip', ["Flips a coin in virtual life.", 'send@flip'], ->
+    confetti.command 'flip', "Flips a coin in virtual life.", ->
         confetti.msg.bot "The coin landed #{if Math.random() > 0.5 then 'heads' else 'tails'}!"
 
     confetti.alias 'coin', 'flip'
 
-    confetti.command 'html', ['html [code]', "Displays some HTML [code] (for testing purposes).", 'setmsg@html code'], (data, chan) ->
+    confetti.command 'html', {help: "Displays some HTML [code] (for testing purposes).", args: ["code"]}, (data, chan) ->
         confetti.msg.html data, chan
 
-    confetti.command 'chan', ['chan [name]', "Joins, jumps to, or creates a channel.", 'setmsg@chan name'], (data) ->
+    confetti.command 'chan', {help: "Joins, jumps to, or creates a channel.", args: ["name"]}, (data) ->
         name = data
         data = data.toLowerCase()
 
@@ -71,11 +71,9 @@ do ->
                 confetti.msg.bot "Channel #{name} created.", cid
             , 500, no # Wait 500 ms
 
-    confetti.alias 'joinchan', 'chan'
-    confetti.alias 'channel', 'chan'
-    confetti.alias 'goto', 'chan'
+    confetti.alias 'joinchan, channel, goto', 'chan'
 
-    confetti.command 'pm', ['pm [name]', 'Opens a PM session with [name].', 'setmsg@pm name'], (data) ->
+    confetti.command 'pm', {help: "Opens a PM session with [name].", args: ["name"]}, (data) ->
         unless data
             return confetti.msg.bot "Specify a name!"
 
@@ -87,7 +85,7 @@ do ->
 
         Client.startPM(id)
 
-    confetti.command 'info', ['info [name]', "Shows some info (like id, color, auth level) for a given user. If you are a moderator, also opens a control panel for the player.", 'setmsg@info name'], (data, chan) ->
+    confetti.command 'info', {help: "Shows some info (like id, color, auth level) for a given user. If you are a moderator, this will also open a control panel for the player.", args: ["name"]}, (data, chan) ->
         id = Client.id data
 
         if Client.ownAuth() > 0
@@ -113,7 +111,7 @@ do ->
 
     confetti.alias 'userinfo', 'info'
 
-    confetti.command 'myip', ['Shows your IP address.', 'send@myip'], ->
+    confetti.command 'myip', "Shows your IP address.", ->
         sys.webCall 'http://bot.whatismyipaddress.com/', (resp) ->
             unless resp
                 return confetti.msg.bot "Couldn't obtain your IP address - check your internet connection."

@@ -16,43 +16,6 @@ do ->
 
         return args
 
-    # Commands
-    commands = {}
-    aliases  = {}
-    reverseAliases = {}
-
-    confetti.command = (name, help, handler) ->
-        usage    = ""
-        desc     = ""
-        complete = ""
-
-        if help.length is 2
-            usage = name
-            [desc, complete] = help
-        else
-            [usage, desc, complete] = help
-
-        commands[name] = {name, help, handler, info: {usage, desc, complete}}
-
-    confetti.alias = (alias, command) ->
-        aliases[alias] = command
-        reverseAliases[command] ?= []
-        reverseAliases[command].push(alias)
-
-    confetti.aliasesOf = (command) -> reverseAliases[command]
-    confetti.execCommand = (command, data, message, chan) ->
-        # Use the alias if available
-        if aliases.hasOwnProperty(command)
-            command = aliases[command]
-
-        if commands.hasOwnProperty(command)
-            commands[command].handler(data, chan, message)
-        else
-            confetti.msg.bot "The command '#{command}' doesn't exist!"
-
-    confetti.commands = commands
-    confetti.aliases  = aliases
-
     # Initialize cache
     # This is done in one function to mimimize the amount of file rewrites (especially on first use).
     # save is called last and should not be called by one of the hooks
@@ -74,6 +37,11 @@ do ->
 
         confetti.callHooks 'initCache'
         confetti.cache.save()
+
+    confetti.initFields = (fields) ->
+        confetti.hook 'initCache', ->
+            for field, value of fields
+                confetti.cache.store(field, value, confetti.cache.once)
 
     # Also supports loading a single plugin.
     confetti.initPlugins = (id) ->

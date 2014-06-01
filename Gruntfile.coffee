@@ -23,7 +23,7 @@ module.exports = (grunt) ->
         'components/channel'
         'components/message'
         'components/confetti'
-        'components/commandlist'
+        'components/commands'
 
         'feature/*'
 

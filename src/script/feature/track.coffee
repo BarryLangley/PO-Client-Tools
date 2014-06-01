@@ -1,10 +1,6 @@
 do ->
-    # Command lists
-    confetti.command 'trackcommands', ['Shows commands related to tracking players (such as their aliases).', 'send@trackcommands'], ->
-        confetti.cmdlist("Tracking", 'track untrack tracked trackingresolve', 'track')
-
     # Commands
-    confetti.command 'tracked', ["Displays a list of tracked players.", 'send@tracked'], (_, chan) ->
+    confetti.command 'tracked', "Displays a list of tracked players.", (_, chan) ->
         tracked = confetti.cache.get 'tracked'
         numTracked = Object.keys(tracked).length
 
@@ -31,10 +27,9 @@ do ->
 
         confetti.msg.html html, chan
 
-    confetti.alias 'tracking', 'tracked'
-    confetti.alias 'trackinglist', 'tracked'
+    confetti.alias 'tracking, trackinglist', 'tracked'
 
-    confetti.command 'track', ['track [alt]:[name]', "Adds [alt] as an alt of [name] to your tracking list.", 'setmsg@track alt:name'], (data) ->
+    confetti.command 'track', {help: "Adds [alias] as an alias of [name] to your tracking list.", args: ["alias", "name"]}, (data) ->
         parts = data.split ':'
         parts[1] = '' unless parts[1]?
 
@@ -57,7 +52,7 @@ do ->
 
         confetti.msg.bot "#{altName} is now on your tracking list as an alt of #{confetti.player.name(name, no)}!"
 
-    confetti.command 'untrack', ['untrack [alt]', "Removes [alt] from your tracking list.", 'setmsg@untrack alt'], (data) ->
+    confetti.command 'untrack', {help: "Removes [alias] from your tracking list.", args: ["alias"]}, (data) ->
         data = data.toLowerCase()
         name = confetti.player.name(data, no)
         tracked = confetti.cache.get 'tracked'
@@ -70,12 +65,11 @@ do ->
 
         confetti.msg.bot "You removed #{name} from your tracking list!"
 
-    confetti.command 'trackingresolve', ["Toggles whether if tracked names should resolve to their real name (in lists &c.). Does not affect chat name resolution.", 'send@trackingresolve'], ->
+    confetti.command 'trackingresolve', "Toggles whether if tracked names should resolve to their real name (in lists &c.). Does not affect chat name resolution.", ->
         confetti.cache.store('trackingresolve', !confetti.cache.read('trackingresolve')).save()
         confetti.msg.bot "Tracking name resolve is now #{if confetti.cache.read('trackingresolve') then 'on' else 'off'}."
 
     # The initCache work is done in the main function due to it being used in core functionality.
-
     confetti.hook 'manipulateChanPlayerMessage', (from, fromId, message, playerMessage, [color, auth, authSymbol], chan, html, dirty) ->
         tracked     = confetti.cache.get 'tracked'
         trackedName = from.toLowerCase()

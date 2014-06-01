@@ -1,5 +1,5 @@
 do ->
-    confetti.command 'define', ['define [term]', 'Attempts to find a definition for the given term.', 'setmsg@define term'], (data, chan) ->
+    confetti.command 'define', {help: "Attempts to find a definition for the given term.", args: ["term"]}, (data, chan) ->
         unless data
             return confetti.msg.bot "You need to give me a term!"
 
