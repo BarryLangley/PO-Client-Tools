@@ -1570,7 +1570,7 @@ confetti.cacheFile = 'confetti.json';
     }
     plugins = confetti.cache.get('plugins');
     return getListing(chan, function(json) {
-      var plug, plugin, toUpdate, _i, _j, _len, _len1, _results;
+      var plug, plugin, toUpdate, _i, _len;
       toUpdate = [];
       for (_i = 0, _len = plugins.length; _i < _len; _i++) {
         plugin = plugins[_i];
@@ -1580,24 +1580,19 @@ confetti.cacheFile = 'confetti.json';
         }
       }
       if (toUpdate.length) {
-        _results = [];
-        for (_j = 0, _len1 = toUpdate.length; _j < _len1; _j++) {
-          plugin = toUpdate[_j];
-          _results.push(getPluginFile(plugin.id, chan, (function(plugin) {
-            return function(resp) {
-              var index, pid;
-              plug = plugin[1];
-              pid = plug.id;
-              confetti.io.writeLocal("plugin-" + pid + ".js", resp);
-              index = plugins.indexOf(plugin[0]);
-              plugins[index] = plug;
-              confetti.cache.store('plugins', plugins).save();
-              confetti.msg.bot("Plugin " + plug.name + " updated to version " + plug.version + "!", chan);
-              return confetti.initPlugins(pid);
-            };
-          })(plugin), verbose));
-        }
-        return _results;
+        return toUpdate.forEach(function(plugin) {
+          return getPluginFile(plugin.id, chan, function(resp) {
+            var index, pid;
+            plug = plugin[1];
+            pid = plug.id;
+            confetti.io.writeLocal("plugin-" + pid + ".js", resp);
+            index = plugins.indexOf(plugin[0]);
+            plugins[index] = plug;
+            confetti.cache.store('plugins', plugins).save();
+            confetti.msg.bot("Plugin " + plug.name + " updated to version " + plug.version + "!", chan);
+            return confetti.initPlugins(pid);
+          }, verbose);
+        });
       } else if (verbose) {
         return confetti.msg.bot("All plugins up to date.", chan);
       }
