@@ -26,19 +26,18 @@ do ->
                     toUpdate.push [plugin, plug]
 
             if toUpdate.length
-                for plugin in toUpdate
-                    getPluginFile plugin.id, chan, do (plugin) ->
-                        return (resp) ->
-                            plug = plugin[1]
-                            pid = plug.id
-                            confetti.io.writeLocal "plugin-#{pid}.js", resp
+                toUpdate.forEach (plugin) ->
+                    getPluginFile plugin.id, chan, (resp) ->
+                        plug = plugin[1]
+                        pid = plug.id
+                        confetti.io.writeLocal "plugin-#{pid}.js", resp
 
-                            index = plugins.indexOf(plugin[0])
-                            plugins[index] = plug # Replace plugin with the new one
-                            confetti.cache.store('plugins', plugins).save()
+                        index = plugins.indexOf(plugin[0])
+                        plugins[index] = plug # Replace plugin with the new one
+                        confetti.cache.store('plugins', plugins).save()
 
-                            confetti.msg.bot "Plugin #{plug.name} updated to version #{plug.version}!", chan
-                            confetti.initPlugins pid
+                        confetti.msg.bot "Plugin #{plug.name} updated to version #{plug.version}!", chan
+                        confetti.initPlugins pid
                     , verbose
             else if verbose
                 confetti.msg.bot "All plugins up to date.", chan

@@ -103,7 +103,8 @@
     }
     target = confetti.player.name(data).trim();
     msg = getInsult(target);
-    return confetti.msg.pm(id, msg);
+    confetti.msg.pm(id, msg);
+    return confetti.msg.bot("Insult: <a href=\"po:setmsg/" + msg + "\"><b>" + msg + "</b></a> <small>(click to copy to line edit)</small>");
   };
   insultp = function(data, chan) {
     var msg, target;
@@ -118,7 +119,7 @@
     }
     target = confetti.player.name(data).trim();
     msg = getInsult(target);
-    return confetti.msg.html('<a href="po:setmsg/#{msg}"><b>#{msg}</b></a> <small>(click to copy to line edit)</small>', chan);
+    return confetti.msg.html("<a href=\"po:setmsg/" + msg + "\"><b>" + msg + "</b></a> <small>(click to copy to line edit)</small>", chan);
   };
   confetti.updateInsults = updateInsults;
   confetti.command('insult', ['insult [name]', 'Insults the given target for the greater good of mankind.', 'setmsg@insult [name]'], insult);

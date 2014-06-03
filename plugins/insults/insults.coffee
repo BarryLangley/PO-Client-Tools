@@ -86,6 +86,7 @@ do ->
         msg = getInsult(target)
 
         confetti.msg.pm id, msg
+        confetti.msg.bot "Insult: <a href=\"po:setmsg/#{msg}\"><b>#{msg}</b></a> <small>(click to copy to line edit)</small>"
 
     insultp = (data, chan) ->
         unless data
@@ -100,7 +101,7 @@ do ->
         target = confetti.player.name(data).trim()
         msg = getInsult(target)
 
-        confetti.msg.html '<a href="po:setmsg/#{msg}"><b>#{msg}</b></a> <small>(click to copy to line edit)</small>', chan
+        confetti.msg.html "<a href=\"po:setmsg/#{msg}\"><b>#{msg}</b></a> <small>(click to copy to line edit)</small>", chan
 
     confetti.updateInsults = updateInsults
 
