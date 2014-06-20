@@ -107,7 +107,7 @@ do ->
 
     confetti.command 'insult', ['insult [name]', 'Insults the given target for the greater good of mankind.', 'setmsg@insult [name]'], insult
     confetti.command 'insultp', ['insultp [name]', 'Like insult, but prints the insult with a clickable copy link instead of sending it.', 'setmsg@insultp [name]'], insultp
-    confetti.command 'insultpm', ['insultp [name]', 'Like insult, but pms it to someone. You will not see the insult.', 'setmsg@insultpm [name]'], insultpm
+    confetti.command 'insultpm', ['insultpm [name]', 'Like insult, but pms it to someone. You will not see the insult.', 'setmsg@insultpm [name]'], insultpm
     confetti.command 'intellisult', ['intellisult [name]', 'Insults the given target for the greater good of mankind, with intelligence.', 'setmsg@intellisult [name]'], (data, chan) ->
         unless data
             return confetti.msg.bot "Specify a target!"
