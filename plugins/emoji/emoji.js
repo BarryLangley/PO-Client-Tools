@@ -2,7 +2,7 @@
   var checkEmoji, emoji, emojiRegex, parseEmoji, parsed, url;
   emoji = {};
   parsed = false;
-  url = 'http://theunknownone.github.io/PO-Client-Tools/plugins/emoji/emoji.json';
+  url = 'https://theunknownone.github.io/PO-Client-Tools/plugins/emoji/emoji.json';
   emojiRegex = /:([a-z0-9\+\-_]+):/g;
   checkEmoji = function(verbose) {
     var content, file;

@@ -40,7 +40,7 @@
   insultsLoaded = false;
   insultList = [];
   updateInsults = function(cb) {
-    return sys.webCall('http://theunknownone.github.io/Insults/src/insults.txt', function(req) {
+    return sys.webCall('https://theunknownone.github.io/Insults/src/insults.txt', function(req) {
       var ex, insult, insults;
       try {
         insults = req.split('\n');
@@ -51,7 +51,19 @@
         ex = _error;
         return confetti.msg.bot("Failed to load insults, check your internet connection.");
       }
-      if (confetti.cache.get('longinsults') !== true) {
+      if (confetti.cache.get('shortinsults') === true) {
+        insults = (function() {
+          var _i, _len, _results;
+          _results = [];
+          for (_i = 0, _len = insults.length; _i < _len; _i++) {
+            insult = insults[_i];
+            if (insult.length < 150) {
+              _results.push(insult);
+            }
+          }
+          return _results;
+        })();
+      } else if (confetti.cache.get('longinsults') === false) {
         insults = (function() {
           var _i, _len, _results;
           _results = [];
@@ -137,12 +149,18 @@
       return confetti.msg.bot("Insults have been updated.");
     });
   });
-  confetti.command('longinsults', ["Toggles whether if long insults (those > 400 characters) should be loaded as well.", 'send@longinsults'], function() {
+  confetti.command('longinsults', ["Toggles whether if long insults (those > 400 characters) will be used in the insult commands.", 'send@longinsults'], function() {
     confetti.cache.store('longinsults', !confetti.cache.read('longinsults')).save();
     return confetti.msg.bot("Long insults are now " + (confetti.cache.read('longinsults') ? 'enabled' : 'disabled') + ".");
   });
+  confetti.command('shortinsults', ["Toggles whether if only short insults (those < 150 characters) will in used in the insult commands.", 'send@shortinsults'], function() {
+    confetti.cache.store('shortinsults', !confetti.cache.read('shortinsults')).save();
+    return confetti.msg.bot("From now on " + (confetti.cache.read('shortinsults') ? 'only short insults will be used' : 'longer insults will also be used') + ".");
+  });
   confetti.hook('initCache', function() {
-    return confetti.cache.store('longinsults', false, confetti.cache.once);
+    var once;
+    once = confetti.cache.once;
+    return confetti.cache.store('longinsults', false, once).store('shortinsults', false, once);
   });
   confetti.command('insultcommands', ['Shows various commands related to insults.', 'send@insultcommands'], function() {
     return new confetti.CommandList("Insult Commands").cmds('insult insultp insultpm intellisult updateinsults longinsults').hooks('insult').render();

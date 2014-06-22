@@ -30,9 +30,9 @@ confetti.version = {
   minor: 0
 };
 
-confetti.scriptUrl = 'http://theunknownone.github.io/PO-Client-Tools/';
+confetti.scriptUrl = 'https://theunknownone.github.io/PO-Client-Tools/';
 
-confetti.pluginsUrl = 'http://theunknownone.github.io/PO-Client-Tools/plugins/';
+confetti.pluginsUrl = 'https://theunknownone.github.io/PO-Client-Tools/plugins/';
 
 confetti.dataDir = sys.scriptsFolder;
 

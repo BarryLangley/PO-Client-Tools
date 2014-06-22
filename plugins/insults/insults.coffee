@@ -35,7 +35,7 @@ do ->
     insultList = []
 
     updateInsults = (cb) ->
-        sys.webCall 'http://theunknownone.github.io/Insults/src/insults.txt', (req) ->
+        sys.webCall 'https://theunknownone.github.io/Insults/src/insults.txt', (req) ->
             try
                 insults = req.split '\n'
                 if insults[insults.length - 1] is ''
@@ -43,8 +43,11 @@ do ->
             catch ex
                 return confetti.msg.bot "Failed to load insults, check your internet connection."
 
-            unless confetti.cache.get('longinsults') is yes
+            if confetti.cache.get('shortinsults') is yes
+                insults = (insult for insult in insults when insult.length < 150)
+            else if confetti.cache.get('longinsults') is no
                 insults = (insult for insult in insults when insult.length < 400)
+
             insultList = insults
             insultsLoaded = yes
             cb() if cb?
@@ -119,12 +122,19 @@ do ->
             insultsLoaded = yes
             confetti.msg.bot "Insults have been updated."
 
-    confetti.command 'longinsults', ["Toggles whether if long insults (those > 400 characters) should be loaded as well.", 'send@longinsults'], ->
+    confetti.command 'longinsults', ["Toggles whether if long insults (those > 400 characters) will be used in the insult commands.", 'send@longinsults'], ->
         confetti.cache.store('longinsults', !confetti.cache.read('longinsults')).save()
         confetti.msg.bot "Long insults are now #{if confetti.cache.read('longinsults') then 'enabled' else 'disabled'}."
 
+    confetti.command 'shortinsults', ["Toggles whether if only short insults (those < 150 characters) will in used in the insult commands.", 'send@shortinsults'], ->
+        confetti.cache.store('shortinsults', !confetti.cache.read('shortinsults')).save()
+        confetti.msg.bot "From now on #{if confetti.cache.read('shortinsults') then 'only short insults will be used' else 'longer insults will also be used'}."
+
     confetti.hook 'initCache', ->
-        confetti.cache.store('longinsults', no, confetti.cache.once)
+        once = confetti.cache.once
+        confetti.cache
+            .store('longinsults', no, once)
+            .store('shortinsults', no, once)
 
     confetti.command 'insultcommands', ['Shows various commands related to insults.', 'send@insultcommands'], ->
         new confetti.CommandList("Insult Commands")
