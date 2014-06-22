@@ -43,17 +43,17 @@ do ->
             catch ex
                 return confetti.msg.bot "Failed to load insults, check your internet connection."
 
-            if confetti.cache.get('shortinsults') is yes
-                insults = (insult for insult in insults when insult.length < 150)
-            else if confetti.cache.get('longinsults') is no
-                insults = (insult for insult in insults when insult.length < 400)
-
             insultList = insults
             insultsLoaded = yes
             cb() if cb?
 
     getInsult = (target) ->
-        return confetti.util.random(insultList)
+        if confetti.cache.get('shortinsults') is yes
+            insults = (insult for insult in insultList when insult.length < 150)
+        else if confetti.cache.get('longinsults') is no
+            insults = (insult for insult in insultList when insult.length < 400)
+
+        return confetti.util.random(insults)
             .replace(/\{name\}/g, target.toLowerCase())
             .replace(/\{Name\}/g, target)
             .replace(/\{NAME\}/g, target.toUpperCase())

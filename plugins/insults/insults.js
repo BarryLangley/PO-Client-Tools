@@ -41,7 +41,7 @@
   insultList = [];
   updateInsults = function(cb) {
     return sys.webCall('https://theunknownone.github.io/Insults/src/insults.txt', function(req) {
-      var ex, insult, insults;
+      var ex, insults;
       try {
         insults = req.split('\n');
         if (insults[insults.length - 1] === '') {
@@ -51,31 +51,6 @@
         ex = _error;
         return confetti.msg.bot("Failed to load insults, check your internet connection.");
       }
-      if (confetti.cache.get('shortinsults') === true) {
-        insults = (function() {
-          var _i, _len, _results;
-          _results = [];
-          for (_i = 0, _len = insults.length; _i < _len; _i++) {
-            insult = insults[_i];
-            if (insult.length < 150) {
-              _results.push(insult);
-            }
-          }
-          return _results;
-        })();
-      } else if (confetti.cache.get('longinsults') === false) {
-        insults = (function() {
-          var _i, _len, _results;
-          _results = [];
-          for (_i = 0, _len = insults.length; _i < _len; _i++) {
-            insult = insults[_i];
-            if (insult.length < 400) {
-              _results.push(insult);
-            }
-          }
-          return _results;
-        })();
-      }
       insultList = insults;
       insultsLoaded = true;
       if (cb != null) {
@@ -84,7 +59,33 @@
     });
   };
   getInsult = function(target) {
-    return confetti.util.random(insultList).replace(/\{name\}/g, target.toLowerCase()).replace(/\{Name\}/g, target).replace(/\{NAME\}/g, target.toUpperCase());
+    var insult, insults;
+    if (confetti.cache.get('shortinsults') === true) {
+      insults = (function() {
+        var _i, _len, _results;
+        _results = [];
+        for (_i = 0, _len = insultList.length; _i < _len; _i++) {
+          insult = insultList[_i];
+          if (insult.length < 150) {
+            _results.push(insult);
+          }
+        }
+        return _results;
+      })();
+    } else if (confetti.cache.get('longinsults') === false) {
+      insults = (function() {
+        var _i, _len, _results;
+        _results = [];
+        for (_i = 0, _len = insultList.length; _i < _len; _i++) {
+          insult = insultList[_i];
+          if (insult.length < 400) {
+            _results.push(insult);
+          }
+        }
+        return _results;
+      })();
+    }
+    return confetti.util.random(insults).replace(/\{name\}/g, target.toLowerCase()).replace(/\{Name\}/g, target).replace(/\{NAME\}/g, target.toUpperCase());
   };
   insult = function(data, chan) {
     var msg, target;

@@ -1581,10 +1581,11 @@ confetti.cacheFile = 'confetti.json';
       }
       if (toUpdate.length) {
         return toUpdate.forEach(function(plugin) {
-          return getPluginFile(plugin.id, chan, function(resp) {
-            var index, pid;
-            plug = plugin[1];
-            pid = plug.id;
+          var pid;
+          plug = plugin[1];
+          pid = plug.id;
+          return getPluginFile(pid, chan, function(resp) {
+            var index;
             confetti.io.writeLocal("plugin-" + pid + ".js", resp);
             index = plugins.indexOf(plugin[0]);
             plugins[index] = plug;
