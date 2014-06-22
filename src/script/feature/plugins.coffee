@@ -27,9 +27,9 @@ do ->
 
             if toUpdate.length
                 toUpdate.forEach (plugin) ->
-                    getPluginFile plugin.id, chan, (resp) ->
-                        plug = plugin[1]
-                        pid = plug.id
+                    plug = plugin[1]
+                    pid = plug.id
+                    getPluginFile pid, chan, (resp) ->
                         confetti.io.writeLocal "plugin-#{pid}.js", resp
 
                         index = plugins.indexOf(plugin[0])
