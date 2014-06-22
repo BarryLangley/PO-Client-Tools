@@ -1,7 +1,7 @@
 [{
     "id": "insults",
     "name": "Insults",
-    "version": "1.0.12"
+    "version": "1.0.13"
 }, {
     "id": "pokedex",
     "name": "Pok&eacute;dex",
@@ -13,7 +13,7 @@
 }, {
     "id": "emoji",
     "name": "Emoji",
-    "version": "1.0.2"
+    "version": "1.0.3"
 }, {
     "id": "pusestats",
     "name": "Pok&eacute;mon Usage Statistics",

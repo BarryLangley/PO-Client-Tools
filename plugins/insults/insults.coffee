@@ -138,7 +138,7 @@ do ->
 
     confetti.command 'insultcommands', ['Shows various commands related to insults.', 'send@insultcommands'], ->
         new confetti.CommandList("Insult Commands")
-            .cmds('insult insultp insultpm intellisult updateinsults longinsults').hooks('insult')
+            .cmds('insult insultp insultpm intellisult updateinsults shortinsults longinsults').hooks('insult')
             .render()
 
     confetti.hook 'commands:list', (template) ->

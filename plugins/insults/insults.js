@@ -163,7 +163,7 @@
     return confetti.cache.store('longinsults', false, once).store('shortinsults', false, once);
   });
   confetti.command('insultcommands', ['Shows various commands related to insults.', 'send@insultcommands'], function() {
-    return new confetti.CommandList("Insult Commands").cmds('insult insultp insultpm intellisult updateinsults longinsults').hooks('insult').render();
+    return new confetti.CommandList("Insult Commands").cmds('insult insultp insultpm intellisult updateinsults shortinsults longinsults').hooks('insult').render();
   });
   return confetti.hook('commands:list', function(template) {
     return template.cmd('insultcommands');
