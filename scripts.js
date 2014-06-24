@@ -1501,6 +1501,8 @@ confetti.cacheFile = 'confetti.json';
     }
   });
   confetti.alias('userinfo', 'info');
+  confetti.alias('controlpanel', 'info');
+  confetti.alias('cp', 'info');
   return confetti.command('myip', "Shows your IP address.", function() {
     return sys.webCall('http://bot.whatismyipaddress.com/', function(resp) {
       if (!resp) {

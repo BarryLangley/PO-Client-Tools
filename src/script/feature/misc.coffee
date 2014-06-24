@@ -125,6 +125,8 @@ do ->
             confetti.msg.html "#{confetti.msg.bullet} <b>Avatar</b>: #{avatar}<br>#{confetti.msg.indent}<img src='trainer:#{avatar}'>", chan
 
     confetti.alias 'userinfo', 'info'
+    confetti.alias 'controlpanel', 'info'
+    confetti.alias 'cp', 'info'
 
     confetti.command 'myip', "Shows your IP address.", ->
         sys.webCall 'http://bot.whatismyipaddress.com/', (resp) ->
