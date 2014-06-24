@@ -8,7 +8,7 @@ do ->
             .hooks('categories')
             .whiteline()
 
-            .cmds('reconnect define translate news imp info chan idle pm flip myip').hooks('misc')
+            .cmds('reconnect define translate news imp info chan idle pm flip myip teambuilder findbattle').hooks('misc')
             .cmds('html eval').hooks('dev')
             .render()
 

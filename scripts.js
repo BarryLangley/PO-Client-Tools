@@ -1340,7 +1340,7 @@ confetti.cacheFile = 'confetti.json';
 
 (function() {
   confetti.command('commands', "Shows this command list.", function() {
-    return new confetti.CommandList("Commands").group("Command Lists").cmds('commands scriptcommands plugincommands friendcommands blockcommands trackcommands flashcommands configcommands').hooks('list').group("Player Symbols").cmds('authsymbols authsymbol').hooks('playersymbols').hooks('categories').whiteline().cmds('reconnect define translate news imp info chan idle pm flip myip').hooks('misc').cmds('html eval').hooks('dev').render();
+    return new confetti.CommandList("Commands").group("Command Lists").cmds('commands scriptcommands plugincommands friendcommands blockcommands trackcommands flashcommands configcommands').hooks('list').group("Player Symbols").cmds('authsymbols authsymbol').hooks('playersymbols').hooks('categories').whiteline().cmds('reconnect define translate news imp info chan idle pm flip myip teambuilder findbattle').hooks('misc').cmds('html eval').hooks('dev').render();
   });
   confetti.alias('commandlist', 'commands');
   confetti.command('configcommands', "Shows various commands that change your settings.", function() {
@@ -1413,6 +1413,14 @@ confetti.cacheFile = 'confetti.json';
     Client.goAway(away);
     return confetti.msg.bot("You are " + (away ? 'now idle' : 'no longer idle') + ".");
   });
+  confetti.command('teambuilder', "Opens the teambuilder.", function() {
+    return Client.openTeamBuilder();
+  });
+  confetti.alias('tb', 'teambuilder');
+  confetti.command('findbattle', "Opens the find battle dialog.", function() {
+    return Client.openBattleFinder();
+  });
+  confetti.alias('fb', 'findbattle');
   confetti.command('chan', {
     help: "Joins, jumps to, or creates a channel.",
     args: ["name"]

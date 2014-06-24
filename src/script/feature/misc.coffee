@@ -35,6 +35,16 @@ do ->
         Client.goAway(away)
         confetti.msg.bot "You are #{if away then 'now idle' else 'no longer idle'}."
 
+    confetti.command 'teambuilder', "Opens the teambuilder.", ->
+        Client.openTeamBuilder()
+
+    confetti.alias 'tb', 'teambuilder'
+
+    confetti.command 'findbattle', "Opens the find battle dialog.", ->
+        Client.openBattleFinder()
+
+    confetti.alias 'fb', 'findbattle'
+
     confetti.command 'chan', {help: "Joins, jumps to, or creates a channel.", args: ["name"]}, (data) ->
         name = data
         data = data.toLowerCase()
