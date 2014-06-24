@@ -1340,7 +1340,7 @@ confetti.cacheFile = 'confetti.json';
 
 (function() {
   confetti.command('commands', "Shows this command list.", function() {
-    return new confetti.CommandList("Commands").group("Command Lists").cmds('commands scriptcommands plugincommands friendcommands blockcommands trackcommands flashcommands configcommands').hooks('list').group("Player Symbols").cmds('authsymbols authsymbol').hooks('playersymbols').hooks('categories').whiteline().cmds('reconnect define translate news imp info chan pm flip myip').hooks('misc').cmds('html eval').hooks('dev').render();
+    return new confetti.CommandList("Commands").group("Command Lists").cmds('commands scriptcommands plugincommands friendcommands blockcommands trackcommands flashcommands configcommands').hooks('list').group("Player Symbols").cmds('authsymbols authsymbol').hooks('playersymbols').hooks('categories').whiteline().cmds('reconnect define translate news imp info chan idle pm flip myip').hooks('misc').cmds('html eval').hooks('dev').render();
   });
   confetti.alias('commandlist', 'commands');
   confetti.command('configcommands', "Shows various commands that change your settings.", function() {
@@ -1406,6 +1406,10 @@ confetti.cacheFile = 'confetti.json';
     args: ["code"]
   }, function(data, chan) {
     return confetti.msg.html(data, chan);
+  });
+  confetti.command('idle', "Toggles your idle status.", function() {
+    Client.goAway(!Client.away());
+    return confetti.msg.bot("You are " + (Client.away() ? 'now idle' : 'no longer idle') + ".");
   });
   confetti.command('chan', {
     help: "Joins, jumps to, or creates a channel.",

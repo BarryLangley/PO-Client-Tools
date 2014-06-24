@@ -30,6 +30,10 @@ do ->
     confetti.command 'html', {help: "Displays some HTML [code] (for testing purposes).", args: ["code"]}, (data, chan) ->
         confetti.msg.html data, chan
 
+    confetti.command 'idle', "Toggles your idle status.", ->
+        Client.goAway(!Client.away())
+        confetti.msg.bot "You are #{if Client.away() then 'now idle' else 'no longer idle'}."
+
     confetti.command 'chan', {help: "Joins, jumps to, or creates a channel.", args: ["name"]}, (data) ->
         name = data
         data = data.toLowerCase()
