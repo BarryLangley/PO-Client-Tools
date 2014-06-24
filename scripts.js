@@ -1408,8 +1408,10 @@ confetti.cacheFile = 'confetti.json';
     return confetti.msg.html(data, chan);
   });
   confetti.command('idle', "Toggles your idle status.", function() {
-    Client.goAway(!Client.away());
-    return confetti.msg.bot("You are " + (Client.away() ? 'now idle' : 'no longer idle') + ".");
+    var away;
+    away = !Client.away();
+    Client.goAway(away);
+    return confetti.msg.bot("You are " + (away ? 'now idle' : 'no longer idle') + ".");
   });
   confetti.command('chan', {
     help: "Joins, jumps to, or creates a channel.",
