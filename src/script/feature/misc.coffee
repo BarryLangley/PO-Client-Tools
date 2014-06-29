@@ -100,29 +100,67 @@ do ->
 
         Client.startPM(id)
 
-    confetti.command 'info', {help: "Shows some info (like id, color, auth level) for a given user. If you are a moderator, this will also open a control panel for the player.", args: ["name"]}, (data, chan) ->
+    confetti.command 'info', {help: "Shows some info (like id, color, auth level) for a given user. If you are a moderator, this will also open a control panel for the player and display additional information.", args: ["name"]}, (data, chan) ->
         id = Client.id data
+        hasAuth = Client.ownAuth() >= 1
 
-        if Client.ownAuth() > 0
-            Client.controlPanel id
+        bullet = (title, msg) -> confetti.msg.html "#{confetti.msg.bullet} <b>#{title}</b>: #{msg}"
+        showAvatar = ->
+            if id isnt -1 and Client.player?
+                avatar = Client.player(id).avatar
+                bullet "Avatar", "#{avatar}<br>#{confetti.msg.indent}<img src='trainer:#{avatar}'>"
 
-            Network.getUserInfo data
+        if hasAuth
+            confetti.requestUserInfo data, (ui) ->
+                FlagOnline = 1
+                FlagBanned = 2
+                FlagMuted = 4
+                FlagNonExistant = 8
+                FlagTempBanned = 16
+
+                if ui.flags & FlagNonExistant
+                    return confetti.msg.bot "#{data} has not been on this server yet."
+
+                if id is -1
+                    confetti.msg.html "<timestamp/>#{ui.name} <small>#{if ui.flags & FlagOnline then 'Online' else 'Offline'}</small>"
+                    bullet "Auth", confetti.player.authToName(ui.auth) + " (#{auth})"
+
+                bullet "IP", ui.ip
+                bullet "Last Online", ui.date.replace('T', ' at ') + " (GMT)"
+                if ui.os
+                    bullet "Operating System", ui.os
+
+                mode = []
+                if ui.flags & FlagBanned
+                    mode.push 'Banned'
+                if ui.flags & FlagMuted
+                    mode.push 'Muted'
+                if ui.flags & FlagTempBanned
+                    mode.push 'Tempbanned'
+
+                if mode.length
+                    confetti.msg.html "<timestamp/> <b>#{mode.join('; ')}</b>"
+                showAvatar()
+
             Network.getBanList()
 
+            Client.controlPanel id
+
         if id is -1
-            return confetti.msg.bot "#{data} is offline, I can't fetch any information about them."
+            if !hasAuth
+                confetti.msg.bot "#{data} is offline, I can't fetch any information about them."
+            return
 
         name = confetti.player.fancyName id
         auth = Client.auth id
         color = Client.color id
 
         confetti.msg.html "<timestamp/>#{name} #{confetti.player.status(id)} <small>#{id}</small>"
-        confetti.msg.html "#{confetti.msg.bullet} <b>Auth</b>: #{confetti.player.authToName(auth)} (#{auth})"
-        confetti.msg.html "#{confetti.msg.bullet} <b>Color</b>: <b style='color:#{color}'>#{color}</b>"
+        bullet "Auth", confetti.player.authToName(auth) + " (#{auth})"
+        bullet "Color", "<b style='color:#{color}'>#{color}</b>"
 
-        if Client.player?
-            avatar = Client.player(id).avatar
-            confetti.msg.html "#{confetti.msg.bullet} <b>Avatar</b>: #{avatar}<br>#{confetti.msg.indent}<img src='trainer:#{avatar}'>", chan
+        unless hasAuth
+            showAvatar()
 
     confetti.alias 'userinfo', 'info'
     confetti.alias 'controlpanel', 'info'

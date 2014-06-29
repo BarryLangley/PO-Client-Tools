@@ -3,7 +3,7 @@ do ->
     autoReconnectTimer = -1
     attempts = 0
     stopReconnecting = no
-    forced = no
+    forceIgnore = no
 
     attemptToReconnect = ->
         if attempts >= 3
@@ -21,7 +21,7 @@ do ->
             stopReconnecting = no
 
     Network.disconnected.connect ->
-        if confetti.cache.get('autoreconnect') is on and autoReconnectTimer is -1 and forced isnt yes
+        if confetti.cache.get('autoreconnect') is on and autoReconnectTimer is -1 and forceIgnore is no
             confetti.msg.bot "Attempting to reconnect..."
             confetti.msg.notification "Disconnection detected, attempting to reconnect."
 
@@ -37,13 +37,13 @@ do ->
                     stopReconnecting = yes
             , 5000, yes
 
-        forced = no
+        forceIgnore = no
 
     confetti.command 'reconnect', "Forces a reconnect to the server.", ->
         confetti.msg.bot "Reconnecting to the server..."
 
         attempts = 0
-        forced = yes
+        forceIgnore = yes
         stopReconnecting = no
         Client.reconnect()
 

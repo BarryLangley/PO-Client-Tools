@@ -70,3 +70,20 @@ do ->
         if success
             confetti.callHooks 'initCache'
             confetti.cache.save()
+
+    # UserInfo resolution
+    infoRequests = {}
+    Network.userInfoReceived.connect (info) ->
+        name = info?.name.toLowerCase()
+        if info and infoRequests.hasOwnProperty(name)
+            (callback(info) for callback in infoRequests[name])
+            delete infoRequests[name]
+
+    confetti.requestUserInfo = (n, callback) ->
+        name = n.toLowerCase()
+
+        if infoRequests[name]
+            infoRequests[name].push(callback)
+        else
+            infoRequests[name] = [callback]
+            Network.getUserInfo(name)

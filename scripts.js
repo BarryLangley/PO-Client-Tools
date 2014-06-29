@@ -505,7 +505,7 @@ confetti.cacheFile = 'confetti.json';
 })();
 
 (function() {
-  var hooks;
+  var hooks, infoRequests;
   hooks = {};
   confetti._hooks = hooks;
   confetti.hook = function(name, func) {
@@ -549,7 +549,7 @@ confetti.cacheFile = 'confetti.json';
       return _results;
     });
   };
-  return confetti.initPlugins = function(id) {
+  confetti.initPlugins = function(id) {
     var ex, pid, plugin, plugins, src, success, _i, _len;
     plugins = confetti.cache.get('plugins');
     if (plugins.length === 0) {
@@ -583,6 +583,29 @@ confetti.cacheFile = 'confetti.json';
     if (success) {
       confetti.callHooks('initCache');
       return confetti.cache.save();
+    }
+  };
+  infoRequests = {};
+  Network.userInfoReceived.connect(function(info) {
+    var callback, name, _i, _len, _ref;
+    name = info != null ? info.name.toLowerCase() : void 0;
+    if (info && infoRequests.hasOwnProperty(name)) {
+      _ref = infoRequests[name];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        callback = _ref[_i];
+        callback(info);
+      }
+      return delete infoRequests[name];
+    }
+  });
+  return confetti.requestUserInfo = function(n, callback) {
+    var name;
+    name = n.toLowerCase();
+    if (infoRequests[name]) {
+      return infoRequests[name].push(callback);
+    } else {
+      infoRequests[name] = [callback];
+      return Network.getUserInfo(name);
     }
   };
 })();
@@ -1476,28 +1499,74 @@ confetti.cacheFile = 'confetti.json';
     return Client.startPM(id);
   });
   confetti.command('info', {
-    help: "Shows some info (like id, color, auth level) for a given user. If you are a moderator, this will also open a control panel for the player.",
+    help: "Shows some info (like id, color, auth level) for a given user. If you are a moderator, this will also open a control panel for the player and display additional information.",
     args: ["name"]
   }, function(data, chan) {
-    var auth, avatar, color, id, name;
+    var auth, bullet, color, hasAuth, id, name, showAvatar;
     id = Client.id(data);
-    if (Client.ownAuth() > 0) {
-      Client.controlPanel(id);
-      Network.getUserInfo(data);
+    hasAuth = Client.ownAuth() >= 1;
+    bullet = function(title, msg) {
+      return confetti.msg.html("" + confetti.msg.bullet + " <b>" + title + "</b>: " + msg);
+    };
+    showAvatar = function() {
+      var avatar;
+      if (id !== -1 && (Client.player != null)) {
+        avatar = Client.player(id).avatar;
+        return bullet("Avatar", "" + avatar + "<br>" + confetti.msg.indent + "<img src='trainer:" + avatar + "'>");
+      }
+    };
+    if (hasAuth) {
+      confetti.requestUserInfo(data, function(ui) {
+        var FlagBanned, FlagMuted, FlagNonExistant, FlagOnline, FlagTempBanned, mode;
+        FlagOnline = 1;
+        FlagBanned = 2;
+        FlagMuted = 4;
+        FlagNonExistant = 8;
+        FlagTempBanned = 16;
+        if (ui.flags & FlagNonExistant) {
+          return confetti.msg.bot("" + data + " has not been on this server yet.");
+        }
+        if (id === -1) {
+          confetti.msg.html("<timestamp/>" + ui.name + " <small>" + (ui.flags & FlagOnline ? 'Online' : 'Offline') + "</small>");
+          bullet("Auth", confetti.player.authToName(ui.auth) + (" (" + auth + ")"));
+        }
+        bullet("IP", ui.ip);
+        bullet("Last Online", ui.date.replace('T', ' at ') + " (GMT)");
+        if (ui.os) {
+          bullet("Operating System", ui.os);
+        }
+        mode = [];
+        if (ui.flags & FlagBanned) {
+          mode.push('Banned');
+        }
+        if (ui.flags & FlagMuted) {
+          mode.push('Muted');
+        }
+        if (ui.flags & FlagTempBanned) {
+          mode.push('Tempbanned');
+        }
+        if (mode.length) {
+          confetti.msg.html("<timestamp/> <b>" + (mode.join('; ')) + "</b>");
+        }
+        return showAvatar();
+      });
       Network.getBanList();
+      Client.controlPanel(id);
     }
     if (id === -1) {
-      return confetti.msg.bot("" + data + " is offline, I can't fetch any information about them.");
+      if (!hasAuth) {
+        confetti.msg.bot("" + data + " is offline, I can't fetch any information about them.");
+      }
+      return;
     }
     name = confetti.player.fancyName(id);
     auth = Client.auth(id);
     color = Client.color(id);
     confetti.msg.html("<timestamp/>" + name + " " + (confetti.player.status(id)) + " <small>" + id + "</small>");
-    confetti.msg.html("" + confetti.msg.bullet + " <b>Auth</b>: " + (confetti.player.authToName(auth)) + " (" + auth + ")");
-    confetti.msg.html("" + confetti.msg.bullet + " <b>Color</b>: <b style='color:" + color + "'>" + color + "</b>");
-    if (Client.player != null) {
-      avatar = Client.player(id).avatar;
-      return confetti.msg.html("" + confetti.msg.bullet + " <b>Avatar</b>: " + avatar + "<br>" + confetti.msg.indent + "<img src='trainer:" + avatar + "'>", chan);
+    bullet("Auth", confetti.player.authToName(auth) + (" (" + auth + ")"));
+    bullet("Color", "<b style='color:" + color + "'>" + color + "</b>");
+    if (!hasAuth) {
+      return showAvatar();
     }
   });
   confetti.alias('userinfo', 'info');
@@ -1710,11 +1779,11 @@ confetti.cacheFile = 'confetti.json';
 })();
 
 (function() {
-  var attemptToReconnect, attempts, autoReconnectTimer, forced, stopReconnecting;
+  var attemptToReconnect, attempts, autoReconnectTimer, forceIgnore, stopReconnecting;
   autoReconnectTimer = -1;
   attempts = 0;
   stopReconnecting = false;
-  forced = false;
+  forceIgnore = false;
   attemptToReconnect = function() {
     if (attempts >= 3) {
       return false;
@@ -1732,7 +1801,7 @@ confetti.cacheFile = 'confetti.json';
     }
   });
   Network.disconnected.connect(function() {
-    if (confetti.cache.get('autoreconnect') === true && autoReconnectTimer === -1 && forced !== true) {
+    if (confetti.cache.get('autoreconnect') === true && autoReconnectTimer === -1 && forceIgnore === false) {
       confetti.msg.bot("Attempting to reconnect...");
       confetti.msg.notification("Disconnection detected, attempting to reconnect.");
       autoReconnectTimer = sys.setTimer(function() {
@@ -1748,12 +1817,12 @@ confetti.cacheFile = 'confetti.json';
         }
       }, 5000, true);
     }
-    return forced = false;
+    return forceIgnore = false;
   });
   confetti.command('reconnect', "Forces a reconnect to the server.", function() {
     confetti.msg.bot("Reconnecting to the server...");
     attempts = 0;
-    forced = true;
+    forceIgnore = true;
     stopReconnecting = false;
     return Client.reconnect();
   });
