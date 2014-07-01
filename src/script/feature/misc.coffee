@@ -122,8 +122,8 @@ do ->
                     return confetti.msg.bot "#{data} has not been on this server yet."
 
                 if id is -1
-                    confetti.msg.html "<timestamp/>#{ui.name} <small>#{if ui.flags & FlagOnline then 'Online' else 'Offline'}</small>"
-                    bullet "Auth", confetti.player.authToName(ui.auth) + " (#{auth})"
+                    confetti.msg.html "<timestamp/><b>#{ui.name}</b> (<b>#{if ui.flags & FlagOnline then '<font color="green">Online</font>' else '<font color="red">Offline</font>'}</b>)"
+                    bullet "Auth", confetti.player.authToName(ui.auth) + " (#{ui.auth})"
 
                 bullet "IP", ui.ip
                 bullet "Last Online", ui.date.replace('T', ' at ') + " (GMT)"

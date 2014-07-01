@@ -1527,8 +1527,8 @@ confetti.cacheFile = 'confetti.json';
           return confetti.msg.bot("" + data + " has not been on this server yet.");
         }
         if (id === -1) {
-          confetti.msg.html("<timestamp/>" + ui.name + " <small>" + (ui.flags & FlagOnline ? 'Online' : 'Offline') + "</small>");
-          bullet("Auth", confetti.player.authToName(ui.auth) + (" (" + auth + ")"));
+          confetti.msg.html("<timestamp/><b>" + ui.name + "</b> (<b>" + (ui.flags & FlagOnline ? '<font color="green">Online</font>' : '<font color="red">Offline</font>') + "</b>)");
+          bullet("Auth", confetti.player.authToName(ui.auth) + (" (" + ui.auth + ")"));
         }
         bullet("IP", ui.ip);
         bullet("Last Online", ui.date.replace('T', ' at ') + " (GMT)");
