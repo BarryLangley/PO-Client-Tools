@@ -1246,7 +1246,7 @@ confetti.cacheFile = 'confetti.json';
         flashword = flashwords[_i];
         cat = flashwordCategory(flashword);
         if (cat.type === 'word') {
-          flashMessage = flashMessage.replace(new RegExp("\\b(" + (confetti.util.escapeRegex(cat.word)) + ")\\b(?![^\\s<]*>)", "i"), classhilight);
+          flashMessage = flashMessage.replace(new RegExp("\\b(" + (confetti.util.escapeRegex(cat.word)) + ")\\b(?![^\\s<]*>)", "gi"), classhilight);
         } else {
           flashMessage = flashMessage.replace(new RegExp(cat.regex, cat.flags), classhilight);
         }
@@ -2282,7 +2282,7 @@ confettiScript = {
       confetti.ignoreNextChanMessage = true;
       Client.printChannelMessage(finishedMessage, chan, true);
       if (flashes && playerMessage.indexOf('<ping/>') !== -1) {
-        return confetti.msg.notification(confetti.util.stripHtml("" + from + ": " + playerMessage), "Ping in #" + (Client.channelName(chan)), false, true);
+        return confetti.msg.notification(confetti.util.stripHtml("" + from + ": " + playerMessage), "Ping in #" + (Client.channelName(chan)), false);
       }
     }
   }

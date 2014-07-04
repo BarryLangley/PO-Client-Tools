@@ -73,7 +73,7 @@ do ->
             for flashword in flashwords
                 cat = flashwordCategory(flashword)
                 if cat.type is 'word'
-                    flashMessage = flashMessage.replace(new RegExp("\\b(#{confetti.util.escapeRegex(cat.word)})\\b(?![^\\s<]*>)", "i"), classhilight)
+                    flashMessage = flashMessage.replace(new RegExp("\\b(#{confetti.util.escapeRegex(cat.word)})\\b(?![^\\s<]*>)", "gi"), classhilight)
                 else
                     flashMessage = flashMessage.replace(new RegExp(cat.regex, cat.flags), classhilight)
 
