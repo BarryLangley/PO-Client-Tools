@@ -84,6 +84,8 @@
         }
         return _results;
       })();
+    } else {
+      insults = insultList;
     }
     return confetti.util.random(insults).replace(/\{name\}/g, target.toLowerCase()).replace(/\{Name\}/g, target).replace(/\{NAME\}/g, target.toUpperCase());
   };

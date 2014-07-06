@@ -52,6 +52,7 @@ do ->
             insults = (insult for insult in insultList when insult.length < 150)
         else if confetti.cache.get('longinsults') is no
             insults = (insult for insult in insultList when insult.length < 400)
+        else insults = insultList
 
         return confetti.util.random(insults)
             .replace(/\{name\}/g, target.toLowerCase())

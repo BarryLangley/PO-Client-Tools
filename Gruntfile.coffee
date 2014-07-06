@@ -2,15 +2,15 @@ module.exports = (grunt) ->
     #grunt.loadNpmTasks 'grunt-contrib-concat'
     grunt.loadNpmTasks 'grunt-contrib-coffee'
 
-    grunt.registerTask 'build-client', 'Builds the client script source.', (data) ->
+    grunt.registerTask 'confetti', 'Builds the client script source.', (data) ->
         grunt.task.run 'coffee:client'
 
-    grunt.registerTask 'build-plugins', 'Builds the client script plugins.', (data) ->
+    grunt.registerTask 'plugins', 'Builds the client script plugins.', (data) ->
         grunt.task.run 'coffee:pokedex-plugin'
         for plugin in plugins
             grunt.task.run "coffee:#{plugin}-plugin"
 
-    grunt.registerTask 'default', ['build-client']
+    grunt.registerTask 'default', ['confetti']
 
     # Add files to build here. Keep them in order.
     clientFiles = [

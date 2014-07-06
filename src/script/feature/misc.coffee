@@ -104,7 +104,7 @@ do ->
         id = Client.id data
         hasAuth = Client.ownAuth() >= 1
 
-        bullet = (title, msg) -> confetti.msg.html "#{confetti.msg.bullet} <b>#{title}</b>: #{msg}"
+        bullet = (title, msg) -> confetti.msg.html "#{confetti.msg.bullet} <b>#{title}</b>: #{msg}", chan
         showAvatar = ->
             if id isnt -1 and Client.player?
                 avatar = Client.player(id).avatar
@@ -119,7 +119,7 @@ do ->
                 FlagTempBanned = 16
 
                 if ui.flags & FlagNonExistant
-                    return confetti.msg.bot "#{data} has not been on this server yet."
+                    return confetti.msg.bot "#{data} has not been on this server yet.", chan
 
                 if id is -1
                     confetti.msg.html "<timestamp/><b>#{ui.name}</b> (<b>#{if ui.flags & FlagOnline then '<font color="green">Online</font>' else '<font color="red">Offline</font>'}</b>)"

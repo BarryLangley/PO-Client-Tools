@@ -1506,7 +1506,7 @@ confetti.cacheFile = 'confetti.json';
     id = Client.id(data);
     hasAuth = Client.ownAuth() >= 1;
     bullet = function(title, msg) {
-      return confetti.msg.html("" + confetti.msg.bullet + " <b>" + title + "</b>: " + msg);
+      return confetti.msg.html("" + confetti.msg.bullet + " <b>" + title + "</b>: " + msg, chan);
     };
     showAvatar = function() {
       var avatar;
@@ -1524,7 +1524,7 @@ confetti.cacheFile = 'confetti.json';
         FlagNonExistant = 8;
         FlagTempBanned = 16;
         if (ui.flags & FlagNonExistant) {
-          return confetti.msg.bot("" + data + " has not been on this server yet.");
+          return confetti.msg.bot("" + data + " has not been on this server yet.", chan);
         }
         if (id === -1) {
           confetti.msg.html("<timestamp/><b>" + ui.name + "</b> (<b>" + (ui.flags & FlagOnline ? '<font color="green">Online</font>' : '<font color="red">Offline</font>') + "</b>)");
