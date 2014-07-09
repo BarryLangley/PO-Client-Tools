@@ -56,12 +56,15 @@
     parse: parseEmoji,
     check: checkEmoji
   };
-  confetti.command('emoji', ["Toggles whether if emojis should be shown.", 'send@emoji'], function(_, chan) {
+  confetti.command('emoji', "Toggles whether if emojis should be shown.", function(_, chan) {
     checkEmoji();
     confetti.cache.store('emoji', !confetti.cache.read('emoji')).save();
     return confetti.msg.bot("Emojis are now " + (confetti.cache.read('emoji') ? 'enabled' : 'disabled') + ".", chan);
   });
-  confetti.command('emojimax', ["Changes how many emoji there may be in one message. Subsequent emoji won't be parsed. If no valid number is given, shows the current emoji max.", 'setmsg@emojimax [count]'], function(data, chan) {
+  confetti.command('emojimax', {
+    help: "Changes how many emoji there may be in one message. Subsequent emoji won't be parsed. If no valid number is given, shows the current emoji max.",
+    args: ["count"]
+  }, function(data, chan) {
     var count, num;
     checkEmoji();
     num = parseInt(data, 10);
@@ -76,14 +79,10 @@
     confetti.cache.store('emojimax', num).save();
     return confetti.msg.bot("" + num + " " + (num === 1 ? 'emoji is' : 'emojis are') + " now allowed per message.", chan);
   });
-  confetti.command('emojis', ["Shows the list of emoji.", 'send@emojis'], function(_, chan) {
+  confetti.command('emojis', "Shows the list of emoji.", function(_, chan) {
     checkEmoji();
     confetti.msg.bot("There are currently 872 emojis! You can look them up here:");
     return confetti.msg.bot("<a href='http://www.emoji-cheat-sheet.com/'>http://www.emoji-cheat-sheet.com/</a>", chan);
-  });
-  confetti.hook('initCache', function() {
-    confetti.cache.store('emoji', true, confetti.cache.once);
-    return confetti.cache.store('emojimax', 5, confetti.cache.once);
   });
   confetti.hook('commands:misc', function(template) {
     return template.cmds('emoji emojis');
@@ -98,6 +97,10 @@
       dirty = true;
     }
     return [from, fromId, message, playerMessage, [color, auth, authSymbol], chan, html, dirty];
+  });
+  confetti.initFields({
+    emoji: true,
+    emojimax: 5
   });
   return checkEmoji();
 })();

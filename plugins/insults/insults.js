@@ -119,7 +119,7 @@
     target = confetti.player.name(data).trim();
     msg = getInsult(target);
     confetti.msg.pm(id, msg);
-    return confetti.msg.bot("Insult: <a href=\"po:setmsg/" + msg + "\"><b>" + msg + "</b></a> <small>(click to copy to line edit)</small>");
+    return confetti.msg.bot("Insult to " + target + ": <a href=\"po:setmsg/" + msg + "\"><b>" + msg + "</b></a>");
   };
   insultp = function(data, chan) {
     var msg, target;
@@ -137,10 +137,22 @@
     return confetti.msg.html("<a href=\"po:setmsg/" + msg + "\"><b>" + msg + "</b></a> <small>(click to copy to line edit)</small>", chan);
   };
   confetti.updateInsults = updateInsults;
-  confetti.command('insult', ['insult [name]', 'Insults the given target for the greater good of mankind.', 'setmsg@insult [name]'], insult);
-  confetti.command('insultp', ['insultp [name]', 'Like insult, but prints the insult with a clickable copy link instead of sending it.', 'setmsg@insultp [name]'], insultp);
-  confetti.command('insultpm', ['insultpm [name]', 'Like insult, but pms it to someone. You will not see the insult.', 'setmsg@insultpm [name]'], insultpm);
-  confetti.command('intellisult', ['intellisult [name]', 'Insults the given target for the greater good of mankind, with intelligence.', 'setmsg@intellisult [name]'], function(data, chan) {
+  confetti.command('insult', {
+    help: "Insults the given target for the greater good of mankind.",
+    args: ["name"]
+  }, insult);
+  confetti.command('insultp', {
+    help: "Like insult, but prints the insult with a clickable copy link instead of sending it.",
+    args: ["name"]
+  }, insultp);
+  confetti.command('insultpm', {
+    help: "Like insult, but pms it to someone. You will not see the insult in the PM window.",
+    args: ["name"]
+  }, insultpm);
+  confetti.command('intellisult', {
+    help: "Insults the given target for the greater good of mankind, with intelligence.",
+    args: ["name"]
+  }, function(data, chan) {
     if (!data) {
       return confetti.msg.bot("Specify a target!");
     }
@@ -152,23 +164,22 @@
       return confetti.msg.bot("Insults have been updated.");
     });
   });
-  confetti.command('longinsults', ["Toggles whether if long insults (those > 400 characters) will be used in the insult commands.", 'send@longinsults'], function() {
+  confetti.command('longinsults', "Toggles whether if long insults (those > 400 characters) will be used in the insult commands.", function() {
     confetti.cache.store('longinsults', !confetti.cache.read('longinsults')).save();
     return confetti.msg.bot("Long insults are now " + (confetti.cache.read('longinsults') ? 'enabled' : 'disabled') + ".");
   });
-  confetti.command('shortinsults', ["Toggles whether if only short insults (those < 150 characters) will in used in the insult commands.", 'send@shortinsults'], function() {
+  confetti.command('shortinsults', "Toggles whether if only short insults (those < 150 characters) will in used in the insult commands.", function() {
     confetti.cache.store('shortinsults', !confetti.cache.read('shortinsults')).save();
     return confetti.msg.bot("From now on " + (confetti.cache.read('shortinsults') ? 'only short insults will be used' : 'longer insults will also be used') + ".");
-  });
-  confetti.hook('initCache', function() {
-    var once;
-    once = confetti.cache.once;
-    return confetti.cache.store('longinsults', false, once).store('shortinsults', false, once);
   });
   confetti.command('insultcommands', ['Shows various commands related to insults.', 'send@insultcommands'], function() {
     return new confetti.CommandList("Insult Commands").cmds('insult insultp insultpm intellisult updateinsults shortinsults longinsults').hooks('insult').render();
   });
-  return confetti.hook('commands:list', function(template) {
+  confetti.hook('commands:list', function(template) {
     return template.cmd('insultcommands');
+  });
+  return confetti.initFields({
+    longinsults: false,
+    shortinsults: false
   });
 })();

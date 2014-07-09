@@ -80,9 +80,6 @@ do ->
         confetti.cache.store('aoctaunts', !confetti.cache.read('aoctaunts')).save()
         confetti.msg.bot "AoC Taunts are now #{if confetti.cache.read('aoctaunts') then 'enabled' else 'disabled'}."
 
-    confetti.hook 'initCache', ->
-        confetti.cache.store('aoctaunts', yes, confetti.cache.once)
-
     confetti.hook 'commands:misc', (template) ->
         template.cmd 'aoctaunts'
 
@@ -97,4 +94,5 @@ do ->
         playTaunt(message)
         [tar, message, dirty]
 
+    confetti.initFields {aoctaunts: yes}
     checkTaunts()

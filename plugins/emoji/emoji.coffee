@@ -52,13 +52,13 @@ do ->
         parse: parseEmoji
         check: checkEmoji
 
-    confetti.command 'emoji', ["Toggles whether if emojis should be shown.", 'send@emoji'], (_, chan) ->
+    confetti.command 'emoji', "Toggles whether if emojis should be shown.", (_, chan) ->
         checkEmoji()
 
         confetti.cache.store('emoji', !confetti.cache.read('emoji')).save()
         confetti.msg.bot "Emojis are now #{if confetti.cache.read('emoji') then 'enabled' else 'disabled'}.", chan
 
-    confetti.command 'emojimax', ["Changes how many emoji there may be in one message. Subsequent emoji won't be parsed. If no valid number is given, shows the current emoji max.", 'setmsg@emojimax [count]'], (data, chan) ->
+    confetti.command 'emojimax', {help: "Changes how many emoji there may be in one message. Subsequent emoji won't be parsed. If no valid number is given, shows the current emoji max.", args: ["count"]}, (data, chan) ->
         checkEmoji()
 
         num = parseInt(data, 10)
@@ -73,15 +73,11 @@ do ->
         confetti.cache.store('emojimax', num).save()
         confetti.msg.bot "#{num} #{if num is 1 then 'emoji is' else 'emojis are'} now allowed per message.", chan
 
-    confetti.command 'emojis', ["Shows the list of emoji.", 'send@emojis'], (_, chan) ->
+    confetti.command 'emojis', "Shows the list of emoji.", (_, chan) ->
         checkEmoji()
 
         confetti.msg.bot "There are currently 872 emojis! You can look them up here:"
         confetti.msg.bot "<a href='http://www.emoji-cheat-sheet.com/'>http://www.emoji-cheat-sheet.com/</a>", chan
-
-    confetti.hook 'initCache', ->
-        confetti.cache.store('emoji', yes, confetti.cache.once)
-        confetti.cache.store('emojimax', 5, confetti.cache.once)
 
     confetti.hook 'commands:misc', (template) ->
         template.cmds('emoji emojis')
@@ -94,4 +90,6 @@ do ->
             dirty = yes
 
         [from, fromId, message, playerMessage, [color, auth, authSymbol], chan, html, dirty]
+
+    confetti.initFields {emoji: yes, emojimax: 5}
     checkEmoji()

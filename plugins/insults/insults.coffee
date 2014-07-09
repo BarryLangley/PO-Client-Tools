@@ -90,7 +90,7 @@ do ->
         msg = getInsult(target)
 
         confetti.msg.pm id, msg
-        confetti.msg.bot "Insult: <a href=\"po:setmsg/#{msg}\"><b>#{msg}</b></a> <small>(click to copy to line edit)</small>"
+        confetti.msg.bot "Insult to #{target}: <a href=\"po:setmsg/#{msg}\"><b>#{msg}</b></a>"
 
     insultp = (data, chan) ->
         unless data
@@ -109,10 +109,10 @@ do ->
 
     confetti.updateInsults = updateInsults
 
-    confetti.command 'insult', ['insult [name]', 'Insults the given target for the greater good of mankind.', 'setmsg@insult [name]'], insult
-    confetti.command 'insultp', ['insultp [name]', 'Like insult, but prints the insult with a clickable copy link instead of sending it.', 'setmsg@insultp [name]'], insultp
-    confetti.command 'insultpm', ['insultpm [name]', 'Like insult, but pms it to someone. You will not see the insult.', 'setmsg@insultpm [name]'], insultpm
-    confetti.command 'intellisult', ['intellisult [name]', 'Insults the given target for the greater good of mankind, with intelligence.', 'setmsg@intellisult [name]'], (data, chan) ->
+    confetti.command 'insult', {help: "Insults the given target for the greater good of mankind.", args: ["name"]}, insult
+    confetti.command 'insultp', {help: "Like insult, but prints the insult with a clickable copy link instead of sending it.", args: ["name"]}, insultp
+    confetti.command 'insultpm', {help: "Like insult, but pms it to someone. You will not see the insult in the PM window.", args: ["name"]}, insultpm
+    confetti.command 'intellisult', {help: "Insults the given target for the greater good of mankind, with intelligence.", args: ["name"]}, (data, chan) ->
         unless data
             return confetti.msg.bot "Specify a target!"
 
@@ -123,19 +123,13 @@ do ->
             insultsLoaded = yes
             confetti.msg.bot "Insults have been updated."
 
-    confetti.command 'longinsults', ["Toggles whether if long insults (those > 400 characters) will be used in the insult commands.", 'send@longinsults'], ->
+    confetti.command 'longinsults', "Toggles whether if long insults (those > 400 characters) will be used in the insult commands.", ->
         confetti.cache.store('longinsults', !confetti.cache.read('longinsults')).save()
         confetti.msg.bot "Long insults are now #{if confetti.cache.read('longinsults') then 'enabled' else 'disabled'}."
 
-    confetti.command 'shortinsults', ["Toggles whether if only short insults (those < 150 characters) will in used in the insult commands.", 'send@shortinsults'], ->
+    confetti.command 'shortinsults', "Toggles whether if only short insults (those < 150 characters) will in used in the insult commands.", ->
         confetti.cache.store('shortinsults', !confetti.cache.read('shortinsults')).save()
         confetti.msg.bot "From now on #{if confetti.cache.read('shortinsults') then 'only short insults will be used' else 'longer insults will also be used'}."
-
-    confetti.hook 'initCache', ->
-        once = confetti.cache.once
-        confetti.cache
-            .store('longinsults', no, once)
-            .store('shortinsults', no, once)
 
     confetti.command 'insultcommands', ['Shows various commands related to insults.', 'send@insultcommands'], ->
         new confetti.CommandList("Insult Commands")
@@ -144,3 +138,5 @@ do ->
 
     confetti.hook 'commands:list', (template) ->
         template.cmd('insultcommands')
+
+    confetti.initFields {longinsults: no, shortinsults: no}

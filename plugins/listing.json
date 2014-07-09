@@ -1,21 +1,21 @@
 [{
     "id": "insults",
     "name": "Insults",
-    "version": "1.0.15"
+    "version": "1.0.16"
 }, {
     "id": "pokedex",
     "name": "Pok&eacute;dex",
-    "version": "1.0.1"
+    "version": "1.0.2"
 }, {
     "id": "aoctaunts",
     "name": "AoC Taunts",
-    "version": "1.0.1"
+    "version": "1.0.2"
 }, {
     "id": "emoji",
     "name": "Emoji",
-    "version": "1.0.3"
+    "version": "1.0.4"
 }, {
     "id": "pusestats",
     "name": "Pok&eacute;mon Usage Statistics",
-    "version": "1.0.3"
+    "version": "1.0.4"
 }]

@@ -39,9 +39,6 @@
     confetti.cache.store('aoctaunts', !confetti.cache.read('aoctaunts')).save();
     return confetti.msg.bot("AoC Taunts are now " + (confetti.cache.read('aoctaunts') ? 'enabled' : 'disabled') + ".");
   });
-  confetti.hook('initCache', function() {
-    return confetti.cache.store('aoctaunts', true, confetti.cache.once);
-  });
   confetti.hook('commands:misc', function(template) {
     return template.cmd('aoctaunts');
   });
@@ -57,6 +54,9 @@
   confetti.hook('manipulateOwnPM', function(tar, message, dirty) {
     playTaunt(message);
     return [tar, message, dirty];
+  });
+  confetti.initFields({
+    aoctaunts: true
   });
   return checkTaunts();
 })();

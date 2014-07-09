@@ -71,7 +71,7 @@ do ->
         "Yellow"
     ]
 
-    confetti.command 'usagetiers', ['Shows the tiers which have usage statistics. Click on any of them to open full usage statistics.', 'send@usagetiers'], (_, chan) ->
+    confetti.command 'usagetiers', 'Shows the tiers which have usage statistics. Click on any of them to open full usage statistics.', (_, chan) ->
         html = "<table cellpadding='0.8'><tr><th colspan=12><font color=#aa6a2b>Usage Statistics</font></th></tr><tr>"
 
         for tier, index in tiers

@@ -1,7 +1,7 @@
 (function() {
   var tiers;
   tiers = ["Adv 200", "Adv LC", "Adv NU", "Adv OU", "Adv Uber Doubles", "Adv Ubers", "Adv UU", "Battle Factory", "Battle Factory 6v6", "BW2 LC", "BW2 LU", "BW2 NU", "BW2 OU", "BW2 OU Doubles", "BW2 Uber Doubles", "BW2 Ubers", "BW2 UU", "Colosseum", "Crystal", "Emerald", "GSC LC", "GSC OU", "GSC Ubers", "GSC UU", "HGSS LC", "HGSS NU", "HGSS OU", "HGSS OU Doubles", "HGSS Uber Doubles", "HGSS Ubers", "HGSS UU", "Inverted Battle", "JAA", "Metronome", "Mixed Tiers Gen 1", "Mixed Tiers Gen 2", "Mixed Tiers Gen 3", "Mixed Tiers Gen 4", "Mixed Tiers Gen 5", "Mixed Tiers Gen 6", "Monotype", "Platinum", "Pre-PokeBank OU", "Random Battle", "RBY BL", "RBY LC", "RBY NU", "RBY OU", "RBY Ubers", "RBY UU", "Sky Battle", "Stadium", "Stadium 2", "VGC 2014", "XY 1v1", "XY Cup", "XY LC", "XY LU", "XY OU", "XY OU Doubles", "XY OU Triples", "XY Ubers", "XY UU", "Yellow"];
-  confetti.command('usagetiers', ['Shows the tiers which have usage statistics. Click on any of them to open full usage statistics.', 'send@usagetiers'], function(_, chan) {
+  confetti.command('usagetiers', 'Shows the tiers which have usage statistics. Click on any of them to open full usage statistics.', function(_, chan) {
     var html, index, tier, _i, _len;
     html = "<table cellpadding='0.8'><tr><th colspan=12><font color=#aa6a2b>Usage Statistics</font></th></tr><tr>";
     for (index = _i = 0, _len = tiers.length; _i < _len; index = ++_i) {
