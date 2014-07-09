@@ -1,4 +1,13 @@
 do ->
+    pluginIndex = (id, plugins=confetti.cache.get('plugins')) ->
+        id = id.toLowerCase()
+
+        for plugin, index in plugins
+            if plugin.id is id
+                return index
+
+        return -1
+
     findPlugin = (id, plugins=confetti.cache.get('plugins')) ->
         id = id.toLowerCase()
 
@@ -33,9 +42,7 @@ do ->
                     getPluginFile pid, chan, (resp) ->
                         confetti.io.writeLocal "plugin-#{pid}.js", resp
 
-                        index = plugins.indexOf(plugin[0])
-                        plugins[index] = plug # Replace plugin with the new one
-                        confetti.cache.store('plugins', plugins).save()
+                        plugins[pluginIndex(pid)] = plug # Replace plugin with the new one
 
                         done += 1
                         if done is toUpdate.length
@@ -43,6 +50,7 @@ do ->
                             for p in toUpdate
                                 confetti.msg.bot "Plugin #{p[1].name} updated to version #{p[1].version}!", chan
                                 pids.push(p[1].id)
+                            confetti.cache.store('plugins', plugins).save()
                             confetti.initPlugins pids
                     , verbose
             else if verbose
