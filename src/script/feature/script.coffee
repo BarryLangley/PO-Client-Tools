@@ -13,6 +13,7 @@ do ->
         '2.0.10': 'Pok&eacute;mon Usage Statistics plugin, auth symbols, flashwords.'
         '2.1.0': 'Reworked command lists, pm utility command.'
         '2.1.1': 'Commands split into several new command lists, nato encool mode, idle utility command.'
+        '2.1.2': 'Many important bug fixes, ignorepms, teambuilder & findbattle utility commands, improved info command.'
 
     autoUpdate = ->
         return if confetti.cache.get('autoupdate') is no

@@ -27,7 +27,7 @@ if (typeof confetti !== 'object') {
 confetti.version = {
   release: 2,
   major: 1,
-  minor: 1
+  minor: 2
 };
 
 confetti.scriptUrl = 'https://theunknownone.github.io/PO-Client-Tools/';
@@ -1889,7 +1889,8 @@ confetti.cacheFile = 'confetti.json';
     '2.0.9': 'Changelog, usability improvements, fullwidth encool, updated script urls.',
     '2.0.10': 'Pok&eacute;mon Usage Statistics plugin, auth symbols, flashwords.',
     '2.1.0': 'Reworked command lists, pm utility command.',
-    '2.1.1': 'Commands split into several new command lists, nato encool mode, idle utility command.'
+    '2.1.1': 'Commands split into several new command lists, nato encool mode, idle utility command.',
+    '2.1.2': 'Many important bug fixes, ignorepms, teambuilder & findbattle utility commands, improved info command.'
   };
   autoUpdate = function() {
     var now;
