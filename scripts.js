@@ -300,6 +300,15 @@ confetti.cacheFile = 'confetti.json';
       return this.hash[key];
     };
 
+    Cache.prototype.init = function(keys) {
+      var key, value;
+      for (key in keys) {
+        value = keys[key];
+        this.store(key, value, true);
+      }
+      return this;
+    };
+
     Cache.prototype.save = function() {
       if (this.saved > 0) {
         confetti.io.writeLocalJson(this.file, this.hash);
@@ -531,22 +540,25 @@ confetti.cacheFile = 'confetti.json';
     return args;
   };
   confetti.initCache = function() {
-    var once;
     confetti.cache = new confetti.Cache;
-    once = confetti.cache.once;
-    confetti.cache.store('botname', '±Confetti', once).store('botcolor', '#07b581', once).store('notifications', true, once).store('commandindicator', '-', once).store('lastuse', 0, once).store('plugins', [], once).store('tracked', {}, once).store('trackingresolve', true, once).store('flashes', true, once);
+    confetti.cache.init({
+      botname: '±Confetti',
+      botcolor: '#07b581',
+      notifications: true,
+      commandindicator: '-',
+      lastuse: 0,
+      plugins: [],
+      tracked: {},
+      trackingresolve: true,
+      flashes: true,
+      ignorepms: false
+    });
     confetti.callHooks('initCache');
     return confetti.cache.save();
   };
   confetti.initFields = function(fields) {
     return confetti.hook('initCache', function() {
-      var field, value, _results;
-      _results = [];
-      for (field in fields) {
-        value = fields[field];
-        _results.push(confetti.cache.store(field, value, confetti.cache.once));
-      }
-      return _results;
+      return confetti.cache.init(fields);
     });
   };
   confetti.initPlugins = function(id) {
@@ -1367,7 +1379,7 @@ confetti.cacheFile = 'confetti.json';
   });
   confetti.alias('commandlist', 'commands');
   confetti.command('configcommands', "Shows various commands that change your settings.", function() {
-    return new confetti.CommandList("Configuration").cmds('botname botcolor encool notifications commandindicator autoreconnect').hooks('config').whiteline().cmd('defaults').render();
+    return new confetti.CommandList("Configuration").cmds('botname botcolor encool notifications commandindicator autoreconnect ignorepms').hooks('config').whiteline().cmd('defaults').render();
   });
   confetti.command('blockcommands', "Shows commands related to blocking other players.", function() {
     return confetti.cmdlist("Blocking", 'block unblock blocked', 'block');
@@ -1779,11 +1791,11 @@ confetti.cacheFile = 'confetti.json';
 })();
 
 (function() {
-  var attemptToReconnect, attempts, autoReconnectTimer, forceIgnore, stopReconnecting;
+  var attemptToReconnect, attempts, autoReconnectTimer, failed, forceIgnore;
   autoReconnectTimer = -1;
   attempts = 0;
-  stopReconnecting = false;
   forceIgnore = false;
+  failed = false;
   attemptToReconnect = function() {
     if (attempts >= 3) {
       return false;
@@ -1797,23 +1809,20 @@ confetti.cacheFile = 'confetti.json';
       sys.unsetTimer(autoReconnectTimer);
       autoReconnectTimer = -1;
       attempts = 0;
-      return stopReconnecting = false;
+      return failed = false;
     }
   });
   Network.disconnected.connect(function() {
-    if (confetti.cache.get('autoreconnect') === true && autoReconnectTimer === -1 && forceIgnore === false) {
+    if (confetti.cache.get('autoreconnect') === true && autoReconnectTimer === -1 && !forceIgnore && !failed) {
       confetti.msg.bot("Attempting to reconnect...");
       confetti.msg.notification("Disconnection detected, attempting to reconnect.");
       autoReconnectTimer = sys.setTimer(function() {
-        if (autoReconnectTimer === -1) {
-          return;
-        }
         if (attemptToReconnect() === false) {
           confetti.msg.bot("Three attempts at reconnecting have failed, stopping.");
           confetti.msg.notification("Failed to reconnect.");
           sys.unsetTimer(autoReconnectTimer);
           autoReconnectTimer = -1;
-          return stopReconnecting = true;
+          return failed = true;
         }
       }, 5000, true);
     }
@@ -1823,7 +1832,7 @@ confetti.cacheFile = 'confetti.json';
     confetti.msg.bot("Reconnecting to the server...");
     attempts = 0;
     forceIgnore = true;
-    stopReconnecting = false;
+    failed = false;
     return Client.reconnect();
   });
   confetti.command('autoreconnect', "Toggles whether if you should automatically reconnect to the server when detected you've disconnected.", function() {
@@ -1929,6 +1938,10 @@ confetti.cacheFile = 'confetti.json';
   confetti.command('notifications', "Toggles whether if notifications should be shown (tray messages).", function() {
     confetti.cache.store('notifications', !confetti.cache.read('notifications')).save();
     return confetti.msg.bot("Notifications are now " + (confetti.cache.read('notifications') ? 'on' : 'off') + ".");
+  });
+  confetti.command('ignorepms', "Toggles whether if PMs should be ignored. This feature is separate from the client's built-in (this one actually works). You can still send PMs, but no one will be able to send them to you and you won't receive notification of it (so be careful to leave this on).", function() {
+    confetti.cache.store('ignorepms', !confetti.cache.read('ignorepms')).save();
+    return confetti.msg.bot("PMs are now " + (confetti.cache.read('ignorepms') ? 'being ignored' : 'enabled') + ".");
   });
   confetti.command('botname', {
     help: "Changes the bot's name to [name].",
@@ -2149,10 +2162,13 @@ confettiScript = {
         confetti.msg.bot("Type <a href='po:send/-commands' style='text-decoration:none;color:green'><b>" + (confetti.cache.get('commandindicator')) + "commands</b></a> for a list of client commands.", -1);
       }
       confetti.cache.store('lastuse', sys.time()).save();
+      if (confetti.cache.get('ignorepms') === true) {
+        confetti.msg.bot("<b style='color:red'>PMs are currently being ignored. You can re-enable them with <a href='po:send/-ignorepms' style='text-decoration:none;color:green'><b>" + (confetti.cache.get('commandindicator')) + "ignorepms</b></a> (toggle command).", -1);
+      }
     }
     if (sys.isSafeScripts()) {
-      confetti.msg.bot("<b style='color: red;'>Safe Scripts is enabled</b>. This will disable persistent data storage and limit other features.", -1);
-      confetti.msg.bot("Disable it by unticking the \"<b>Safe Scripts</b>\" box in the <i>Script Window</i> [<i>Plugins->Script Window</i>].", -1);
+      confetti.msg.bot("<b style='color:red'>Safe Scripts is enabled</b>. This will disable persistent data storage (your settings won't be saved) and limit other features.", -1);
+      confetti.msg.bot("Disable it by unticking the \"<b>Safe Scripts</b>\" box in the <i>Script Window</i> [<i>Plugins->Script Window</i>] and clicking <b>Ok</b>.", -1);
       confetti.msg.bot("Afterwards, re-login to see the effects.", -1);
     }
     return confetti.initialized = true;
@@ -2172,6 +2188,11 @@ confettiScript = {
     if (dirty) {
       sys.stopEvent();
       return Network.sendPM(tar, message);
+    }
+  },
+  beforePMReceived: function(src, message) {
+    if (confetti.cache.get('ignorepms') === true) {
+      return sys.stopEvent();
     }
   },
   afterPMReceived: function(src, message) {

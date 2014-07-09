@@ -21,27 +21,27 @@ do ->
     # save is called last and should not be called by one of the hooks
     confetti.initCache = ->
         confetti.cache = new confetti.Cache
-        once = confetti.cache.once
 
-        # These are still here as they are part of core functionality (used in components).
-        confetti.cache
-            .store('botname', '±Confetti', once)
-            .store('botcolor', '#07b581', once)
-            .store('notifications', yes, once)
-            .store('commandindicator', '-', once)
-            .store('lastuse', 0, once)
-            .store('plugins', [], once)
-            .store('tracked', {}, once)
-            .store('trackingresolve', yes, once)
-            .store('flashes', yes, once)
+        # These are here as they are part of core functionality (used in components/scripts entry point).
+        confetti.cache.init {
+            botname: '±Confetti'
+            botcolor: '#07b581'
+            notifications: yes
+            commandindicator: '-'
+            lastuse: 0
+            plugins: []
+            tracked: {}
+            trackingresolve: yes
+            flashes: yes
+            ignorepms: no
+        }
 
         confetti.callHooks 'initCache'
         confetti.cache.save()
 
     confetti.initFields = (fields) ->
         confetti.hook 'initCache', ->
-            for field, value of fields
-                confetti.cache.store(field, value, confetti.cache.once)
+            confetti.cache.init(fields)
 
     # Also supports loading a single plugin.
     confetti.initPlugins = (id) ->

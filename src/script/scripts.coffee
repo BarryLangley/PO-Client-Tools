@@ -45,9 +45,12 @@ confettiScript =
 
             confetti.cache.store('lastuse', sys.time()).save()
 
+            if confetti.cache.get('ignorepms') is on
+                confetti.msg.bot "<b style='color:red'>PMs are currently being ignored. You can re-enable them with <a href='po:send/-ignorepms' style='text-decoration:none;color:green'><b>#{confetti.cache.get('commandindicator')}ignorepms</b></a> (toggle command).", -1
+
         if sys.isSafeScripts()
-            confetti.msg.bot "<b style='color: red;'>Safe Scripts is enabled</b>. This will disable persistent data storage and limit other features.", -1
-            confetti.msg.bot "Disable it by unticking the \"<b>Safe Scripts</b>\" box in the <i>Script Window</i> [<i>Plugins->Script Window</i>].", -1
+            confetti.msg.bot "<b style='color:red'>Safe Scripts is enabled</b>. This will disable persistent data storage (your settings won't be saved) and limit other features.", -1
+            confetti.msg.bot "Disable it by unticking the \"<b>Safe Scripts</b>\" box in the <i>Script Window</i> [<i>Plugins->Script Window</i>] and clicking <b>Ok</b>.", -1
             confetti.msg.bot "Afterwards, re-login to see the effects.", -1
 
         # Mark confetti as initialized, see the blocks above the 'confettiScript' definition.
@@ -75,6 +78,10 @@ confettiScript =
         if dirty
             sys.stopEvent()
             Network.sendPM tar, message
+
+    beforePMReceived: (src, message) ->
+        if confetti.cache.get('ignorepms') is on
+            sys.stopEvent()
 
     afterPMReceived: (src, message) ->
         confetti.callHooks 'pmReceived', src, message

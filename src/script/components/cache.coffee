@@ -22,6 +22,10 @@ do ->
             @hash[key]
         get: (key) ->
             @hash[key]
+        init: (keys) ->
+            for key, value of keys
+                @store(key, value, yes)
+            return this
         save: ->
             if @saved > 0
                 confetti.io.writeLocalJson @file, @hash

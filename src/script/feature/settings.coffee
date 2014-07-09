@@ -4,6 +4,10 @@ do ->
         confetti.cache.store('notifications', !confetti.cache.read('notifications')).save()
         confetti.msg.bot "Notifications are now #{if confetti.cache.read('notifications') then 'on' else 'off'}."
 
+    confetti.command 'ignorepms', "Toggles whether if PMs should be ignored. This feature is separate from the client's built-in (this one actually works). You can still send PMs, but no one will be able to send them to you and you won't receive notification of it (so be careful to leave this on).", ->
+        confetti.cache.store('ignorepms', !confetti.cache.read('ignorepms')).save()
+        confetti.msg.bot "PMs are now #{if confetti.cache.read('ignorepms') then 'being ignored' else 'enabled'}."
+
     confetti.command 'botname', {help: "Changes the bot's name to [name].", args: ["name"]}, (data) ->
         if data.length > 25
             return confetti.msg.bot "Uhh, that's too long, I think!"

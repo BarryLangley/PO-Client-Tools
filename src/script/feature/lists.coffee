@@ -16,7 +16,7 @@ do ->
 
     confetti.command 'configcommands', "Shows various commands that change your settings.", ->
         new confetti.CommandList("Configuration")
-            .cmds('botname botcolor encool notifications commandindicator autoreconnect')
+            .cmds('botname botcolor encool notifications commandindicator autoreconnect ignorepms')
             .hooks('config')
 
             .whiteline()
