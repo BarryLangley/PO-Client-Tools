@@ -41,8 +41,7 @@ do ->
                     pid = plug.id
                     getPluginFile pid, chan, (resp) ->
                         confetti.io.writeLocal "plugin-#{pid}.js", resp
-
-                        plugins[pluginIndex(pid)] = plug # Replace plugin with the new one
+                        plugins[pluginIndex(pid, plugins)] = plug # Replace plugin with the new one
 
                         done += 1
                         if done is toUpdate.length
@@ -58,6 +57,7 @@ do ->
         , verbose
 
     confetti.updatePlugins = updatePlugins
+    confetti._pluginAPI = {pluginIndex, findPlugin, hasPlugin, getListing, getPluginFile, updatePlugins}
 
     # TODO: Possibility for local plugins
     confetti.command 'plugins', "Displays a list of enabled and available plugins.", (_, chan) ->

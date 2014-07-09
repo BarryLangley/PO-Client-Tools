@@ -1700,7 +1700,7 @@ confetti.cacheFile = 'confetti.json';
           return getPluginFile(pid, chan, function(resp) {
             var p, pids, _j, _len1;
             confetti.io.writeLocal("plugin-" + pid + ".js", resp);
-            plugins[pluginIndex(pid)] = plug;
+            plugins[pluginIndex(pid, plugins)] = plug;
             done += 1;
             if (done === toUpdate.length) {
               pids = [];
@@ -1720,6 +1720,14 @@ confetti.cacheFile = 'confetti.json';
     }, verbose);
   };
   confetti.updatePlugins = updatePlugins;
+  confetti._pluginAPI = {
+    pluginIndex: pluginIndex,
+    findPlugin: findPlugin,
+    hasPlugin: hasPlugin,
+    getListing: getListing,
+    getPluginFile: getPluginFile,
+    updatePlugins: updatePlugins
+  };
   confetti.command('plugins', "Displays a list of enabled and available plugins.", function(_, chan) {
     var html, plugin, plugins, _i, _len;
     plugins = confetti.cache.get('plugins');
