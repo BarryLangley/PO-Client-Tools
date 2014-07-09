@@ -1694,13 +1694,13 @@ confetti.cacheFile = 'confetti.json';
       }
       if (toUpdate.length) {
         return toUpdate.forEach(function(plugin) {
-          var pid;
-          plug = plugin[1];
-          pid = plug.id;
+          var nplug, pid;
+          nplug = plugin[1];
+          pid = nplug.id;
           return getPluginFile(pid, chan, function(resp) {
             var p, pids, _j, _len1;
             confetti.io.writeLocal("plugin-" + pid + ".js", resp);
-            plugins[pluginIndex(pid, plugins)] = plug;
+            plugins[pluginIndex(pid, plugins)] = nplug;
             done += 1;
             if (done === toUpdate.length) {
               pids = [];
@@ -1738,7 +1738,6 @@ confetti.cacheFile = 'confetti.json';
         plugin = plugins[_i];
         html += "" + confetti.msg.bullet + " <b>" + plugin.name + "</b> (" + plugin.id + ") v" + plugin.version + " <small>[<a href='po:send/-removeplugin " + plugin.id + "' style='text-decoration:none;color:black'>remove</a>]</small><br>";
       }
-      html += "<br>";
       confetti.msg.html(html, chan);
     }
     return getListing(chan, function(json) {

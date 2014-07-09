@@ -37,11 +37,11 @@ do ->
 
             if toUpdate.length
                 toUpdate.forEach (plugin) ->
-                    plug = plugin[1]
-                    pid = plug.id
+                    nplug = plugin[1]
+                    pid = nplug.id
                     getPluginFile pid, chan, (resp) ->
                         confetti.io.writeLocal "plugin-#{pid}.js", resp
-                        plugins[pluginIndex(pid, plugins)] = plug # Replace plugin with the new one
+                        plugins[pluginIndex(pid, plugins)] = nplug # Replace plugin with the new one
 
                         done += 1
                         if done is toUpdate.length
@@ -70,7 +70,6 @@ do ->
                 # Since '-' is always the command indicator, use it so the command remains clickable even if the user changes their command indicator (inside the send/setmsg protocol).
                 html += "#{confetti.msg.bullet} <b>#{plugin.name}</b> (#{plugin.id}) v#{plugin.version} <small>[<a href='po:send/-removeplugin #{plugin.id}' style='text-decoration:none;color:black'>remove</a>]</small><br>"
 
-            html += "<br>"
             confetti.msg.html html, chan
 
         getListing chan, (json) ->
