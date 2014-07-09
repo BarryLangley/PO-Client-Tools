@@ -562,7 +562,7 @@ confetti.cacheFile = 'confetti.json';
     });
   };
   confetti.initPlugins = function(id) {
-    var ex, pid, plugin, plugins, src, success, _i, _len;
+    var ex, pid, plugin, plugins, src, success, _i, _len, _ref;
     plugins = confetti.cache.get('plugins');
     if (plugins.length === 0) {
       return;
@@ -575,6 +575,8 @@ confetti.cacheFile = 'confetti.json';
       plugin = plugins[_i];
       pid = plugin.id;
       if (typeof id === 'string' && pid !== id) {
+        continue;
+      } else if (Array.isArray(id) && (_ref = !pid, __indexOf.call(id, _ref) >= 0)) {
         continue;
       }
       src = confetti.io.readLocal("plugin-" + pid + ".js");
@@ -1661,14 +1663,14 @@ confetti.cacheFile = 'confetti.json';
     return confetti.io.getRemoteFile("" + confetti.pluginsUrl + pid + "/" + pid + ".js", [(verbose ? "A connection error occured whilst loading the plugin source file of the plugin " + pid + "." : ""), chan], callback);
   };
   updatePlugins = function(verbose, chan) {
-    var plugins;
     if (verbose == null) {
       verbose = false;
     }
-    plugins = confetti.cache.get('plugins');
     return getListing(chan, function(json) {
-      var plug, plugin, toUpdate, _i, _len;
+      var done, plug, plugin, plugins, toUpdate, _i, _len;
       toUpdate = [];
+      done = 0;
+      plugins = confetti.cache.get('plugins');
       for (_i = 0, _len = plugins.length; _i < _len; _i++) {
         plugin = plugins[_i];
         plug = findPlugin(plugin.id, json);
@@ -1682,13 +1684,21 @@ confetti.cacheFile = 'confetti.json';
           plug = plugin[1];
           pid = plug.id;
           return getPluginFile(pid, chan, function(resp) {
-            var index;
+            var index, p, pids, _j, _len1;
             confetti.io.writeLocal("plugin-" + pid + ".js", resp);
             index = plugins.indexOf(plugin[0]);
             plugins[index] = plug;
             confetti.cache.store('plugins', plugins).save();
-            confetti.msg.bot("Plugin " + plug.name + " updated to version " + plug.version + "!", chan);
-            return confetti.initPlugins(pid);
+            done += 1;
+            if (done === toUpdate.length) {
+              pids = [];
+              for (_j = 0, _len1 = toUpdate.length; _j < _len1; _j++) {
+                p = toUpdate[_j];
+                confetti.msg.bot("Plugin " + p[1].name + " updated to version " + p[1].version + "!", chan);
+                pids.push(p[1].id);
+              }
+              return confetti.initPlugins(pids);
+            }
           }, verbose);
         });
       } else if (verbose) {

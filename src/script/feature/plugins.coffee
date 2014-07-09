@@ -1,5 +1,5 @@
 do ->
-    findPlugin = (id, plugins = confetti.cache.get('plugins')) ->
+    findPlugin = (id, plugins=confetti.cache.get('plugins')) ->
         id = id.toLowerCase()
 
         for plugin in plugins
@@ -16,10 +16,11 @@ do ->
         confetti.io.getRemoteFile "#{confetti.pluginsUrl}#{pid}/#{pid}.js", [(if verbose then "A connection error occured whilst loading the plugin source file of the plugin #{pid}." else ""), chan], callback
 
     updatePlugins = (verbose = no, chan) ->
-        plugins = confetti.cache.get('plugins')
         getListing chan, (json) ->
             toUpdate = []
+            done = 0
 
+            plugins = confetti.cache.get('plugins')
             for plugin in plugins
                 plug = findPlugin(plugin.id, json)
                 if plug and plugin.version isnt plug.version
@@ -36,8 +37,13 @@ do ->
                         plugins[index] = plug # Replace plugin with the new one
                         confetti.cache.store('plugins', plugins).save()
 
-                        confetti.msg.bot "Plugin #{plug.name} updated to version #{plug.version}!", chan
-                        confetti.initPlugins pid
+                        done += 1
+                        if done is toUpdate.length
+                            pids = []
+                            for p in toUpdate
+                                confetti.msg.bot "Plugin #{p[1].name} updated to version #{p[1].version}!", chan
+                                pids.push(p[1].id)
+                            confetti.initPlugins pids
                     , verbose
             else if verbose
                 confetti.msg.bot "All plugins up to date.", chan

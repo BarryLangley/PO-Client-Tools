@@ -55,6 +55,8 @@ do ->
             pid = plugin.id
             if typeof id is 'string' and pid isnt id
                 continue
+            else if Array.isArray(id) and !pid in id
+                continue
 
             src = confetti.io.readLocal "plugin-#{pid}.js"
             if src
