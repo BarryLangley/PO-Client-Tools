@@ -45,8 +45,7 @@ do ->
         for _, map of maps
             count += 1
 
-            html += "#{confetti.msg.bullet} <b>#{map.msg}</b>: #{map.type} mapping#{if map.data then ' (' + map.data + ')' else ''}"
-            html += "<br>" if count % 3 is 0
+            html += "#{confetti.msg.bullet} <b>#{map.msg}</b>: #{map.type} mapping#{if map.data then ' (' + map.data + ')' else ''}<br>"
 
         confetti.msg.html html, chan
 
