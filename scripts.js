@@ -1714,7 +1714,7 @@ confetti.cacheFile = 'confetti.json';
           return confetti.msg.bot("" + data + " has not been on this server yet.", chan);
         }
         if (id === -1) {
-          confetti.msg.html("<timestamp/><b>" + ui.name + "</b> (<b>" + (ui.flags & FlagOnline ? '<font color="green">Online</font>' : '<font color="red">Offline</font>') + "</b>)");
+          confetti.msg.html("<timestamp/><b>" + ui.name + "</b> (<b>" + (ui.flags & FlagOnline ? '<font color="green">Online</font>' : '<font color="red">Offline</font>') + "</b>)", chan);
           bullet("Auth", confetti.player.authToName(ui.auth) + (" (" + ui.auth + ")"));
         }
         bullet("IP", ui.ip);
@@ -1749,7 +1749,7 @@ confetti.cacheFile = 'confetti.json';
     name = confetti.player.fancyName(id);
     auth = Client.auth(id);
     color = Client.color(id);
-    confetti.msg.html("<timestamp/>" + name + " " + (confetti.player.status(id)) + " <small>" + id + "</small>");
+    confetti.msg.html("<timestamp/>" + name + " " + (confetti.player.status(id)) + " <small>" + id + "</small>", chan);
     bullet("Auth", confetti.player.authToName(auth) + (" (" + auth + ")"));
     bullet("Color", "<b style='color:" + color + "'>" + color + "</b>");
     if (!hasAuth) {

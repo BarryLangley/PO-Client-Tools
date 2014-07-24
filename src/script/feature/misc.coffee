@@ -122,7 +122,7 @@ do ->
                     return confetti.msg.bot "#{data} has not been on this server yet.", chan
 
                 if id is -1
-                    confetti.msg.html "<timestamp/><b>#{ui.name}</b> (<b>#{if ui.flags & FlagOnline then '<font color="green">Online</font>' else '<font color="red">Offline</font>'}</b>)"
+                    confetti.msg.html "<timestamp/><b>#{ui.name}</b> (<b>#{if ui.flags & FlagOnline then '<font color="green">Online</font>' else '<font color="red">Offline</font>'}</b>)", chan
                     bullet "Auth", confetti.player.authToName(ui.auth) + " (#{ui.auth})"
 
                 bullet "IP", ui.ip
@@ -155,7 +155,7 @@ do ->
         auth = Client.auth id
         color = Client.color id
 
-        confetti.msg.html "<timestamp/>#{name} #{confetti.player.status(id)} <small>#{id}</small>"
+        confetti.msg.html "<timestamp/>#{name} #{confetti.player.status(id)} <small>#{id}</small>", chan
         bullet "Auth", confetti.player.authToName(auth) + " (#{auth})"
         bullet "Color", "<b style='color:#{color}'>#{color}</b>"
 
