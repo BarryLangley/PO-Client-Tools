@@ -1483,10 +1483,7 @@ confetti.cacheFile = 'confetti.json';
     for (_ in maps) {
       map = maps[_];
       count += 1;
-      html += "" + confetti.msg.bullet + " <b>" + map.msg + "</b>: " + map.type + " mapping" + (map.data ? ' (' + map.data + ')' : '');
-      if (count % 3 === 0) {
-        html += "<br>";
-      }
+      html += "" + confetti.msg.bullet + " <b>" + map.msg + "</b>: " + map.type + " mapping" + (map.data ? ' (' + map.data + ')' : '') + "<br>";
     }
     return confetti.msg.html(html, chan);
   });
