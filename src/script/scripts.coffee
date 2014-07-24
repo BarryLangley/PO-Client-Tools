@@ -88,21 +88,15 @@ confettiScript =
 
     # Messages sent by the player
     beforeSendMessage: (message, chan) ->
-        # Private commands
-        # Forbid -- etc from triggering commands
-        if message[0] in [confetti.cache.get('commandindicator'), '-'] and message.length > 1 and confetti.util.isAlpha(message[1])
-            space   = message.indexOf ' '
-            command = ""
-            data    = ""
-
-            if space isnt -1
-                command = message.substr(1, space - 1)
-                data = message.substr(space + 1)
-            else
-                command = message.substr(1)
-
+        stop = confetti.callHooks 'beforeSendMessage', message, chan, stop
+        if stop
             sys.stopEvent()
-            confetti.execCommand command, data, message, chan
+            return
+
+        # Private commands
+        if confetti.isCommand(message)
+            sys.stopEvent()
+            confetti.runCommand message, chan
             return
 
         # Message manipulation

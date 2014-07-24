@@ -55,6 +55,11 @@ do ->
             reverseAliases[command].push(alias)
 
     confetti.aliasesOf = (command) -> reverseAliases[command]
+
+    confetti.isCommand = (message) ->
+        # Forbid -- etc from triggering commands
+        message[0] in [confetti.cache.get('commandindicator'), '-'] and message.length > 1 and confetti.util.isAlpha(message[1])
+
     confetti.execCommand = (command, data, message, chan) ->
         # Use the alias if available
         if aliases.hasOwnProperty(command)
@@ -64,6 +69,22 @@ do ->
             commands[command].handler(data, chan, message)
         else
             confetti.msg.bot "The command '#{command}' doesn't exist!"
+
+    confetti.runCommand = (message, chan=Client.currentChannel()) ->
+        if confetti.isCommand(message)
+            message = message.substr(1)
+
+        space   = message.indexOf ' '
+        command = ""
+        data    = ""
+
+        if space isnt -1
+            command = message.substr(0, space - 1)
+            data = message.substr(space + 1)
+        else
+            command = message
+
+        confetti.execCommand command, data, message, chan
 
     confetti.commands = commands
     confetti.aliases  = aliases

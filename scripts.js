@@ -703,6 +703,10 @@ confetti.cacheFile = 'confetti.json';
   confetti.aliasesOf = function(command) {
     return reverseAliases[command];
   };
+  confetti.isCommand = function(message) {
+    var _ref;
+    return ((_ref = message[0]) === confetti.cache.get('commandindicator') || _ref === '-') && message.length > 1 && confetti.util.isAlpha(message[1]);
+  };
   confetti.execCommand = function(command, data, message, chan) {
     if (aliases.hasOwnProperty(command)) {
       command = aliases[command];
@@ -712,6 +716,25 @@ confetti.cacheFile = 'confetti.json';
     } else {
       return confetti.msg.bot("The command '" + command + "' doesn't exist!");
     }
+  };
+  confetti.runCommand = function(message, chan) {
+    var command, data, space;
+    if (chan == null) {
+      chan = Client.currentChannel();
+    }
+    if (confetti.isCommand(message)) {
+      message = message.substr(1);
+    }
+    space = message.indexOf(' ');
+    command = "";
+    data = "";
+    if (space !== -1) {
+      command = message.substr(0, space - 1);
+      data = message.substr(space + 1);
+    } else {
+      command = message;
+    }
+    return confetti.execCommand(command, data, message, chan);
   };
   confetti.commands = commands;
   confetti.aliases = aliases;
@@ -1377,7 +1400,7 @@ confetti.cacheFile = 'confetti.json';
 
 (function() {
   confetti.command('commands', "Shows this command list.", function() {
-    return new confetti.CommandList("Commands").group("Command Lists").cmds('commands scriptcommands plugincommands friendcommands blockcommands trackcommands flashcommands configcommands').hooks('list').group("Player Symbols").cmds('authsymbols authsymbol').hooks('playersymbols').hooks('categories').whiteline().cmds('reconnect define translate news imp info chan idle pm flip myip teambuilder findbattle').hooks('misc').cmds('html eval').hooks('dev').render();
+    return new confetti.CommandList("Commands").group("Command Lists").cmds('commands scriptcommands plugincommands friendcommands blockcommands trackcommands flashcommands mapcommands configcommands').hooks('list').group("Player Symbols").cmds('authsymbols authsymbol').hooks('playersymbols').hooks('categories').whiteline().cmds('reconnect define translate news imp info chan idle pm flip myip teambuilder findbattle').hooks('misc').cmds('html eval').hooks('dev').render();
   });
   confetti.alias('commandlist', 'commands');
   confetti.command('configcommands', "Shows various commands that change your settings.", function() {
@@ -1398,8 +1421,158 @@ confetti.cacheFile = 'confetti.json';
   confetti.command('flashcommands', "Shows commands related to flashes and flashwords.", function() {
     return confetti.cmdlist("Flashes", 'flashword removeflashword flashwords flashes', 'flash');
   });
+  confetti.command('mapcommands', "Shows commands related to message mapping", function() {
+    return confetti.cmdlist("Message Mapping", 'map unmap maphelp mapindicator togglemaps', 'map');
+  });
   return confetti.command('friendcommands', "Shows commands related to friends.", function() {
     return confetti.cmdlist("Friends", 'friend unfriend friends friendnotifications', 'friends');
+  });
+})();
+
+(function() {
+  var executeMap, mapDataValidators, mapTypes;
+  mapTypes = "command send".split(" ");
+  mapDataValidators = {
+    command: function(mapdata) {
+      return mapdata.length > 0;
+    },
+    send: function(mapdata) {
+      return mapdata.length > 0;
+    }
+  };
+  executeMap = function(map, chan) {
+    var data, line, _i, _len;
+    if (chan == null) {
+      chan = Client.currentChannel();
+    }
+    data = map.data.split('\\n');
+    for (_i = 0, _len = data.length; _i < _len; _i++) {
+      line = data[_i];
+      switch (map.type) {
+        case "command":
+          confetti.runCommand(line, chan);
+          break;
+        case "send":
+          confetti.msg.notify(line, chan);
+      }
+    }
+    return true;
+  };
+  confetti.command('maphelp', "Displays help for message mapping.", function(_, chan) {
+    confetti.msg.bot("Message mapping allows you to map a message (starting with your mapping indicator - which is currently <b>" + (confetti.cache.get('mapindicator')) + "</b>) to something else, specified by the mapping <b>type</b>. You can execute multiple commands for a map by separating each command with \"\\n\". The following types are available:");
+    confetti.msg.html("" + confetti.msg.bullet + " <b>command</b>: Executes a Confetti command. Requires data: the command to execute. It doesn't have to start with your command indicator.", chan);
+    confetti.msg.html("" + confetti.msg.bullet + " <b>send</b>: Sends a message in the channel you are in when you use the map. Requires data: the message to send. Can also be used to execute server commands.", chan);
+    confetti.msg.html("", chan);
+    confetti.msg.bot("For example:");
+    confetti.msg.html("" + confetti.msg.bullet + " Add a mapping: " + (confetti.cache.get('commandindicator')) + "map pl:send:/players", chan);
+    confetti.msg.html("" + confetti.msg.bullet + " Execute it: " + (confetti.cache.get('mapindicator')) + "pl", chan);
+    confetti.msg.html("" + confetti.msg.bullet + " Add a multi-map: " + (confetti.cache.get('commandindicator')) + "map hi2:send:hi\\neveryone", chan);
+    confetti.msg.html("", chan);
+    return confetti.msg.bot("You currently have maps " + (confetti.cache.get('mapsenabled') ? 'enabled' : 'disabled') + ". Toggle it with the <b>togglemaps</b> command.");
+  });
+  confetti.command('maps', "Displays your message mappings.", function(_, chan) {
+    var count, html, map, mapc, maps;
+    maps = confetti.cache.get('maps');
+    mapc = Object.keys(maps).length;
+    if (mapc === 0) {
+      return confetti.msg.bot("You have no message mappings.");
+    }
+    confetti.msg.bold("Your mappings <small>[" + mapc + "]</small>", '', chan);
+    html = "";
+    count = 0;
+    for (_ in maps) {
+      map = maps[_];
+      count += 1;
+      html += "" + confetti.msg.bullet + " <b>" + map.msg + "</b>: " + map.type + " mapping" + (map.data ? ' (' + map.data + ')' : '');
+      if (count % 3 === 0) {
+        html += "<br>";
+      }
+    }
+    return confetti.msg.html(html, chan);
+  });
+  confetti.command('map', ['map [message]:[type]:[data...]', "Creates/overrides a message mapping for the message [message]. [type] is the map's type, [data] is any data to be supplied to the map. For more information (like what maps are, and the available mapping types), use the maphelp command.", 'send@maphelp'], function(data) {
+    var mapdata, maps, mdata, msg, oldmap, type, validator, _ref;
+    _ref = data.split(':'), msg = _ref[0], type = _ref[1], mapdata = 3 <= _ref.length ? __slice.call(_ref, 2) : [];
+    if (type == null) {
+      type = "";
+    }
+    type = type.toLowerCase();
+    maps = confetti.cache.get('maps');
+    if (!msg) {
+      return confetti.msg.bot("Specify a mapping!");
+    }
+    if (!(__indexOf.call(mapTypes, type) >= 0)) {
+      return confetti.msg.bot("" + type + " is not a valid map type. Use the maphelp command for more info.");
+    }
+    validator = mapDataValidators[type];
+    if ((validator != null) && !validator(mapdata)) {
+      return confetti.msg.bot("The validator for mapping type " + type + " didn't pass your map data. Use the maphelp command for more info.");
+    }
+    mdata = mapdata.join(':');
+    if (maps[msg]) {
+      oldmap = maps[msg];
+      if (oldmap.type === type && oldmap.data === mdata) {
+        return confetti.msg.bot("" + (confetti.cache.get('mapindicator')) + msg + " already maps to " + type + (map.data ? ' (' + mdata + ')' : '') + "!");
+      }
+    }
+    maps[msg] = {
+      msg: msg,
+      type: type,
+      data: mdata
+    };
+    confetti.cache.store('maps', maps).save();
+    return confetti.msg.bot("" + (confetti.cache.get('mapindicator')) + msg + " now maps to " + type + (map.data ? ' (' + mdata + ')' : '') + "!");
+  });
+  confetti.command('unmap', {
+    help: "Removes the mapping for the message [message].",
+    args: ["message"]
+  }, function(data) {
+    var maps;
+    maps = confetti.cache.get('maps');
+    if (!maps.hasOwnProperty(data)) {
+      return confetti.msg.bot("" + data + " isn't mapped to anything!");
+    }
+    delete maps[data];
+    confetti.cache.store('maps', maps).save();
+    return confetti.msg.bot("You removed " + data + " from your message mappings!");
+  });
+  confetti.command('mapindicator', {
+    help: "Changes your mapping indicator (to indicate usage of maps) to [symbol].",
+    args: ["symbol"]
+  }, function(data) {
+    data = data.toLowerCase();
+    if (data.length !== 1) {
+      return confetti.msg.bot("Your mapping indicator has to be one character, nothing more, nothing less!");
+    }
+    if (data === '/' || data === '!') {
+      return confetti.msg.bot("'!' and '/' are not allowed as command indicators because they are reserved for server scripts.");
+    }
+    if (confetti.cache.read('mapindicator') === data) {
+      return confetti.msg.bot("Your mapping indicator is already " + data + "!");
+    }
+    confetti.cache.store('mapindicator', data).save();
+    return confetti.msg.bot("Your mapping indicator is now " + data + "!");
+  });
+  confetti.command('togglemaps', "Toggles whether if message maps should be enabled.", function() {
+    confetti.cache.store('mapsenabled', !confetti.cache.read('mapsenabled')).save();
+    return confetti.msg.bot("Message mapping is now " + (confetti.cache.read('mapsenabled') ? 'enabled' : 'disabled') + ".");
+  });
+  confetti.initFields({
+    maps: {},
+    mapindicator: ':',
+    mapsenabled: true
+  });
+  return confetti.hook('beforeSendMessage', function(message, chan, stop) {
+    var mapmsg, maps;
+    if (confetti.cache.get('mapsenabled') === true && message[0] === confetti.cache.get('mapindicator')) {
+      mapmsg = message.substr(1);
+      maps = confetti.cache.get('maps');
+      if (maps.hasOwnProperty(mapmsg)) {
+        executeMap(maps[mapmsg], chan);
+        stop = true;
+      }
+    }
+    return [message, chan, stop];
   });
 })();
 
@@ -2230,23 +2403,19 @@ confettiScript = {
     return confetti.callHooks('pmReceived', src, message);
   },
   beforeSendMessage: function(message, chan) {
-    var command, data, dirty, space, _ref, _ref1;
-    if (((_ref = message[0]) === confetti.cache.get('commandindicator') || _ref === '-') && message.length > 1 && confetti.util.isAlpha(message[1])) {
-      space = message.indexOf(' ');
-      command = "";
-      data = "";
-      if (space !== -1) {
-        command = message.substr(1, space - 1);
-        data = message.substr(space + 1);
-      } else {
-        command = message.substr(1);
-      }
+    var dirty, stop, _ref;
+    stop = confetti.callHooks('beforeSendMessage', message, chan, stop);
+    if (stop) {
       sys.stopEvent();
-      confetti.execCommand(command, data, message, chan);
+      return;
+    }
+    if (confetti.isCommand(message)) {
+      sys.stopEvent();
+      confetti.runCommand(message, chan);
       return;
     }
     dirty = false;
-    _ref1 = confetti.callHooks('manipulateOwnMessage', message, chan, dirty), message = _ref1[0], chan = _ref1[1], dirty = _ref1[2];
+    _ref = confetti.callHooks('manipulateOwnMessage', message, chan, dirty), message = _ref[0], chan = _ref[1], dirty = _ref[2];
     if (dirty) {
       sys.stopEvent();
       return Network.sendChanMessage(chan, message);

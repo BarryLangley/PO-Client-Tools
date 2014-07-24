@@ -2,7 +2,7 @@ do ->
     # Command lists
     confetti.command 'commands', "Shows this command list.", ->
         new confetti.CommandList("Commands")
-            .group("Command Lists").cmds('commands scriptcommands plugincommands friendcommands blockcommands trackcommands flashcommands configcommands').hooks('list')
+            .group("Command Lists").cmds('commands scriptcommands plugincommands friendcommands blockcommands trackcommands flashcommands mapcommands configcommands').hooks('list')
             .group("Player Symbols").cmds('authsymbols authsymbol').hooks('playersymbols')
             # Custom categories should be done in this hook, afterwards there are the misc. commands.
             .hooks('categories')
@@ -38,6 +38,9 @@ do ->
 
     confetti.command 'flashcommands', "Shows commands related to flashes and flashwords.", ->
         confetti.cmdlist("Flashes", 'flashword removeflashword flashwords flashes', 'flash')
+
+    confetti.command 'mapcommands', "Shows commands related to message mapping", ->
+        confetti.cmdlist("Message Mapping", 'map unmap maphelp mapindicator togglemaps', 'map')
 
     confetti.command 'friendcommands', "Shows commands related to friends.", ->
         confetti.cmdlist("Friends", 'friend unfriend friends friendnotifications', 'friends')
