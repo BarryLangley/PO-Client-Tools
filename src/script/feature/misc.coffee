@@ -45,6 +45,11 @@ do ->
 
     confetti.alias 'fb', 'findbattle'
 
+    confetti.command 'disconnect', "Disconnects you from the server and returns you to the server selection screen.", ->
+        Client.done()
+
+    confetti.alias 'dc', 'disconnect'
+
     confetti.command 'chan', {help: "Joins, jumps to, or creates a channel.", args: ["name"]}, (data) ->
         name = data
         data = data.toLowerCase()

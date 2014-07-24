@@ -1400,7 +1400,7 @@ confetti.cacheFile = 'confetti.json';
 
 (function() {
   confetti.command('commands', "Shows this command list.", function() {
-    return new confetti.CommandList("Commands").group("Command Lists").cmds('commands scriptcommands plugincommands friendcommands blockcommands trackcommands flashcommands mapcommands configcommands').hooks('list').group("Player Symbols").cmds('authsymbols authsymbol').hooks('playersymbols').hooks('categories').whiteline().cmds('reconnect define translate news imp info chan idle pm flip myip teambuilder findbattle').hooks('misc').cmds('html eval').hooks('dev').render();
+    return new confetti.CommandList("Commands").group("Command Lists").cmds('commands scriptcommands plugincommands friendcommands blockcommands trackcommands flashcommands mapcommands configcommands').hooks('list').group("Player Symbols").cmds('authsymbols authsymbol').hooks('playersymbols').hooks('categories').whiteline().cmds('reconnect define translate news imp info chan idle pm flip myip teambuilder findbattle disconnect').hooks('misc').cmds('html eval').hooks('dev').render();
   });
   confetti.alias('commandlist', 'commands');
   confetti.command('configcommands', "Shows various commands that change your settings.", function() {
@@ -1631,6 +1631,10 @@ confetti.cacheFile = 'confetti.json';
     return Client.openBattleFinder();
   });
   confetti.alias('fb', 'findbattle');
+  confetti.command('disconnect', "Disconnects you from the server and returns you to the server selection screen.", function() {
+    return Client.done();
+  });
+  confetti.alias('dc', 'disconnect');
   confetti.command('chan', {
     help: "Joins, jumps to, or creates a channel.",
     args: ["name"]
