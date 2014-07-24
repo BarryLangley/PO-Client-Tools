@@ -23,9 +23,9 @@ do ->
         confetti.msg.html "", chan
 
         confetti.msg.bot "For example:"
-        confetti.msg.html "#{confetti.msg.bullet} Add a mapping: #{confetti.cache.get('commandindicator')}map pl:send:/players", chan
-        confetti.msg.html "#{confetti.msg.bullet} Execute it: #{confetti.cache.get('mapindicator')}pl", chan
-        confetti.msg.html "#{confetti.msg.bullet} Add a multi-map: #{confetti.cache.get('commandindicator')}map hi2:send:hi\\neveryone", chan
+        confetti.msg.html "#{confetti.msg.bullet} <b>Add a mapping</b>: #{confetti.cache.get('commandindicator')}map pl:send:/players", chan
+        confetti.msg.html "#{confetti.msg.bullet} <b>Execute it</b>: #{confetti.cache.get('mapindicator')}pl", chan
+        confetti.msg.html "#{confetti.msg.bullet} <b>Add a multi-map</b>: #{confetti.cache.get('commandindicator')}map hi2:send:hi\\neveryone", chan
         confetti.msg.html "", chan
 
         confetti.msg.bot "You currently have maps #{if confetti.cache.get('mapsenabled') then 'enabled' else 'disabled'}. Toggle it with the <b>togglemaps</b> command."

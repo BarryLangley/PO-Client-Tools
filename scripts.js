@@ -729,7 +729,7 @@ confetti.cacheFile = 'confetti.json';
     command = "";
     data = "";
     if (space !== -1) {
-      command = message.substr(0, space - 1);
+      command = message.substr(0, space);
       data = message.substr(space + 1);
     } else {
       command = message;
@@ -1464,9 +1464,9 @@ confetti.cacheFile = 'confetti.json';
     confetti.msg.html("" + confetti.msg.bullet + " <b>send</b>: Sends a message in the channel you are in when you use the map. Requires data: the message to send. Can also be used to execute server commands.", chan);
     confetti.msg.html("", chan);
     confetti.msg.bot("For example:");
-    confetti.msg.html("" + confetti.msg.bullet + " Add a mapping: " + (confetti.cache.get('commandindicator')) + "map pl:send:/players", chan);
-    confetti.msg.html("" + confetti.msg.bullet + " Execute it: " + (confetti.cache.get('mapindicator')) + "pl", chan);
-    confetti.msg.html("" + confetti.msg.bullet + " Add a multi-map: " + (confetti.cache.get('commandindicator')) + "map hi2:send:hi\\neveryone", chan);
+    confetti.msg.html("" + confetti.msg.bullet + " <b>Add a mapping</b>: " + (confetti.cache.get('commandindicator')) + "map pl:send:/players", chan);
+    confetti.msg.html("" + confetti.msg.bullet + " <b>Execute it</b>: " + (confetti.cache.get('mapindicator')) + "pl", chan);
+    confetti.msg.html("" + confetti.msg.bullet + " <b>Add a multi-map</b>: " + (confetti.cache.get('commandindicator')) + "map hi2:send:hi\\neveryone", chan);
     confetti.msg.html("", chan);
     return confetti.msg.bot("You currently have maps " + (confetti.cache.get('mapsenabled') ? 'enabled' : 'disabled') + ". Toggle it with the <b>togglemaps</b> command.");
   });

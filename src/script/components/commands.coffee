@@ -79,7 +79,7 @@ do ->
         data    = ""
 
         if space isnt -1
-            command = message.substr(0, space - 1)
+            command = message.substr(0, space)
             data = message.substr(space + 1)
         else
             command = message
