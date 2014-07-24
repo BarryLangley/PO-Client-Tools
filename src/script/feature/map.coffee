@@ -73,12 +73,12 @@ do ->
         if maps[msg]
             oldmap = maps[msg]
             if oldmap.type is type and oldmap.data is mdata
-                return confetti.msg.bot "#{confetti.cache.get('mapindicator')}#{msg} already maps to #{type}#{if map.data then ' (' + mdata + ')' else ''}!"
+                return confetti.msg.bot "#{confetti.cache.get('mapindicator')}#{msg} already maps to #{type}#{if mdata then ' (' + mdata + ')' else ''}!"
 
         maps[msg] = {msg, type, data: mdata}
         confetti.cache.store('maps', maps).save()
 
-        confetti.msg.bot "#{confetti.cache.get('mapindicator')}#{msg} now maps to #{type}#{if map.data then ' (' + mdata + ')' else ''}!"
+        confetti.msg.bot "#{confetti.cache.get('mapindicator')}#{msg} now maps to #{type}#{if mdata then ' (' + mdata + ')' else ''}!"
 
     confetti.command 'unmap', {help: "Removes the mapping for the message [message].", args: ["message"]}, (data) ->
         maps = confetti.cache.get 'maps'

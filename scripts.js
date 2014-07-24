@@ -1512,7 +1512,7 @@ confetti.cacheFile = 'confetti.json';
     if (maps[msg]) {
       oldmap = maps[msg];
       if (oldmap.type === type && oldmap.data === mdata) {
-        return confetti.msg.bot("" + (confetti.cache.get('mapindicator')) + msg + " already maps to " + type + (map.data ? ' (' + mdata + ')' : '') + "!");
+        return confetti.msg.bot("" + (confetti.cache.get('mapindicator')) + msg + " already maps to " + type + (mdata ? ' (' + mdata + ')' : '') + "!");
       }
     }
     maps[msg] = {
@@ -1521,7 +1521,7 @@ confetti.cacheFile = 'confetti.json';
       data: mdata
     };
     confetti.cache.store('maps', maps).save();
-    return confetti.msg.bot("" + (confetti.cache.get('mapindicator')) + msg + " now maps to " + type + (map.data ? ' (' + mdata + ')' : '') + "!");
+    return confetti.msg.bot("" + (confetti.cache.get('mapindicator')) + msg + " now maps to " + type + (mdata ? ' (' + mdata + ')' : '') + "!");
   });
   confetti.command('unmap', {
     help: "Removes the mapping for the message [message].",
