@@ -88,7 +88,9 @@ confettiScript =
 
     # Messages sent by the player
     beforeSendMessage: (message, chan) ->
-        stop = confetti.callHooks 'beforeSendMessage', message, chan, stop
+        stop = no
+        [message, chan, stop] = confetti.callHooks 'beforeSendMessage', message, chan, stop
+
         if stop
             sys.stopEvent()
             return

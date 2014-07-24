@@ -2407,8 +2407,9 @@ confettiScript = {
     return confetti.callHooks('pmReceived', src, message);
   },
   beforeSendMessage: function(message, chan) {
-    var dirty, stop, _ref;
-    stop = confetti.callHooks('beforeSendMessage', message, chan, stop);
+    var dirty, stop, _ref, _ref1;
+    stop = false;
+    _ref = confetti.callHooks('beforeSendMessage', message, chan, stop), message = _ref[0], chan = _ref[1], stop = _ref[2];
     if (stop) {
       sys.stopEvent();
       return;
@@ -2419,7 +2420,7 @@ confettiScript = {
       return;
     }
     dirty = false;
-    _ref = confetti.callHooks('manipulateOwnMessage', message, chan, dirty), message = _ref[0], chan = _ref[1], dirty = _ref[2];
+    _ref1 = confetti.callHooks('manipulateOwnMessage', message, chan, dirty), message = _ref1[0], chan = _ref1[1], dirty = _ref1[2];
     if (dirty) {
       sys.stopEvent();
       return Network.sendChanMessage(chan, message);
