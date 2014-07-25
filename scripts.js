@@ -739,9 +739,10 @@ confetti.cacheFile = 'confetti.json';
   confetti.commands = commands;
   confetti.aliases = aliases;
   CommandList = (function() {
-    function CommandList(name) {
+    function CommandList(name, highlight) {
       var commandindicator;
       this.name = name;
+      this.highlight = highlight != null ? highlight : [];
       commandindicator = confetti.cache.get('commandindicator');
       this.template = ["<table width=25%><tr><td><center><font size=5><b>" + this.name + "</b></font></center></td></tr></table>", "", "<b style='color:teal'>To use any of these commands, prefix them with '" + commandindicator + "' like so:</b> <u>" + commandindicator + "commands</u>", ""];
     }
@@ -757,6 +758,9 @@ confetti.cacheFile = 'confetti.json';
           aliasstr = " (Alias" + (caliases.length === 1 ? '' : 'es') + ": <i>" + (caliases.join(', ')) + "</i>)";
         }
         cmdname = "<a href='po:" + parts[0] + "/-" + parts[1] + "' style='text-decoration:none;color:teal'>" + command.info.usage + "</a>";
+        if (__indexOf.call(this.highlight, name) >= 0) {
+          cmdname = "<b class='name-hilight'>" + cmdname + "</b>";
+        }
         this.template.push("\u00bb " + cmdname + " - " + command.info.desc + aliasstr);
       }
       return this;
@@ -1459,15 +1463,21 @@ confetti.cacheFile = 'confetti.json';
     return true;
   };
   confetti.command('maphelp', "Displays help for message mapping.", function(_, chan) {
-    confetti.msg.bot("Message mapping allows you to map a message (starting with your mapping indicator - which is currently <b>" + (confetti.cache.get('mapindicator')) + "</b>) to something else, specified by the mapping <b>type</b>. You can execute multiple commands for a map by separating each command with \"\\n\". The following types are available:");
+    var cin, min;
+    cin = confetti.cache.get('commandindicator');
+    min = confetti.cache.get('mapindicator');
+    confetti.msg.bot("Message mapping (commonly known as binds) allows you to map a message (starting with your mapping indicator - which is currently <b><font size=4>" + cin + "</font></b>) to something else, specified by the mapping <b>type</b>. Its purpose is to expand something short, easily to type, into a longer piece of text which you have defined beforehand using the <b>map</b> command.");
+    confetti.msg.bot("Maps take a type to indicate what to do. Here they are:");
     confetti.msg.html("" + confetti.msg.bullet + " <b>command</b>: Executes a Confetti command. Requires data: the command to execute. It doesn't have to start with your command indicator.", chan);
     confetti.msg.html("" + confetti.msg.bullet + " <b>send</b>: Sends a message in the channel you are in when you use the map. Requires data: the message to send. Can also be used to execute server commands.", chan);
     confetti.msg.html("", chan);
     confetti.msg.bot("For example:");
-    confetti.msg.html("" + confetti.msg.bullet + " <b>Add a mapping</b>: " + (confetti.cache.get('commandindicator')) + "map pl:send:/players", chan);
-    confetti.msg.html("" + confetti.msg.bullet + " <b>Execute it</b>: " + (confetti.cache.get('mapindicator')) + "pl", chan);
-    confetti.msg.html("" + confetti.msg.bullet + " <b>Add a multi-map</b>: " + (confetti.cache.get('commandindicator')) + "map hi2:send:hi\\neveryone", chan);
+    confetti.msg.html("" + confetti.msg.bullet + " <b>Add a mapping</b>: <a href='po:send/-map pl:send:/players'>" + cin + "map pl:send:/players</a>", chan);
+    confetti.msg.html("" + confetti.msg.bullet + " <b>Execute it</b>: <a href='po:send/" + min + "pl'>" + min + "pl</a>", chan);
+    confetti.msg.html("" + confetti.msg.bullet + " <b>Add a multi-map</b>: <a href='po:send/-map hi2:send:hi\\neveryone'>" + cin + "map hi2:send:hi\\neveryone</a> (executing it is the same process)", chan);
     confetti.msg.html("", chan);
+    confetti.msg.bot("You can execute multiple commands in your mapping for a map by separating each command with the text \"\\n\". This is called a <b>multi-map</b>.");
+    confetti.msg.bot("To remove a mapping, use the <b>unmap</b> command. For a list of maps, use the <a href='po:send/-maps'><b>" + cin + "maps</b></a> command.");
     return confetti.msg.bot("You currently have maps " + (confetti.cache.get('mapsenabled') ? 'enabled' : 'disabled') + ". Toggle it with the <b>togglemaps</b> command.");
   });
   confetti.command('maps', "Displays your message mappings.", function(_, chan) {

@@ -91,7 +91,7 @@ do ->
 
     # Command lists
     class CommandList
-        constructor: (@name) ->
+        constructor: (@name, @highlight=[]) ->
             commandindicator = confetti.cache.get 'commandindicator'
             @template = [
                 "<table width=25%><tr><td><center><font size=5><b>#{@name}</b></font></center></td></tr></table>"
@@ -110,6 +110,8 @@ do ->
                     aliasstr = " (Alias#{if caliases.length is 1 then '' else 'es'}: <i>#{caliases.join(', ')}</i>)"
 
                 cmdname = "<a href='po:#{parts[0]}/-#{parts[1]}' style='text-decoration:none;color:teal'>#{command.info.usage}</a>"
+                if name in @highlight
+                    cmdname = "<b class='name-hilight'>#{cmdname}</b>"
                 @template.push("\u00bb #{cmdname} - #{command.info.desc}#{aliasstr}")
             return this
         cmds: (names) ->
