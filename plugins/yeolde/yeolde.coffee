@@ -95,7 +95,7 @@ do ->
     arrRandom = (arr) -> arr[Math.floor(Math.random() * arr.length)]
 
     yeolde = (message) ->
-         startmsg = arrRandom(startmsgs)
+        startmsg = arrRandom(startmsgs)
         endmsg = arrRandom(endmsgs)
 
         startmsg = startmsg

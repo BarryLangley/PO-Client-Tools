@@ -1,5 +1,5 @@
 (function() {
-  var arrRandom, bodypartadjs, bodyparts, endmsg, endmsgs, exclam, exclamrepl, godadjs, gods, insultadj, insultnoun, insults, message, questi, questirepl, startmsg, startmsgs, word, words, wrd, yeolde, _i, _len;
+  var arrRandom, bodypartadjs, bodyparts, endmsgs, exclam, exclamrepl, godadjs, gods, insultadj, insultnoun, insults, questi, questirepl, startmsgs, word, words, yeolde;
   words = [];
   exclam = /!/g;
   exclamrepl = [", verily!", ", verily I say!", ", verily I sayeth!", ", I say!", ", I sayeth!", "! Huzzah!", "! Hear Hear!", "! What-ho!", "! Ho!", "! Fie!", ", indeed!"];
@@ -87,28 +87,28 @@
     return arr[Math.floor(Math.random() * arr.length)];
   };
   yeolde = function(message) {
-    var startmsg;
-    return startmsg = arrRandom(startmsgs);
+    var endmsg, startmsg, wrd, _i, _len;
+    startmsg = arrRandom(startmsgs);
+    endmsg = arrRandom(endmsgs);
+    startmsg = startmsg.replace("<god>", arrRandom(gods)).replace("<god adjective>", arrRandom(godadjs)).replace("<body part>", arrRandom(bodyparts)).replace("<body part adjective>", arrRandom(bodypartadjs));
+    message = message.replace(exclam, arrRandom(exclamrepl));
+    message = message.replace(questi, arrRandom(questirepl));
+    message = message.replace(insults, function() {
+      var adj1, adjs, noun;
+      adjs = insultadj.slice();
+      adj1 = arrRandom(adjs);
+      noun = arrRandom(insultnoun);
+      adjs.splice(adjs.indexOf(adj1), 1);
+      return adj1 + ", " + Utils.arrRandom(adjs) + ", " + noun;
+    });
+    for (_i = 0, _len = words.length; _i < _len; _i++) {
+      wrd = words[_i];
+      message = message.replace(wrd[0], arrRandom(wrd[1]));
+    }
+    if (["!", "?", "", ",", "."].indexOf(message[message.length - 1]) === -1) {
+      message += ".";
+    }
+    return "" + startmsg + " " + message + " " + endmsg;
   };
-  endmsg = arrRandom(endmsgs);
-  startmsg = startmsg.replace("<god>", arrRandom(gods)).replace("<god adjective>", arrRandom(godadjs)).replace("<body part>", arrRandom(bodyparts)).replace("<body part adjective>", arrRandom(bodypartadjs));
-  message = message.replace(exclam, arrRandom(exclamrepl));
-  message = message.replace(questi, arrRandom(questirepl));
-  message = message.replace(insults, function() {
-    var adj1, adjs, noun;
-    adjs = insultadj.slice();
-    adj1 = arrRandom(adjs);
-    noun = arrRandom(insultnoun);
-    adjs.splice(adjs.indexOf(adj1), 1);
-    return adj1 + ", " + Utils.arrRandom(adjs) + ", " + noun;
-  });
-  for (_i = 0, _len = words.length; _i < _len; _i++) {
-    wrd = words[_i];
-    message = message.replace(wrd[0], arrRandom(wrd[1]));
-  }
-  if (["!", "?", "", ",", "."].indexOf(message[message.length - 1]) === -1) {
-    message += ".";
-  }
-  return "" + startmsg + " " + message + " " + endmsg;
   return confetti.encool.register('yeolde', yeolde);
 })();
