@@ -35,7 +35,7 @@ do ->
                     unless errmsg
                         return
 
-                    return confetti.bot.msg(errmsg, chan)
+                    return confetti.msg.bot(errmsg, chan)
                 else if typeof errback is 'function'
                     return errback()
                 else return
@@ -52,7 +52,7 @@ do ->
                     unless errmsg
                         return
 
-                    return confetti.bot.msg(errmsg, chan)
+                    return confetti.msg.bot(errmsg, chan)
                 else if typeof errback is 'function'
                     return errback()
                 else return

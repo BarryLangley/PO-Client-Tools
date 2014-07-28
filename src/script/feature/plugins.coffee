@@ -19,10 +19,10 @@ do ->
     hasPlugin = (id, plugins) -> findPlugin(id, plugins) isnt null
 
     getListing = (chan, callback, verbose=yes) ->
-        confetti.io.getRemoteJson "#{confetti.pluginsUrl}listing.json", [(if verbose then "A connection error occured whilst loading the plugin listing." else ""), chan], callback
+        confetti.io.getRemoteJson "#{confetti.pluginsUrl}listing.json", [(if verbose then "An error occured whilst loading the plugin listing." else ""), chan], callback
 
     getPluginFile = (pid, chan, callback, verbose=yes) ->
-        confetti.io.getRemoteFile "#{confetti.pluginsUrl}#{pid}/#{pid}.js", [(if verbose then "A connection error occured whilst loading the plugin source file of the plugin #{pid}." else ""), chan], callback
+        confetti.io.getRemoteFile "#{confetti.pluginsUrl}#{pid}/#{pid}.js", [(if verbose then "An error occured whilst loading the plugin source file of the plugin #{pid}." else ""), chan], callback
 
     updatePlugins = (verbose = no, chan) ->
         getListing chan, (json) ->

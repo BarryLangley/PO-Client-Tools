@@ -209,7 +209,7 @@ confetti.cacheFile = 'confetti.json';
           if (!errmsg) {
             return;
           }
-          return confetti.bot.msg(errmsg, chan);
+          return confetti.msg.bot(errmsg, chan);
         } else if (typeof errback === 'function') {
           return errback();
         } else {
@@ -231,7 +231,7 @@ confetti.cacheFile = 'confetti.json';
           if (!errmsg) {
             return;
           }
-          return confetti.bot.msg(errmsg, chan);
+          return confetti.msg.bot(errmsg, chan);
         } else if (typeof errback === 'function') {
           return errback();
         } else {
@@ -1856,13 +1856,13 @@ confetti.cacheFile = 'confetti.json';
     if (verbose == null) {
       verbose = true;
     }
-    return confetti.io.getRemoteJson("" + confetti.pluginsUrl + "listing.json", [(verbose ? "A connection error occured whilst loading the plugin listing." : ""), chan], callback);
+    return confetti.io.getRemoteJson("" + confetti.pluginsUrl + "listing.json", [(verbose ? "An error occured whilst loading the plugin listing." : ""), chan], callback);
   };
   getPluginFile = function(pid, chan, callback, verbose) {
     if (verbose == null) {
       verbose = true;
     }
-    return confetti.io.getRemoteFile("" + confetti.pluginsUrl + pid + "/" + pid + ".js", [(verbose ? "A connection error occured whilst loading the plugin source file of the plugin " + pid + "." : ""), chan], callback);
+    return confetti.io.getRemoteFile("" + confetti.pluginsUrl + pid + "/" + pid + ".js", [(verbose ? "An error occured whilst loading the plugin source file of the plugin " + pid + "." : ""), chan], callback);
   };
   updatePlugins = function(verbose, chan) {
     if (verbose == null) {
