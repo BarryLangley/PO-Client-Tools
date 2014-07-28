@@ -748,20 +748,22 @@ confetti.cacheFile = 'confetti.json';
     }
 
     CommandList.prototype.cmd = function(name) {
-      var aliasstr, caliases, cmdname, command, parts;
+      var aliasstr, caliases, cmdname, command, desc, info, parts;
       command = confetti.commands[name];
       if (command) {
-        parts = command.info.complete.split('@');
+        info = command.info;
+        parts = info.complete.split('@');
+        desc = typeof info.desc === 'function' ? info.desc() : info.desc;
         caliases = confetti.aliasesOf(name);
         aliasstr = '';
         if (caliases) {
           aliasstr = " (Alias" + (caliases.length === 1 ? '' : 'es') + ": <i>" + (caliases.join(', ')) + "</i>)";
         }
-        cmdname = "<a href='po:" + parts[0] + "/-" + parts[1] + "' style='text-decoration:none;color:teal'>" + command.info.usage + "</a>";
+        cmdname = "<a href='po:" + parts[0] + "/-" + parts[1] + "' style='text-decoration:none;color:teal'>" + info.usage + "</a>";
         if (__indexOf.call(this.highlight, name) >= 0) {
           cmdname = "<b class='name-hilight'>" + cmdname + "</b>";
         }
-        this.template.push("\u00bb " + cmdname + " - " + command.info.desc + aliasstr);
+        this.template.push("\u00bb " + cmdname + " - " + info.desc + aliasstr);
       }
       return this;
     };
@@ -1170,7 +1172,9 @@ confetti.cacheFile = 'confetti.json';
     return Network.sendChanMessage(chan, encool(msg));
   };
   confetti.command('encool', {
-    help: "Changes your encool type to (" + (encoolTypes.join(', ')) + ").",
+    help: function() {
+      return "Changes your encool type to (" + (encoolTypes.join(', ')) + ").";
+    },
     args: ["type"]
   }, function(data) {
     data = data.toLowerCase();

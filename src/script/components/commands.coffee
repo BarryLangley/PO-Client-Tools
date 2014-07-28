@@ -102,17 +102,20 @@ do ->
         cmd: (name) ->
             command = confetti.commands[name]
             if command
-                parts = command.info.complete.split '@'
+                info = command.info
+
+                parts = info.complete.split '@'
+                desc = if typeof info.desc is 'function' then info.desc() else info.desc
 
                 caliases = confetti.aliasesOf(name)
                 aliasstr = ''
                 if caliases
                     aliasstr = " (Alias#{if caliases.length is 1 then '' else 'es'}: <i>#{caliases.join(', ')}</i>)"
 
-                cmdname = "<a href='po:#{parts[0]}/-#{parts[1]}' style='text-decoration:none;color:teal'>#{command.info.usage}</a>"
+                cmdname = "<a href='po:#{parts[0]}/-#{parts[1]}' style='text-decoration:none;color:teal'>#{info.usage}</a>"
                 if name in @highlight
                     cmdname = "<b class='name-hilight'>#{cmdname}</b>"
-                @template.push("\u00bb #{cmdname} - #{command.info.desc}#{aliasstr}")
+                @template.push("\u00bb #{cmdname} - #{info.desc}#{aliasstr}")
             return this
         cmds: (names) ->
             if typeof names is 'string'

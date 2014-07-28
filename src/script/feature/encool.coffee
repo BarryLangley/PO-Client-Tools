@@ -158,7 +158,9 @@ do ->
 
         Network.sendChanMessage chan, encool(msg)
 
-    confetti.command 'encool', {help: "Changes your encool type to (#{encoolTypes.join(', ')}).", args: ["type"]}, (data) ->
+    confetti.command 'encool', {help: ->
+        return "Changes your encool type to (#{encoolTypes.join(', ')})."
+    , args: ["type"]}, (data) ->
         data = data.toLowerCase()
 
         if !(data in encoolTypes)
