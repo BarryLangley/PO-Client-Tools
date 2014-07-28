@@ -31,13 +31,9 @@ module.exports = (grunt) ->
     ]
 
     clientFiles = ("src/script/#{file}.coffee" for file in clientFiles)
-    plugins = ['insults', 'aoctaunts', 'emoji', 'pusestats']
 
     gruntConfig =
         pkg: grunt.file.readJSON 'package.json'
-        #concat:
-        #    options:
-        #        separator: ''
         coffee:
             client:
                 options:
@@ -45,44 +41,25 @@ module.exports = (grunt) ->
                     join: yes
                 files:
                     'scripts.js': clientFiles
-            'insult-plugin':
-                options:
-                    bare: yes
-                    join: yes
-                files:
-                    'plugins/insults/insults.js': 'plugins/insults/insults.coffee'
-            'pokedex-plugin':
-                options:
-                    bare: yes
-                    join: yes
-                files:
-                    'plugins/pokedex/pokedex.js': ['plugins/pokedex/pokedex.coffee', 'plugins/pokedex/interface.coffee', 'plugins/pokedex/commands.coffee']
-            'aoctaunts-plugin':
-                options:
-                    bare: yes
-                    join: yes
-                files:
-                    'plugins/aoctaunts/aoctaunts.js': 'plugins/aoctaunts/aoctaunts.coffee'
-            'emoji-plugin':
-                options:
-                    bare: yes
-                    join: yes
-                files:
-                    'plugins/emoji/emoji.js': 'plugins/emoji/emoji.coffee'
-            'pusestats-plugin':
-                options:
-                    bare: yes
-                    join: yes
-                files:
-                    'plugins/pusestats/pusestats.js': 'plugins/pusestats/pusestats.coffee'
 
-    for plugin in plugins
+    plugins = []
+
+    addPlugin = (name, files=["plugins/#{name}/#{name}.coffee"]) ->
+        plugins.push name
         config =
             options:
                 bare: yes
                 join: yes
             files: {}
-        config.files["plugins/#{plugin}/#{plugin}.js"] = "plugins/#{plugin}/#{plugin}.coffee"
-        gruntConfig.coffee["#{plugin}-plugin"] = config
+
+        config.files["plugins/#{name}/#{name}.js"] = files
+        gruntConfig.coffee["#{name}-plugin"] = config
+
+    addPlugin 'insults'
+    addPlugin 'pokedex', ['plugins/pokedex/pokedex.coffee', 'plugins/pokedex/interface.coffee', 'plugins/pokedex/commands.coffee']
+    addPlugin 'aoctaunts'
+    addPlugin 'emoji'
+    addPlugin 'pusestats'
+    addPlugin 'yeolde'
 
     grunt.initConfig gruntConfig

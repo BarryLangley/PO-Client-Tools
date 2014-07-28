@@ -18,4 +18,8 @@
     "id": "pusestats",
     "name": "Pok&eacute;mon Usage Statistics",
     "version": "1.0.4"
+} {
+    "id": "yeolde",
+    "name": "Ye Olde Encool",
+    "version": "1.0.0"
 }]
