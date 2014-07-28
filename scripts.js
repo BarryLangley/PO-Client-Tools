@@ -763,7 +763,7 @@ confetti.cacheFile = 'confetti.json';
         if (__indexOf.call(this.highlight, name) >= 0) {
           cmdname = "<b class='name-hilight'>" + cmdname + "</b>";
         }
-        this.template.push("\u00bb " + cmdname + " - " + info.desc + aliasstr);
+        this.template.push("\u00bb " + cmdname + " - " + desc + aliasstr);
       }
       return this;
     };
@@ -1158,13 +1158,16 @@ confetti.cacheFile = 'confetti.json';
     }
     return encoolHandlers[type || 'none'](msg);
   };
+  encoolTypes = Object.keys(encoolHandlers);
   confetti.encool = encool;
+  confetti._encool = {
+    encoolHandlers: encoolHandlers,
+    encoolTypes: encoolTypes
+  };
   confetti.encool.register = function(type, handler) {
-    var encoolTypes;
     encoolHandlers[type] = handler;
     return encoolTypes = Object.keys(encoolHandlers);
   };
-  encoolTypes = Object.keys(encoolHandlers);
   confetti.msg.notify = function(msg, chan) {
     if (typeof chan !== 'number' || !Client.hasChannel(chan)) {
       return;

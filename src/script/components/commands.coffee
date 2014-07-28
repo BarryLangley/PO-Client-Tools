@@ -115,7 +115,7 @@ do ->
                 cmdname = "<a href='po:#{parts[0]}/-#{parts[1]}' style='text-decoration:none;color:teal'>#{info.usage}</a>"
                 if name in @highlight
                     cmdname = "<b class='name-hilight'>#{cmdname}</b>"
-                @template.push("\u00bb #{cmdname} - #{info.desc}#{aliasstr}")
+                @template.push("\u00bb #{cmdname} - #{desc}#{aliasstr}")
             return this
         cmds: (names) ->
             if typeof names is 'string'

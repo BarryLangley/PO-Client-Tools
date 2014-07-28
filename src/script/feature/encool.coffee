@@ -144,12 +144,13 @@ do ->
     encool = (msg, type = confetti.cache.read('encool')) ->
         encoolHandlers[type or 'none'](msg)
 
+    encoolTypes = Object.keys(encoolHandlers)
+
     confetti.encool = encool
+    confetti._encool = {encoolHandlers, encoolTypes}
     confetti.encool.register = (type, handler) ->
         encoolHandlers[type] = handler
         encoolTypes = Object.keys(encoolHandlers)
-
-    encoolTypes = Object.keys(encoolHandlers)
 
     # Override
     confetti.msg.notify = (msg, chan) ->
