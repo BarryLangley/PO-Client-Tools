@@ -15,11 +15,9 @@ do ->
 
     deladderscript = """
     ({
-        onTierNotification: function () {
-            var deladder = JSON.parse(sys.getFileContent(sys.scriptsFolder + 'confetti.json')).deladder;
-            if (deladder) {
-                battle.forfeit();
-            }
+        var deladder = JSON.parse(sys.getFileContent(sys.scriptsFolder + 'confetti.json')).deladder;
+        if (deladder) {
+            battle.forfeit();
         }
     })
     """
