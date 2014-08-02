@@ -58,7 +58,7 @@
     deladderfb = confetti.cache.get('deladderfb');
     deladderfb.ranged = !deladderfb.ranged;
     confetti.cache.store('deladderfb', deladderfb).save();
-    return confetti.msg.bot("The deladder battle finder " + (deladdering ? 'will look for players in a range around your rating' : 'will no longer look for players in a range around your rating') + ".");
+    return confetti.msg.bot("The deladder battle finder " + (deladderfb.ranged ? 'will look for players in a range around your rating' : 'will no longer look for players in a range around your rating') + ".");
   });
   confetti.command('deladderrange', {
     help: "Changes the range in which the deladder battle finder will look for players. To enable/disable this, use the deladderranged command.",
@@ -74,7 +74,7 @@
     deladderfb = confetti.cache.get('deladderfb');
     deladderfb.range = num;
     confetti.cache.store('deladderfb', deladderfb).save();
-    return confetti.msg.bot("The deladder battle finder will look for players in a range of " + num + " around your rating");
+    return confetti.msg.bot("The deladder battle finder will look for players in a range of " + num + " around your rating.");
   });
   confetti.command('deladdercommands', "Shows commands related to deladdering.", function() {
     return confetti.cmdlist("Deladdering", 'deladder deladderfindbattle deladderhelp deladdersetup deladderranged deladderrange', 'deladder');

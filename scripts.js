@@ -1451,12 +1451,12 @@ confetti.cacheFile = 'confetti.json';
       return mapdata.length > 0;
     }
   };
-  executeMap = function(map, chan) {
+  executeMap = function(map, param, chan) {
     var data, line, _i, _len;
     if (chan == null) {
       chan = Client.currentChannel();
     }
-    data = map.data.split('\\n');
+    data = map.data.replace(/\$%/g, param).replace(/\$\\%/g, '$%').split('\\n');
     for (_i = 0, _len = data.length; _i < _len; _i++) {
       line = data[_i];
       switch (map.type) {
@@ -1481,11 +1481,14 @@ confetti.cacheFile = 'confetti.json';
     confetti.msg.bot("For example:");
     confetti.msg.html("" + confetti.msg.bullet + " <b>Add a mapping</b>: <a href='po:send/-map pl:send:/players'>" + cin + "map pl:send:/players</a>", chan);
     confetti.msg.html("" + confetti.msg.bullet + " <b>Execute it</b>: <a href='po:send/" + min + "pl'>" + min + "pl</a>", chan);
-    confetti.msg.html("" + confetti.msg.bullet + " <b>Add a multi-map</b>: <a href='po:send/-map hi2:send:hi\\neveryone'>" + cin + "map hi2:send:hi\\neveryone</a> (executing it is the same process)", chan);
+    confetti.msg.html("" + confetti.msg.bullet + " <b>Add a multi map</b>: <a href='po:send/-map hi2:send:hi\\neveryone'>" + cin + "map hi2:send:hi\\neveryone</a> (executing it is the same process)", chan);
+    confetti.msg.html("" + confetti.msg.bullet + " <b>Add a parameter map</b>: <a href='po:send/-map ch:-chan $%'>" + cin + "map ch:-chan $%</a>", chan);
+    confetti.msg.html("" + confetti.msg.bullet + " <b>Execute it</b>: <a href='po:send/" + min + "ch Confetti'>" + min + "ch Confetti</a>", chan);
     confetti.msg.html("", chan);
-    confetti.msg.bot("You can execute multiple commands in your mapping for a map by separating each command with the text \"\\n\". This is called a <b>multi-map</b>.");
+    confetti.msg.bot("You can execute multiple commands in your mapping for a map by separating each command with the text \"\\n\". This is called a <b>multi map</b>.");
+    confetti.msg.bot("If you want your map to take a parameter, you can do so by putting $% in your map (see below). If you need to have $% in your map, you can do $\\%. This is called a <b>parameter map</b>. Parameter maps and multi maps can be combined just fine.");
     confetti.msg.bot("To remove a mapping, use the <b>unmap</b> command. For a list of maps, use the <a href='po:send/-maps'><b>" + cin + "maps</b></a> command.");
-    return confetti.msg.bot("You currently have maps " + (confetti.cache.get('mapsenabled') ? 'enabled' : 'disabled') + ". Toggle it with the <b>togglemaps</b> command.");
+    return confetti.msg.bot("You currently have maps " + (confetti.cache.get('mapsenabled') ? 'enabled' : 'disabled') + ". Toggle it with the <a href='po:send/-togglemaps'><b>" + cin + "togglemaps</b></a> command.");
   });
   confetti.command('maps', "Displays your message mappings.", function(_, chan) {
     var count, html, map, mapc, maps;
@@ -1514,6 +1517,9 @@ confetti.cacheFile = 'confetti.json';
     maps = confetti.cache.get('maps');
     if (!msg) {
       return confetti.msg.bot("Specify a mapping!");
+    }
+    if (msg.indexOf(' ') !== -1) {
+      return confetti.msg.bot("Map names cannot contain spaces.");
     }
     if (!(__indexOf.call(mapTypes, type) >= 0)) {
       return confetti.msg.bot("" + type + " is not a valid map type. Use the maphelp command for more info.");
@@ -1577,12 +1583,14 @@ confetti.cacheFile = 'confetti.json';
     mapsenabled: true
   });
   return confetti.hook('beforeSendMessage', function(message, chan, stop) {
-    var mapmsg, maps;
+    var mapmsg, mapparts, maps, params;
     if (confetti.cache.get('mapsenabled') === true && message[0] === confetti.cache.get('mapindicator')) {
-      mapmsg = message.substr(1);
+      mapparts = message.substr(1).split(' ');
+      mapmsg = mapparts[0];
+      params = mapparts.slice(1);
       maps = confetti.cache.get('maps');
       if (maps.hasOwnProperty(mapmsg)) {
-        executeMap(maps[mapmsg], chan);
+        executeMap(maps[mapmsg], params, chan);
         stop = true;
       }
     }

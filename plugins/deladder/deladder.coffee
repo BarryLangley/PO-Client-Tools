@@ -69,7 +69,7 @@ do ->
         deladderfb.ranged = !deladderfb.ranged
 
         confetti.cache.store('deladderfb', deladderfb).save()
-        confetti.msg.bot "The deladder battle finder #{if deladdering then 'will look for players in a range around your rating' else 'will no longer look for players in a range around your rating'}."
+        confetti.msg.bot "The deladder battle finder #{if deladderfb.ranged then 'will look for players in a range around your rating' else 'will no longer look for players in a range around your rating'}."
 
     confetti.command 'deladderrange', {help: "Changes the range in which the deladder battle finder will look for players. To enable/disable this, use the deladderranged command.", args: ["range"]}, (data) ->
         num = parseInt(data, 10)
@@ -83,7 +83,7 @@ do ->
         deladderfb.range = num
 
         confetti.cache.store('deladderfb', deladderfb).save()
-        confetti.msg.bot "The deladder battle finder will look for players in a range of #{num} around your rating"
+        confetti.msg.bot "The deladder battle finder will look for players in a range of #{num} around your rating."
 
     confetti.command 'deladdercommands', "Shows commands related to deladdering.", ->
         confetti.cmdlist("Deladdering", 'deladder deladderfindbattle deladderhelp deladdersetup deladderranged deladderrange', 'deladder')
