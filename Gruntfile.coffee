@@ -61,5 +61,6 @@ module.exports = (grunt) ->
     addPlugin 'emoji'
     addPlugin 'pusestats'
     addPlugin 'yeolde'
+    addPlugin 'deladder'
 
     grunt.initConfig gruntConfig
