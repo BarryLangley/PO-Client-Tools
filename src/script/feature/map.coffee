@@ -5,8 +5,8 @@ do ->
         send: (mapdata) -> mapdata.length > 0
     }
 
-    executeMap = (map, chan=Client.currentChannel()) ->
-        data = map.data.split('\\n')
+    executeMap = (map, param, chan=Client.currentChannel()) ->
+        data = map.data.replace(/\$%/g, param).replace(/\$\\%/g, '$%').split('\\n')
         for line in data
             switch map.type
                 when "command"
@@ -29,13 +29,17 @@ do ->
         confetti.msg.bot "For example:"
         confetti.msg.html "#{confetti.msg.bullet} <b>Add a mapping</b>: <a href='po:send/-map pl:send:/players'>#{cin}map pl:send:/players</a>", chan
         confetti.msg.html "#{confetti.msg.bullet} <b>Execute it</b>: <a href='po:send/#{min}pl'>#{min}pl</a>", chan
-        confetti.msg.html "#{confetti.msg.bullet} <b>Add a multi-map</b>: <a href='po:send/-map hi2:send:hi\\neveryone'>#{cin}map hi2:send:hi\\neveryone</a> (executing it is the same process)", chan
+        confetti.msg.html "#{confetti.msg.bullet} <b>Add a multi map</b>: <a href='po:send/-map hi2:send:hi\\neveryone'>#{cin}map hi2:send:hi\\neveryone</a> (executing it is the same process)", chan
+        confetti.msg.html "#{confetti.msg.bullet} <b>Add a parameter map</b>: <a href='po:send/-map ch:-chan $%'>#{cin}map ch:-chan $%</a>", chan
+        confetti.msg.html "#{confetti.msg.bullet} <b>Execute it</b>: <a href='po:send/#{min}ch Confetti'>#{min}ch Confetti</a>", chan
+
         confetti.msg.html "", chan
 
-        confetti.msg.bot "You can execute multiple commands in your mapping for a map by separating each command with the text \"\\n\". This is called a <b>multi-map</b>."
+        confetti.msg.bot "You can execute multiple commands in your mapping for a map by separating each command with the text \"\\n\". This is called a <b>multi map</b>."
+        confetti.msg.bot "If you want your map to take a parameter, you can do so by putting $% in your map (see below). If you need to have $% in your map, you can do $\\%. This is called a <b>parameter map</b>. Parameter maps and multi maps can be combined just fine."
         confetti.msg.bot "To remove a mapping, use the <b>unmap</b> command. For a list of maps, use the <a href='po:send/-maps'><b>#{cin}maps</b></a> command."
 
-        confetti.msg.bot "You currently have maps #{if confetti.cache.get('mapsenabled') then 'enabled' else 'disabled'}. Toggle it with the <b>togglemaps</b> command."
+        confetti.msg.bot "You currently have maps #{if confetti.cache.get('mapsenabled') then 'enabled' else 'disabled'}. Toggle it with the <a href='po:send/-togglemaps'><b>#{cin}togglemaps</b></a> command."
 
     confetti.command 'maps', "Displays your message mappings.", (_, chan) ->
         maps = confetti.cache.get('maps')
@@ -65,6 +69,9 @@ do ->
 
         unless msg
             return confetti.msg.bot "Specify a mapping!"
+
+        if msg.indexOf(' ') isnt -1
+            return confetti.msg.bot "Map names cannot contain spaces."
 
         if !(type in mapTypes)
             return confetti.msg.bot "#{type} is not a valid map type. Use the maphelp command for more info."
@@ -119,10 +126,12 @@ do ->
     confetti.initFields {maps: {}, mapindicator: ':', mapsenabled: yes}
     confetti.hook 'beforeSendMessage', (message, chan, stop) ->
         if confetti.cache.get('mapsenabled') is on and message[0] is confetti.cache.get('mapindicator')
-            mapmsg = message.substr(1)
+            mapparts = message.substr(1).split(' ')
+            mapmsg = mapparts[0]
+            params = mapparts.slice(1)
             maps = confetti.cache.get('maps')
             if maps.hasOwnProperty(mapmsg)
-                executeMap(maps[mapmsg], chan)
+                executeMap(maps[mapmsg], params, chan)
                 stop = yes
 
         [message, chan, stop]
