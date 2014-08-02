@@ -14,12 +14,10 @@ do ->
                 , 1000, no
 
     deladderscript = """
-    ({
-        var deladder = JSON.parse(sys.getFileContent(sys.scriptsFolder + 'confetti.json')).deladder;
-        if (deladder) {
-            battle.forfeit();
-        }
-    })
+    var deladder = JSON.parse(sys.getFileContent(sys.scriptsFolder + 'confetti.json')).deladder;
+    if (deladder) {
+        battle.forfeit();
+    }
     """
 
     confetti.command 'deladder', "Toggles whether if deladdering should be enabled.", ->

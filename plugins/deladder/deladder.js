@@ -16,7 +16,7 @@
       }
     }
   });
-  deladderscript = "({\n    var deladder = JSON.parse(sys.getFileContent(sys.scriptsFolder + 'confetti.json')).deladder;\n    if (deladder) {\n        battle.forfeit();\n    }\n})";
+  deladderscript = "var deladder = JSON.parse(sys.getFileContent(sys.scriptsFolder + 'confetti.json')).deladder;\nif (deladder) {\n    battle.forfeit();\n}";
   confetti.command('deladder', "Toggles whether if deladdering should be enabled.", function() {
     var deladdering;
     deladdering = !confetti.cache.read('deladder');
