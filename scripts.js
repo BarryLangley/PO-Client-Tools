@@ -1482,7 +1482,7 @@ confetti.cacheFile = 'confetti.json';
     confetti.msg.html("" + confetti.msg.bullet + " <b>Add a mapping</b>: <a href='po:send/-map pl:send:/players'>" + cin + "map pl:send:/players</a>", chan);
     confetti.msg.html("" + confetti.msg.bullet + " <b>Execute it</b>: <a href='po:send/" + min + "pl'>" + min + "pl</a>", chan);
     confetti.msg.html("" + confetti.msg.bullet + " <b>Add a multi map</b>: <a href='po:send/-map hi2:send:hi\\neveryone'>" + cin + "map hi2:send:hi\\neveryone</a> (executing it is the same process)", chan);
-    confetti.msg.html("" + confetti.msg.bullet + " <b>Add a parameter map</b>: <a href='po:send/-map ch:-chan $%'>" + cin + "map ch:-chan $%</a>", chan);
+    confetti.msg.html("" + confetti.msg.bullet + " <b>Add a parameter map</b>: <a href='po:send/-map ch:command:chan $%'>" + cin + "map ch:send:chan $%</a>", chan);
     confetti.msg.html("" + confetti.msg.bullet + " <b>Execute it</b>: <a href='po:send/" + min + "ch Confetti'>" + min + "ch Confetti</a>", chan);
     confetti.msg.html("", chan);
     confetti.msg.bot("You can execute multiple commands in your mapping for a map by separating each command with the text \"\\n\". This is called a <b>multi map</b>.");
