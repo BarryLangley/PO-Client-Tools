@@ -35,7 +35,7 @@ do ->
         friends.push data
         confetti.cache.store('friends', friends).save()
 
-        confetti.msg.bot "#{name} is now on your friends list!"
+        confetti.msg.bot "#{sys.htmlEscape(name)} is now on your friends list!"
 
     confetti.command 'unfriend', {help: "Removes [name] from your friend list.", args: ["name"]}, (data) ->
         data = data.toLowerCase()
@@ -43,12 +43,12 @@ do ->
         friends = confetti.cache.get 'friends'
 
         unless data in friends
-            return confetti.msg.bot "#{name} isn't on your friends list!"
+            return confetti.msg.bot "#{sys.htmlEscape(name)} isn't on your friends list!"
 
         friends.splice friends.indexOf(data), 1
         confetti.cache.store('friends', friends).save()
 
-        confetti.msg.bot "You removed #{name} from your friends list!"
+        confetti.msg.bot "You removed #{sys.htmlEscape(name)} from your friends list!"
 
     confetti.command 'friendnotifications', "Toggles whether if notifications specific to friends (logins, logouts) should be shown.", ->
         confetti.cache.store('friendnotifications', !confetti.cache.read('friendnotifications')).save()

@@ -33,7 +33,7 @@ do ->
             return confetti.msg.bot "You can't block yourself!"
 
         if data in blocked
-            return confetti.msg.bot "#{name} is already blocked!"
+            return confetti.msg.bot "#{sys.htmlEscape(name)} is already blocked!"
 
         blocked.push data
         confetti.cache.store('blocked', blocked).save()
@@ -41,7 +41,7 @@ do ->
         id = Client.id data
         Client.ignore(id, yes) if id isnt -1
 
-        confetti.msg.bot "#{name} is now blocked!"
+        confetti.msg.bot "#{sys.htmlEscape(name)} is now blocked!"
 
     confetti.command 'unblock', {help: "Unblocks a user.", args: ["name"]}, (data) ->
         data = data.toLowerCase()
@@ -49,7 +49,7 @@ do ->
         blocked = confetti.cache.get 'blocked'
 
         unless data in blocked
-            return confetti.msg.bot "#{name} isn't blocked!"
+            return confetti.msg.bot "#{sys.htmlEscape(name)} isn't blocked!"
 
         blocked.splice blocked.indexOf(data), 1
         confetti.cache.store('blocked', blocked).save()
@@ -57,7 +57,7 @@ do ->
         id = Client.id data
         Client.ignore(id, no) if id isnt -1
 
-        confetti.msg.bot "You are no longer blocking #{name}!"
+        confetti.msg.bot "You are no longer blocking #{sys.htmlEscape(name)}!"
 
     confetti.initFields {blocked: []}
     confetti.hook 'onPlayerReceived', (id) ->

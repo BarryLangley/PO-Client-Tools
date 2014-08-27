@@ -22,7 +22,7 @@ do ->
 
         html = ""
         for word, index in flashwords
-            html += confetti.msg.bullet + " #{if flashwordCategory(word).type is 'word' then 'Word' else 'Regex'}: <b>#{word}</b> <small>[<a href='po:send/-removeflashword #{word}' style='text-decoration:none;color:black'>remove</a>]</small><br>"
+            html += confetti.msg.bullet + " #{if flashwordCategory(word).type is 'word' then 'Word' else 'Regex'}: <b>#{sys.htmlEscape(word)}</b> <small>[<a href='po:send/-removeflashword #{confetti.util.stripquotes(word)}' style='text-decoration:none;color:black'>remove</a>]</small><br>"
 
         confetti.msg.html html, chan
 

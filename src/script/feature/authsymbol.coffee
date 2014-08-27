@@ -33,7 +33,7 @@ do ->
 
         authsymbols = confetti.cache.get 'authsymbols'
         if isNaN(authl)
-            return confetti.msg.bot "#{parts[0]} is not a number. Give a number in the range 0-4."
+            return confetti.msg.bot "#{sys.htmlEscape(parts[0])} is not a number. Give a number in the range 0-4."
         else if authl < 0
             authl = 0
         else if authl > 4

@@ -23,6 +23,6 @@ do ->
             catch ex
                 return confetti.msg.bot "Failed to translate your message -- check your internet connection", chan
 
-            confetti.msg.bot "'#{message}' is '#{json[0][0][0]}' in '#{to.toUpperCase()}'.", chan
+            confetti.msg.bot "'#{sys.htmlEscape(message)}' is '#{sys.htmlEscape(json[0][0][0])}' in '#{to.toUpperCase()}'.", chan
 
     confetti.alias 'trans, tr', 'translate'

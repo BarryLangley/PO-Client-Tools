@@ -13,10 +13,10 @@ do ->
             return confetti.msg.bot "Uhh, that's too long, I think!"
 
         if confetti.cache.read('botname') is data
-            return confetti.msg.bot "I'm already #{data}!"
+            return confetti.msg.bot "I'm already #{sys.htmlEscape(data)}!"
 
         confetti.cache.store('botname', data).save()
-        confetti.msg.bot "I'm now called #{data}!"
+        confetti.msg.bot "I'm now called #{sys.htmlEscape(data)}!"
 
     confetti.command 'botcolor', {help: "Changes the bot's color to [color].", args: ["color"]}, (data) ->
         data = data.toLowerCase()
@@ -40,10 +40,10 @@ do ->
             return confetti.msg.bot "'!' and '/' are not allowed as command indicators because they are reserved for server scripts."
 
         if confetti.cache.read('commandindicator') is data
-            return confetti.msg.bot "Your command indicator is already #{data}!"
+            return confetti.msg.bot "Your command indicator is already #{sys.htmlEscape(data)}!"
 
         confetti.cache.store('commandindicator', data).save()
-        confetti.msg.bot "Your command indicator is now #{data}!"
+        confetti.msg.bot "Your command indicator is now #{sys.htmlEscape(data)}!"
 
     # Use setmsg here as this command can be dangerous.
     confetti.command 'defaults', "Sets all settings back to their defaults. There may be some plugins which do not support this action, in which case they might break.", (data) ->

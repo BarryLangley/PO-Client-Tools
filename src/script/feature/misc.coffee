@@ -124,7 +124,7 @@ do ->
                 FlagTempBanned = 16
 
                 if ui.flags & FlagNonExistant
-                    return confetti.msg.bot "#{data} has not been on this server yet.", chan
+                    return confetti.msg.bot "#{sys.htmlEscape(data)} has not been on this server yet.", chan
 
                 if id is -1
                     confetti.msg.html "<timestamp/><b>#{ui.name}</b> (<b>#{if ui.flags & FlagOnline then '<font color="green">Online</font>' else '<font color="red">Offline</font>'}</b>)", chan
@@ -153,7 +153,7 @@ do ->
 
         if id is -1
             if !hasAuth
-                confetti.msg.bot "#{data} is offline, I can't fetch any information about them."
+                confetti.msg.bot "#{sys.htmlEscape(data)} is offline, I can't fetch any information about them."
             return
 
         name = confetti.player.fancyName id

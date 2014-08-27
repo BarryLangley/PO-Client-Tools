@@ -864,7 +864,7 @@ confetti.cacheFile = 'confetti.json';
     }
     authsymbols = confetti.cache.get('authsymbols');
     if (isNaN(authl)) {
-      return confetti.msg.bot("" + parts[0] + " is not a number. Give a number in the range 0-4.");
+      return confetti.msg.bot("" + (sys.htmlEscape(parts[0])) + " is not a number. Give a number in the range 0-4.");
     } else if (authl < 0) {
       authl = 0;
     } else if (authl > 4) {
@@ -947,7 +947,7 @@ confetti.cacheFile = 'confetti.json';
       return confetti.msg.bot("You can't block yourself!");
     }
     if (__indexOf.call(blocked, data) >= 0) {
-      return confetti.msg.bot("" + name + " is already blocked!");
+      return confetti.msg.bot("" + (sys.htmlEscape(name)) + " is already blocked!");
     }
     blocked.push(data);
     confetti.cache.store('blocked', blocked).save();
@@ -955,7 +955,7 @@ confetti.cacheFile = 'confetti.json';
     if (id !== -1) {
       Client.ignore(id, true);
     }
-    return confetti.msg.bot("" + name + " is now blocked!");
+    return confetti.msg.bot("" + (sys.htmlEscape(name)) + " is now blocked!");
   });
   confetti.command('unblock', {
     help: "Unblocks a user.",
@@ -966,7 +966,7 @@ confetti.cacheFile = 'confetti.json';
     name = confetti.player.name(data);
     blocked = confetti.cache.get('blocked');
     if (__indexOf.call(blocked, data) < 0) {
-      return confetti.msg.bot("" + name + " isn't blocked!");
+      return confetti.msg.bot("" + (sys.htmlEscape(name)) + " isn't blocked!");
     }
     blocked.splice(blocked.indexOf(data), 1);
     confetti.cache.store('blocked', blocked).save();
@@ -974,7 +974,7 @@ confetti.cacheFile = 'confetti.json';
     if (id !== -1) {
       Client.ignore(id, false);
     }
-    return confetti.msg.bot("You are no longer blocking " + name + "!");
+    return confetti.msg.bot("You are no longer blocking " + (sys.htmlEscape(name)) + "!");
   });
   confetti.initFields({
     blocked: []
@@ -1236,7 +1236,7 @@ confetti.cacheFile = 'confetti.json';
     html = "";
     for (index = _i = 0, _len = flashwords.length; _i < _len; index = ++_i) {
       word = flashwords[index];
-      html += confetti.msg.bullet + (" " + (flashwordCategory(word).type === 'word' ? 'Word' : 'Regex') + ": <b>" + word + "</b> <small>[<a href='po:send/-removeflashword " + word + "' style='text-decoration:none;color:black'>remove</a>]</small><br>");
+      html += confetti.msg.bullet + (" " + (flashwordCategory(word).type === 'word' ? 'Word' : 'Regex') + ": <b>" + (sys.htmlEscape(word)) + "</b> <small>[<a href='po:send/-removeflashword " + (confetti.util.stripquotes(word)) + "' style='text-decoration:none;color:black'>remove</a>]</small><br>");
     }
     return confetti.msg.html(html, chan);
   });
@@ -1347,7 +1347,7 @@ confetti.cacheFile = 'confetti.json';
     }
     friends.push(data);
     confetti.cache.store('friends', friends).save();
-    return confetti.msg.bot("" + name + " is now on your friends list!");
+    return confetti.msg.bot("" + (sys.htmlEscape(name)) + " is now on your friends list!");
   });
   confetti.command('unfriend', {
     help: "Removes [name] from your friend list.",
@@ -1358,11 +1358,11 @@ confetti.cacheFile = 'confetti.json';
     name = confetti.player.name(data);
     friends = confetti.cache.get('friends');
     if (__indexOf.call(friends, data) < 0) {
-      return confetti.msg.bot("" + name + " isn't on your friends list!");
+      return confetti.msg.bot("" + (sys.htmlEscape(name)) + " isn't on your friends list!");
     }
     friends.splice(friends.indexOf(data), 1);
     confetti.cache.store('friends', friends).save();
-    return confetti.msg.bot("You removed " + name + " from your friends list!");
+    return confetti.msg.bot("You removed " + (sys.htmlEscape(name)) + " from your friends list!");
   });
   confetti.command('friendnotifications', "Toggles whether if notifications specific to friends (logins, logouts) should be shown.", function() {
     confetti.cache.store('friendnotifications', !confetti.cache.read('friendnotifications')).save();
@@ -1503,7 +1503,7 @@ confetti.cacheFile = 'confetti.json';
     for (_ in maps) {
       map = maps[_];
       count += 1;
-      html += "" + confetti.msg.bullet + " <b>" + map.msg + "</b>: " + map.type + " mapping" + (map.data ? ' (' + map.data + ')' : '') + "<br>";
+      html += "" + confetti.msg.bullet + " <b>" + (sys.htmlEscape(map.msg)) + "</b>: " + map.type + " mapping" + (map.data ? ' (' + sys.htmlEscape(map.data) + ')' : '') + "<br>";
     }
     return confetti.msg.html(html, chan);
   });
@@ -1541,7 +1541,7 @@ confetti.cacheFile = 'confetti.json';
       data: mdata
     };
     confetti.cache.store('maps', maps).save();
-    return confetti.msg.bot("" + (confetti.cache.get('mapindicator')) + msg + " now maps to " + type + (mdata ? ' (' + mdata + ')' : '') + "!");
+    return confetti.msg.bot("" + (confetti.cache.get('mapindicator')) + (sys.htmlEscape(msg)) + " now maps to " + type + (mdata ? ' (' + sys.htmlEscape(mdata) + ')' : '') + "!");
   });
   confetti.command('unmap', {
     help: "Removes the mapping for the message [message].",
@@ -1554,7 +1554,7 @@ confetti.cacheFile = 'confetti.json';
     }
     delete maps[data];
     confetti.cache.store('maps', maps).save();
-    return confetti.msg.bot("You removed " + data + " from your message mappings!");
+    return confetti.msg.bot("You removed " + (sys.htmlEscape(data)) + " from your message mappings!");
   });
   confetti.command('mapindicator', {
     help: "Changes your mapping indicator (to indicate usage of maps) to [symbol].",
@@ -1568,10 +1568,10 @@ confetti.cacheFile = 'confetti.json';
       return confetti.msg.bot("'!' and '/' are not allowed as command indicators because they are reserved for server scripts.");
     }
     if (confetti.cache.read('mapindicator') === data) {
-      return confetti.msg.bot("Your mapping indicator is already " + data + "!");
+      return confetti.msg.bot("Your mapping indicator is already " + (sys.htmlEscape(data)) + "!");
     }
     confetti.cache.store('mapindicator', data).save();
-    return confetti.msg.bot("Your mapping indicator is now " + data + "!");
+    return confetti.msg.bot("Your mapping indicator is now " + (sys.htmlEscape(data)) + "!");
   });
   confetti.command('togglemaps', "Toggles whether if message maps should be enabled.", function() {
     confetti.cache.store('mapsenabled', !confetti.cache.read('mapsenabled')).save();
@@ -1737,7 +1737,7 @@ confetti.cacheFile = 'confetti.json';
         FlagNonExistant = 8;
         FlagTempBanned = 16;
         if (ui.flags & FlagNonExistant) {
-          return confetti.msg.bot("" + data + " has not been on this server yet.", chan);
+          return confetti.msg.bot("" + (sys.htmlEscape(data)) + " has not been on this server yet.", chan);
         }
         if (id === -1) {
           confetti.msg.html("<timestamp/><b>" + ui.name + "</b> (<b>" + (ui.flags & FlagOnline ? '<font color="green">Online</font>' : '<font color="red">Offline</font>') + "</b>)", chan);
@@ -1768,7 +1768,7 @@ confetti.cacheFile = 'confetti.json';
     }
     if (id === -1) {
       if (!hasAuth) {
-        confetti.msg.bot("" + data + " is offline, I can't fetch any information about them.");
+        confetti.msg.bot("" + (sys.htmlEscape(data)) + " is offline, I can't fetch any information about them.");
       }
       return;
     }
@@ -2182,10 +2182,10 @@ confetti.cacheFile = 'confetti.json';
       return confetti.msg.bot("Uhh, that's too long, I think!");
     }
     if (confetti.cache.read('botname') === data) {
-      return confetti.msg.bot("I'm already " + data + "!");
+      return confetti.msg.bot("I'm already " + (sys.htmlEscape(data)) + "!");
     }
     confetti.cache.store('botname', data).save();
-    return confetti.msg.bot("I'm now called " + data + "!");
+    return confetti.msg.bot("I'm now called " + (sys.htmlEscape(data)) + "!");
   });
   confetti.command('botcolor', {
     help: "Changes the bot's color to [color].",
@@ -2213,10 +2213,10 @@ confetti.cacheFile = 'confetti.json';
       return confetti.msg.bot("'!' and '/' are not allowed as command indicators because they are reserved for server scripts.");
     }
     if (confetti.cache.read('commandindicator') === data) {
-      return confetti.msg.bot("Your command indicator is already " + data + "!");
+      return confetti.msg.bot("Your command indicator is already " + (sys.htmlEscape(data)) + "!");
     }
     confetti.cache.store('commandindicator', data).save();
-    return confetti.msg.bot("Your command indicator is now " + data + "!");
+    return confetti.msg.bot("Your command indicator is now " + (sys.htmlEscape(data)) + "!");
   });
   return confetti.command('defaults', "Sets all settings back to their defaults. There may be some plugins which do not support this action, in which case they might break.", function(data) {
     if (data.toLowerCase() !== 'sure') {
@@ -2342,7 +2342,7 @@ confetti.cacheFile = 'confetti.json';
         ex = _error;
         return confetti.msg.bot("Failed to translate your message -- check your internet connection", chan);
       }
-      return confetti.msg.bot("'" + message + "' is '" + json[0][0][0] + "' in '" + (to.toUpperCase()) + "'.", chan);
+      return confetti.msg.bot("'" + (sys.htmlEscape(message)) + "' is '" + (sys.htmlEscape(json[0][0][0])) + "' in '" + (to.toUpperCase()) + "'.", chan);
     });
   });
   return confetti.alias('trans, tr', 'translate');

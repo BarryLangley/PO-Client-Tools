@@ -56,7 +56,7 @@ do ->
         for _, map of maps
             count += 1
 
-            html += "#{confetti.msg.bullet} <b>#{map.msg}</b>: #{map.type} mapping#{if map.data then ' (' + map.data + ')' else ''}<br>"
+            html += "#{confetti.msg.bullet} <b>#{sys.htmlEscape(map.msg)}</b>: #{map.type} mapping#{if map.data then ' (' + sys.htmlEscape(map.data) + ')' else ''}<br>"
 
         confetti.msg.html html, chan
 
@@ -91,7 +91,7 @@ do ->
         maps[msg] = {msg, type, data: mdata}
         confetti.cache.store('maps', maps).save()
 
-        confetti.msg.bot "#{confetti.cache.get('mapindicator')}#{msg} now maps to #{type}#{if mdata then ' (' + mdata + ')' else ''}!"
+        confetti.msg.bot "#{confetti.cache.get('mapindicator')}#{sys.htmlEscape(msg)} now maps to #{type}#{if mdata then ' (' + sys.htmlEscape(mdata) + ')' else ''}!"
 
     confetti.command 'unmap', {help: "Removes the mapping for the message [message].", args: ["message"]}, (data) ->
         maps = confetti.cache.get 'maps'
@@ -102,7 +102,7 @@ do ->
         delete maps[data]
         confetti.cache.store('maps', maps).save()
 
-        confetti.msg.bot "You removed #{data} from your message mappings!"
+        confetti.msg.bot "You removed #{sys.htmlEscape(data)} from your message mappings!"
 
     confetti.command 'mapindicator', {help: "Changes your mapping indicator (to indicate usage of maps) to [symbol].", args: ["symbol"]}, (data) ->
         data = data.toLowerCase()
@@ -114,10 +114,10 @@ do ->
             return confetti.msg.bot "'!' and '/' are not allowed as command indicators because they are reserved for server scripts."
 
         if confetti.cache.read('mapindicator') is data
-            return confetti.msg.bot "Your mapping indicator is already #{data}!"
+            return confetti.msg.bot "Your mapping indicator is already #{sys.htmlEscape(data)}!"
 
         confetti.cache.store('mapindicator', data).save()
-        confetti.msg.bot "Your mapping indicator is now #{data}!"
+        confetti.msg.bot "Your mapping indicator is now #{sys.htmlEscape(data)}!"
 
     confetti.command 'togglemaps', "Toggles whether if message maps should be enabled.", ->
         confetti.cache.store('mapsenabled', !confetti.cache.read('mapsenabled')).save()
