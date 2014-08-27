@@ -15,6 +15,7 @@ do ->
         '2.1.1': 'Commands split into several new command lists, nato encool mode, idle utility command.'
         '2.1.2': 'Many important bug fixes, ignorepms, teambuilder & findbattle utility commands, improved info command.'
         '2.1.3': 'Message mapping, disconnect utility command, minor fix for info command.'
+        '2.1.4': 'Parameter maps, improved maphelp, minor fixes, Ye Olde & Deladder plugins.'
 
     autoUpdate = ->
         return if confetti.cache.get('autoupdate') is no
