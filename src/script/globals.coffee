@@ -21,7 +21,7 @@ if typeof confetti isnt 'object'
 confetti.version =
     release: 2
     major: 1
-    minor: 4
+    minor: 5
 
 # TODO: A command to change this
 confetti.scriptUrl  = 'https://caresx.github.io/PO-Client-Tools/'

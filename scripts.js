@@ -27,7 +27,7 @@ if (typeof confetti !== 'object') {
 confetti.version = {
   release: 2,
   major: 1,
-  minor: 4
+  minor: 5
 };
 
 confetti.scriptUrl = 'https://caresx.github.io/PO-Client-Tools/';
@@ -2091,7 +2091,8 @@ confetti.cacheFile = 'confetti.json';
     '2.1.1': 'Commands split into several new command lists, nato encool mode, idle utility command.',
     '2.1.2': 'Many important bug fixes, ignorepms, teambuilder & findbattle utility commands, improved info command.',
     '2.1.3': 'Message mapping, disconnect utility command, minor fix for info command.',
-    '2.1.4': 'Parameter maps, improved maphelp, minor fixes, Ye Olde & Deladder plugins.'
+    '2.1.4': 'Parameter maps, improved maphelp, minor fixes, Ye Olde & Deladder plugins.',
+    '2.1.5': 'URLs updated.'
   };
   autoUpdate = function() {
     var now;
