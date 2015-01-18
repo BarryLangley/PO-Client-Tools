@@ -40,7 +40,7 @@
   insultsLoaded = false;
   insultList = [];
   updateInsults = function(cb) {
-    return sys.webCall('https://theunknownone.github.io/Insults/src/insults.txt', function(req) {
+    return sys.webCall('https://caresx.github.io/Insults/src/insults.txt', function(req) {
       var ex, insults;
       try {
         insults = req.split('\n');

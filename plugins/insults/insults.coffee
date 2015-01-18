@@ -35,7 +35,7 @@ do ->
     insultList = []
 
     updateInsults = (cb) ->
-        sys.webCall 'https://theunknownone.github.io/Insults/src/insults.txt', (req) ->
+        sys.webCall 'https://caresx.github.io/Insults/src/insults.txt', (req) ->
             try
                 insults = req.split '\n'
                 if insults[insults.length - 1] is ''

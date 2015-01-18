@@ -2,7 +2,7 @@
 do ->
     emoji = {}
     parsed = no
-    url = 'https://theunknownone.github.io/PO-Client-Tools/plugins/emoji/emoji.json'
+    url = 'https://caresx.github.io/PO-Client-Tools/plugins/emoji/emoji.json'
 
     emojiRegex = /:([a-z0-9\+\-_]+):/g
 
